@@ -1,5 +1,4 @@
-## Interface: 110200
-
+## Interface: 120000, 110207, 110205
 ## Title: CrossHotbar
 ## Version: 1.0.15
 ## Notes: Implements a WXHB Crosshotbar as an actionbar.
@@ -9,9 +8,6 @@
 #@no-lib-strip@
 Libs\LibStub\LibStub.lua
 Libs\LibUIDropDownMenu\LibUIDropDownMenu.lua
-Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
-Libs\LibButtonGlow-1.0\LibButtonGlow-1.0.lua
-Libs\LibActionButton-1.0\LibActionButton-1.0.lua
 #@end-no-lib-strip@
 
 Config.lua

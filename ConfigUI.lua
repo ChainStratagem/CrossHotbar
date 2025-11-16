@@ -151,7 +151,7 @@ local Locale = {
    spadrTabToolTip = "Actions and hotbar assignments when under the RIGHTSHOULDER modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    ppadlTabToolTip = "Actions and hotbar assignments when under the LEFTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    ppadrTabToolTip = "Actions and hotbar assignments when under the RIGHTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
-   hotbarTypeToolTip = "Hotbars can be created with LibActionButton or reuse the existing Blizzard Actionbars. When using Blizzard Actiobars Edit Mode can change the hotbar positions. Interacting with the Crosshotbar will restore the positions if moved.",
+   hotbarTypeToolTip = "Hotbars can be internally recreated or reuse the existing Blizzard Actionbars. When using Blizzard Actiobars Edit Mode can change the hotbar positions. Interacting with the Crosshotbar will restore the positions if moved.",
    hotkeyTypeToolTip = "Button icons used in the gui and hotkeys can be set to shapes or letters.",
    expandedTypeToolTip = "When either LEFTHOTBAR or RIGHTHOTBAR  are double clicked HOTBARBTN[9-12] are mapped to HOTBARBTN[1-4]. This setting controls the visual cue of their activation.",
    dadaTypeToolTip = "The Cross hotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
@@ -1054,8 +1054,8 @@ end
 function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
 
    local hbartypestr = {
-      ["LIBA"] = "Create HotBars using LibActionButton.",
-      ["BLIZ"] = "Use Blizzard ActionBars.",
+      ["LIBA"] = "Create HotBars internally.",
+      ["BLIZ"] = "Reuse Blizzard ActionBars.",
    }
 
    local hkeytypestr = {

@@ -789,20 +789,7 @@ function GamePadButtonsMixin:OnEvent(event, ...)
       if SpellIsTargeting() then
          if self.MouseLookEnabled then
             if IsMouselooking() then
-               -- We need to toggle the mouse
-               -- to show the retical
-               -- 11.0.2 can not change the
-               -- mouselook until next frame.
-               local function togglemouse(timer)
-                  if not IsMouseButtonDown() then
-                     self.MouseLookEnabled = false
-                     MouselookStop()
-                     MouselookStart()
-                     self.MouseLookEnabled = true
-                     timer:Cancel()
-                  end
-               end
-               C_Timer.NewTicker(0.1, togglemouse, 5)
+               MouselookStop()
             end
          end
          self.SpellTargetingStarted = true
@@ -885,8 +872,7 @@ function GamePadButtonsMixin:OnEvent(event, ...)
       self.MouseOnUpdateFrame = CreateFrame("Frame", ADDON .. "OnUpdateFrame")
       
       function self.MouseOnUpdateFrame:onUpdate(...)
-         if addon.GamePadButtons.MouseLookEnabled and
-            not SpellIsTargeting() then
+         if addon.GamePadButtons.MouseLookEnabled then
             if IsMouselooking() ~= addon.GamePadButtons.MouseLookState then
                addon.GamePadButtons:SetMouseLook(addon.GamePadButtons.MouseLookState)
             end

@@ -1,6 +1,5 @@
 local ADDON, addon = ...
 local config = addon.Config
-local LibActBtn = LibStub("LibActionButton-1.0")
 
 local HBARList = {
    ["LIBA"] = true,
@@ -115,6 +114,15 @@ function HotbarMixin:OnLoad()
 end
 
 function HotbarMixin:SetupHotbar()
+
+   -- Workaround for MainMenuBar in Midnight
+   if self.BarName == "MainMenuBar" then
+      if _G[self.BarName] == nil then
+         self.BarName = "MainActionBar"
+         self.BtnPrefix = "ActionBarButton"
+      end
+   end
+   
    self.AnchorButtons = {}
    self.Highlights = {}
    self:AddActionBar()
@@ -209,24 +217,15 @@ function HotbarMixin:AddActionBar()
       }
       
       for i = 1,12 do
-         self.Buttons[i] = LibActBtn:CreateButton(i, self.BtnPrefix .. i, self.ActionBar, ActBTnConfig)
+         self.Buttons[i] = CreateFrame("CheckButton", self.BtnPrefix .. i, self.ActionBar, "ActionBarButtonTemplate")
+         
          self.Buttons[i]:SetID(i)
+         self.Buttons[i]:SetAttributeNoHandler("actions", i)
          self.Buttons[i]:SetAttribute("checkmouseovercast", true);
          -- Set attribute to tell Consoleport not to manage hotkey text.
          self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
          hooksecurefunc(self.Buttons[i], "SetAlpha", GenerateClosure(self.SetAlphaHook, self))
          hooksecurefunc(self.Buttons[i].icon, "SetDesaturated", GenerateClosure(self.HookDesatHook, self))
-         local offset = 0
-         local offsetid = (i + offset - 1) % 12 + 1
-         for k = 1,18 do
-            self.Buttons[i]:SetState(k, "action", (k - 1) * 12 + offsetid)
-         end
-         self.Buttons[i]:SetState(0, "action", offsetid)
-         if i == 12 then
-            self.Buttons[i]:SetState(16, "custom", customExitButton)
-            self.Buttons[i]:SetState(17, "custom", customExitButton)
-            self.Buttons[i]:SetState(18, "custom", customExitButton)
-         end
       end
 
       if _G[self.BarName].EndCaps then

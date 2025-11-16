@@ -2,7 +2,4 @@ package-as: CrossHotbar
 
 externals:
   Libs/LibStub:             https://repos.wowace.com/wow/libstub/tags/1.0
-  Libs/CallbackHandler-1.0: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
-  Libs/LibActionButton-1.0: https://repos.wowace.com/wow/libactionbutton-1-0
-  Libs/LibButtonGlow-1.0:   https://repos.wowace.com/wow/libbuttonglow-1-0
   Libs/LibUIDropDownMenu:   https://repos.wowace.com/wow/libuidropdownmenu/trunk/LibUIDropDownMenu
