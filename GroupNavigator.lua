@@ -66,10 +66,6 @@ function GroupNavigatorMixin:OnEvent(event, ...)
       self.SoftTargetFrame.selectionHighlight:SetVertexColor(0.2, 1.0, 0.6);
       self.SoftTargetFrame.selectionHighlight:SetAllPoints(self.SoftTargetFrame);
       
-      local frameWidth = EditModeManagerFrame:GetRaidFrameWidth(true);
-      local frameHeight = EditModeManagerFrame:GetRaidFrameHeight(true);
-      
-      self.SoftTargetFrame:SetSize(frameWidth+6, frameHeight+6)
       self.SoftTargetFrame:SetAlpha(0)
       self.SoftTargetFrame:Hide()
       
@@ -604,6 +600,10 @@ function GroupNavigatorMixin:WrapOnClickFlush()
                      softtarget:SetParent(frame)
                      softtarget:ClearAllPoints()
                      softtarget:SetPoint("CENTER", frame, "CENTER")
+                     local frameWidth = frame:GetWidth();
+                     local frameHeight = frame:GetHeight();
+                     softtarget:SetWidth(frameWidth+6)
+                     softtarget:SetHeight(frameHeight+6)
                      softtarget:SetAlpha(0.75)
                      found = true
                   end
