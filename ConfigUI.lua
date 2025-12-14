@@ -1401,8 +1401,18 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    lhotbareditbox:EnableMouse(true)
    lhotbareditbox:SetText(config.Hotbar.LPagePrefix)
    lhotbareditbox:SetScript("OnEditFocusLost", function(self)
-      config.Hotbar.LPagePrefix = self:GetText()
-      ConfigUI:Refresh(true)
+      local page_prefix = self:GetText()
+      if page_prefix ~= config.Hotbar.LPagePrefix then        
+         local result = SecureCmdOptionParse(page_prefix .. config.Hotbar.LPageIndex)
+         if result ~= nil and tonumber(result) ~= nil then
+            print("Setting conditional: " .. page_prefix)
+            config.Hotbar.LPagePrefix = page_prefix
+         ConfigUI:Refresh(true)
+         else
+            print("|cffffff00Not setting conditional: " .. page_prefix .. config.Hotbar.LPageIndex .. " Returned a non number [" .. result .. "] conditional not set.|r")
+            self:SetText(config.Hotbar.LPagePrefix)
+         end
+      end
    end)
 
    ConfigUI:AddToolTip(lpagepresubtitle, Locale.pagePrefixToolTip, true)
@@ -1429,8 +1439,18 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    rhotbareditbox:EnableMouse(true)
    rhotbareditbox:SetText(config.Hotbar.RPagePrefix)
    rhotbareditbox:SetScript("OnEditFocusLost", function(self)
-      config.Hotbar.RPagePrefix = self:GetText()
-      ConfigUI:Refresh(true)
+      local page_prefix = self:GetText()
+      if page_prefix ~= config.Hotbar.RPagePrefix then        
+         local result = SecureCmdOptionParse(page_prefix .. config.Hotbar.RPageIndex)
+         if result ~= nil and tonumber(result) ~= nil then
+            print("Setting conditional: " .. page_prefix)
+            config.Hotbar.RPagePrefix = page_prefix
+            ConfigUI:Refresh(true)
+         else
+            print("|cffffff00Not setting conditional: " .. page_prefix .. config.Hotbar.RPageIndex .. " Returned a non number [" .. result .. "] conditional not set.|r")
+            self:SetText(config.Hotbar.RPagePrefix)
+         end
+      end
    end)
 
    ConfigUI:AddToolTip(rpagepresubtitle, Locale.pagePrefixToolTip, true)
@@ -1457,8 +1477,18 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    lrhotbareditbox:EnableMouse(true)
    lrhotbareditbox:SetText(config.Hotbar.LRPagePrefix)
    lrhotbareditbox:SetScript("OnEditFocusLost", function(self)
-      config.Hotbar.LRPagePrefix = self:GetText()
-      ConfigUI:Refresh(true)
+      local page_prefix = self:GetText()
+      if page_prefix ~= config.Hotbar.LRPagePrefix then                           
+         local result = SecureCmdOptionParse(page_prefix .. config.Hotbar.LRPageIndex)
+         if result ~= nil and tonumber(result) ~= nil then
+            print("Setting conditional: " .. page_prefix)
+            config.Hotbar.LRPagePrefix = page_prefix
+            ConfigUI:Refresh(true)
+         else
+         print("|cffffff00Not setting conditional: " .. page_prefix .. config.Hotbar.LRPageIndex .. " Returned a non number [" .. result .. "] conditional not set.|r")
+         self:SetText(config.Hotbar.LRPagePrefix)
+         end
+      end
    end)
 
    ConfigUI:AddToolTip(lrpagepresubtitle, Locale.pagePrefixToolTip, true)
@@ -1485,8 +1515,18 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    rlhotbareditbox:EnableMouse(true)
    rlhotbareditbox:SetText(config.Hotbar.RPagePrefix)
    rlhotbareditbox:SetScript("OnEditFocusLost", function(self)
-      config.Hotbar.RLPagePrefix = self:GetText()
-      ConfigUI:Refresh(true)
+      local page_prefix = self:GetText()
+      if page_prefix ~= config.Hotbar.RLPagePrefix then                          
+         local result = SecureCmdOptionParse(page_prefix .. config.Hotbar.RLPageIndex)
+         if result ~= nil and tonumber(result) ~= nil then
+            print("Setting conditional: " .. page_prefix)
+            config.Hotbar.RLPagePrefix = page_prefix
+            ConfigUI:Refresh(true)
+         else
+            print("|cffffff00Not setting conditional: " .. page_prefix .. config.Hotbar.RLPageIndex .. " Returned a non number [" .. result .. "] conditional not set.|r")
+            self:SetText(config.Hotbar.RLPagePrefix)
+         end
+      end
    end)
 
    ConfigUI:AddToolTip(rlpagepresubtitle, Locale.pagePrefixToolTip, true)
