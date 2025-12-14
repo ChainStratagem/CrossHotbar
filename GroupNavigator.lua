@@ -38,6 +38,7 @@ function GroupNavigatorMixin:OnEvent(event, ...)
       self:updateRoster()
       local value = GetCVarBool("ActionButtonUseKeyDown");
       self:RegisterForClicks("AnyUp", "AnyDown")
+      self:UnregisterEvent("ADDON_LOADED")
    elseif event == "GROUP_JOINED" then
       self:updateRoster()
    elseif event == "GROUP_LEFT" then

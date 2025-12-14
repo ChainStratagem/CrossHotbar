@@ -19,33 +19,7 @@ local ActionList = {
 }
 config:ConfigListAdd("HotbarActions", ActionList, "NONE")
 
-CrossHotbarMixin = {
-   HBARType = nil
-}
-
---[[
-function CrossHotbarMixin:SaveLayout()
-   StaticPopupDialogs["CROSSHOTBAR_SAVEACTIONBARTOLAYOUT"] = {
-      text = "Double Click: Save/Overwrite ActionBar positions to the active layout?",
-      button1 = "Save",
-      button2 = "Cancel",
-      OnAccept = function()
-         local layouts = C_EditMode.GetLayouts()
-         for i,sysInfo in ipairs(layouts.layouts[layouts.activeLayout].systems) do
-            if sysInfo.system == 0 then
-               print(sysInfo.system, sysInfo.systemIndex)
-            end
-         end
-         print("Saved")
-      end,
-      timeout = 0,
-      whileDead = true,
-      hideOnEscape = true,
-      preferredIndex = 3
-   }
-   StaticPopup_Show("CROSSHOTBAR_SAVEACTIONBARTOLAYOUT")
-end
---]]
+CrossHotbarMixin = {}
 
 function CrossHotbarMixin:SetupCrosshotbar()
    self.LHotbar = { WXHBLHotbar1, WXHBLHotbar2, WXHBLHotbar3 }
@@ -75,15 +49,6 @@ function CrossHotbarMixin:SetupCrosshotbar()
       Crosshotbar:RunAttribute("SetHotbarPlacement")
       self:SetWidth(Crosshotbar:GetWidth())
    ]])
-
---   if CrossHotbar_DB.HBARType == "BLIZ" then
---      SecureHandlerWrapScript(WXHBCrossHotbarMover, "OnDoubleClick", WXHBCrossHotbarMover, [[
---         local Crosshotbar = self:GetFrameRef('Crosshotbar')
---         Crosshotbar:RunAttribute("SetHotbarPlacement")
---         self:SetWidth(Crosshotbar:GetWidth())
---         Crosshotbar:CallMethod("SaveLayout")
---      ]])
---   end
    
    SecureHandlerWrapScript(WXHBCrossHotbarMover, "OnEnter", WXHBCrossHotbarMover, [[
       self:SetFrameLevel(10)
@@ -95,13 +60,6 @@ function CrossHotbarMixin:SetupCrosshotbar()
 end
 
 function CrossHotbarMixin:ApplyConfig()
-
-   if self.HBARType == nil then
-      self.HBARType = CrossHotbar_DB.HBARType
-   elseif self.HBARType ~= CrossHotbar_DB.HBARType then
-      ReloadUI()
-   end
-   
    local bindings = {}
    local nbindings = #GamePadModifierList + 2
    for action,value in pairs(ActionList) do
@@ -161,12 +119,6 @@ function CrossHotbarMixin:OnLoad()
 
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
    
-   EventRegistry:RegisterCallback("EditMode.Exit", function(ownerID, ...)
-      if not InCombatLockdown() then 
-         self:Execute([[self:RunAttribute("SetHotbarPlacement")]])
-      end
-   end, self)
-
    addon:AddInitCallback(GenerateClosure(self.SetupCrosshotbar, self))
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
 end

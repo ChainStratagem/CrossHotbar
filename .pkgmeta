@@ -1,5 +1,4 @@
 package-as: CrossHotbar
 
 externals:
-  Libs/LibStub:             https://repos.wowace.com/wow/libstub/tags/1.0
-  Libs/LibUIDropDownMenu:   https://repos.wowace.com/wow/libuidropdownmenu/trunk/LibUIDropDownMenu
+

@@ -189,109 +189,89 @@ function HotbarMixin:HookDesatHook(icon, Saturation)
 end
       
 function HotbarMixin:AddActionBar()
-   if CrossHotbar_DB.HBARType == "LIBA" then
-      self.Buttons = {}
-      self.BtnPrefix = self:GetName() .. "Button"
+   self.Buttons = {}
+   self.BtnPrefix = self:GetName() .. "Button"
 
-      self.ActionBar = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
-      self.ActionBar:SetAttribute("_onstate-page", [[
+   self.ActionBar = CreateFrame("Frame", nil, UIParent, "SecureHandlerStateTemplate")
+   self.ActionBar:SetAttribute("_onstate-page", [[
          self:SetAttribute('actionpage', newstate)
          self:SetAttribute("state", newstate)     
          self:ChildUpdate("state", newstate)
       ]])
-      
-      self.ActionBar:SetAttribute('actionpage', 1)
-      self.ActionBar:SetAttribute("state-page", "1")
-      self.ActionBar:SetID(0)
+   
+   self.ActionBar:SetAttribute('actionpage', 1)
+   self.ActionBar:SetAttribute("state-page", "1")
+   self.ActionBar:SetID(0)
 
-      local customExitButton = {
-         func = function(button)
-            VehicleExit()
-         end,
-         texture = "Interface\\Vehicles\\UI-Vehicles-Button-Exit-Up",
-         tooltip = LEAVE_VEHICLE,
-      }
+   local customExitButton = {
+      func = function(button)
+         VehicleExit()
+      end,
+      texture = "Interface\\Vehicles\\UI-Vehicles-Button-Exit-Up",
+      tooltip = LEAVE_VEHICLE,
+   }
+   
+   local ActBTnConfig = {
+      showGrid = true
+   }
+   
+   for i = 1,12 do
+      self.Buttons[i] = CreateFrame("CheckButton", self.BtnPrefix .. i, self.ActionBar, "ActionBarButtonTemplate")
       
-      local ActBTnConfig = {
-         showGrid = true
-      }
-      
-      for i = 1,12 do
-         self.Buttons[i] = CreateFrame("CheckButton", self.BtnPrefix .. i, self.ActionBar, "ActionBarButtonTemplate")
-         
-         self.Buttons[i]:SetID(i)
-         self.Buttons[i]:SetAttributeNoHandler("actions", i)
-         self.Buttons[i]:SetAttribute("checkmouseovercast", true);
-         -- Set attribute to tell Consoleport not to manage hotkey text.
-         self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
-         hooksecurefunc(self.Buttons[i], "SetAlpha", GenerateClosure(self.SetAlphaHook, self))
-         hooksecurefunc(self.Buttons[i].icon, "SetDesaturated", GenerateClosure(self.HookDesatHook, self))
-      end
+      self.Buttons[i]:SetID(i)
+      self.Buttons[i]:SetAttributeNoHandler("actions", i)
+      self.Buttons[i]:SetAttribute("checkmouseovercast", true);
+      -- Set attribute to tell Consoleport not to manage hotkey text.
+      self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
+      hooksecurefunc(self.Buttons[i], "SetAlpha", GenerateClosure(self.SetAlphaHook, self))
+      hooksecurefunc(self.Buttons[i].icon, "SetDesaturated", GenerateClosure(self.HookDesatHook, self))
+   end
 
-      if _G[self.BarName].EndCaps then
-         _G[self.BarName].EndCaps.LeftEndCap:SetShown(false)
-         _G[self.BarName].EndCaps.RightEndCap:SetShown(false)
-      end
-      if _G[self.BarName].BorderArt then
-         _G[self.BarName].BorderArt:SetTexture(nil)
-      end
-      if _G[self.BarName].Background then
-         _G[self.BarName].Background:SetShown(false)
-      end
-      if _G[self.BarName].ActionBarPageNumber then
-         _G[self.BarName].ActionBarPageNumber:SetShown(false)
-         _G[self.BarName].ActionBarPageNumber.Text:SetShown(false)
-      end
-      
-      if _G[self.BarName].system then
-         _G[self.BarName]["isShownExternal"] = nil
-	local c = 42
-	repeat
-           if _G[self.BarName][c]  == nil then
-              _G[self.BarName][c]  = nil
-           end
-           c = c + 1
-	until issecurevariable(_G[self.BarName], "isShownExternal")
-      end
-      if _G[self.BarName].HideBase then
-         _G[self.BarName]:HideBase()
-      else
-         _G[self.BarName]:Hide()
-      end
-      _G[self.BarName]:SetParent(addon.UIHider)
-      
-      _G[self.BarName]:UnregisterEvent("PLAYER_REGEN_ENABLED")
-      _G[self.BarName]:UnregisterEvent("PLAYER_REGEN_DISABLED")
-      _G[self.BarName]:UnregisterEvent("ACTIONBAR_SHOWGRID")
-      _G[self.BarName]:UnregisterEvent("ACTIONBAR_HIDEGRID")
-      
-      local containers = { _G[self.BarName]:GetChildren() }
-      for i,container in ipairs(containers) do
-         local buttons = { container:GetChildren() }
-         for j,button in ipairs(buttons) do
-            button:Hide()
-            button:UnregisterAllEvents()
-            button:SetAttribute("statehidden", true)
+   if _G[self.BarName].EndCaps then
+      _G[self.BarName].EndCaps.LeftEndCap:SetShown(false)
+      _G[self.BarName].EndCaps.RightEndCap:SetShown(false)
+   end
+   if _G[self.BarName].BorderArt then
+      _G[self.BarName].BorderArt:SetTexture(nil)
+   end
+   if _G[self.BarName].Background then
+      _G[self.BarName].Background:SetShown(false)
+   end
+   if _G[self.BarName].ActionBarPageNumber then
+      _G[self.BarName].ActionBarPageNumber:SetShown(false)
+      _G[self.BarName].ActionBarPageNumber.Text:SetShown(false)
+   end
+   
+   if _G[self.BarName].system then
+      _G[self.BarName]["isShownExternal"] = nil
+      local c = 42
+      repeat
+         if _G[self.BarName][c]  == nil then
+            _G[self.BarName][c]  = nil
          end
-      end
-   elseif CrossHotbar_DB.HBARType == "BLIZ" then
-      self.Buttons = {}
-      self.ActionBar = _G[self.BarName]
-      local containers = { self.ActionBar:GetChildren() }
-      for i,container in ipairs(containers) do
-         local buttons = { container:GetChildren() }
-         for j,button in ipairs(buttons) do
-            -- Set attribute to tell Consoleport not to manage hotkey text.
-            button:SetAttribute("ignoregamepadhotkey", true)
-            if button ~= nil and button:GetName() ~= nil then
-               local index = button:GetID();
-               if string.find(button:GetName(), "Button") then -- self.BtnPrefix
-                  self.Buttons[index] = button
-                  hooksecurefunc(self.Buttons[index], "SetAlpha", GenerateClosure(self.SetAlphaHook, self))
-                  hooksecurefunc(self.Buttons[index].icon, "SetDesaturated", GenerateClosure(self.HookDesatHook, self))
-               end
-            end
-         end
+         c = c + 1
+      until issecurevariable(_G[self.BarName], "isShownExternal")
+   end
+   if _G[self.BarName].HideBase then
+      _G[self.BarName]:HideBase()
+   else
+      _G[self.BarName]:Hide()
+   end
+   _G[self.BarName]:ClearAllPoints()
+   _G[self.BarName]:SetParent(addon.UIHider)
+   
+   _G[self.BarName]:UnregisterEvent("PLAYER_REGEN_ENABLED")
+   _G[self.BarName]:UnregisterEvent("PLAYER_REGEN_DISABLED")
+   _G[self.BarName]:UnregisterEvent("ACTIONBAR_SHOWGRID")
+   _G[self.BarName]:UnregisterEvent("ACTIONBAR_HIDEGRID")
+   
+   local containers = { _G[self.BarName]:GetChildren() }
+   for i,container in ipairs(containers) do
+      local buttons = { container:GetChildren() }
+      for j,button in ipairs(buttons) do
+         button:Hide()
+         button:UnregisterAllEvents()
+         button:SetAttribute("statehidden", true)
       end
    end
    

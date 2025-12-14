@@ -784,6 +784,26 @@ end
 function GamePadButtonsMixin:OnEvent(event, ...)
    -- print(event)
    if event == 'PLAYER_ENTERING_WORLD' then
+      isInitialLogin, isReloadingUi = ...
+      if isInitialLogin or isReloadingUi then
+         -- EditModeManger is picking up Crosshotbar frames which causes taint.
+         local bool foundTaint = false
+         layoutInfo = C_EditMode.GetLayouts()
+         for i,layout in ipairs(layoutInfo.layouts) do
+            for i,system in ipairs(layout.systems) do
+               if system.anchorInfo then
+                  if system.anchorInfo.relativeTo == 'Crosshotbar' then
+                     system.anchorInfo.relativeTo = UIParent:GetName()
+                     foundTaint = true
+                  end
+               end
+            end
+         end
+         if foundTaint then
+            print("Removing frame from EditMode")
+            C_EditMode.SaveLayouts(layoutInfo)
+         end
+      end
    elseif event == 'CURSOR_CHANGED' then
    elseif event == 'CURRENT_SPELL_CAST_CHANGED' then
       if SpellIsTargeting() then

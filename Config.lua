@@ -310,14 +310,6 @@ addon.Defaults_DB = {
    }
 }
 
-CrossHotbar_DB = {
-   Version = "v1.0.0",
-   ActivePreset = 1,
-   HBARType = "LIBA",
-   GPEnable = true,
-   Presets = {}
-}
-
 addon.Config = CopyTable(addon.Defaults_DB.Presets[1])
 addon.Config.Mutable = true
 addon.Config.Name = ""
@@ -415,6 +407,17 @@ function addon:ApplyConfig(updated)
 end
 
 function addon:InitConfig()
+   
+   if CrossHotbar_DB == nil then
+      CrossHotbar_DB = {
+         Version = "v1.0.0",
+         ActivePreset = 1,
+         HBARType = "LIBA",
+         GPEnable = true,
+         Presets = {}
+      }
+   end
+   
    local preset = CrossHotbar_DB.ActivePreset;
    local hassaves = false
    for k,preset in pairs(CrossHotbar_DB.Presets) do
@@ -451,5 +454,6 @@ EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", addon.Apply
 EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", addon.ApplyConfig, addon)
 EventRegistry:RegisterFrameEventAndCallback("ADDON_LOADED", addon.InitConfig, addon)
 
-addon.UIHider = CreateFrame("Frame")
+addon.UIHider = CreateFrame("Frame", nil, UIParent)
+addon.UIHider:SetAllPoints(UIParent)
 addon.UIHider:Hide()
