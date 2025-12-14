@@ -217,17 +217,22 @@ function ConfigUI:AddToolTip(frame, text, wrap)
    end)
 end
 
-function ConfigUI:Refresh(updated)
-   if self.InterfaceFrame:IsVisible() or
-      self.PresetFrame:IsVisible() or
-      self.ActionFrame:IsVisible() or
-      self.HotbarFrame:IsVisible() or
-      self.GamePadFrame:IsVisible() then 
-      for i,callback in ipairs(self.RefreshCallbacks) do
-         callback()
-      end
-      addon:ApplyConfig(updated)
+function ConfigUI:AddRefreshCallback(frame, func)
+   if self.RefreshCallbacks[frame] == nil then
+      self.RefreshCallbacks[frame] = {}
    end
+   table.insert(self.RefreshCallbacks[frame], func)
+end
+
+function ConfigUI:Refresh(updated)
+   for frame,callbacks in pairs(self.RefreshCallbacks)  do
+      if frame:IsVisible() then
+         for i,callback in ipairs(callbacks) do
+            callback()
+         end
+      end
+   end
+   addon:ApplyConfig(updated)
 end
 
 function ConfigUI:OnConfigInit()
@@ -307,6 +312,7 @@ Settings:
       title:SetText("Presets")
       local anchor = title
       anchor = ConfigUI:CreatePresets(PresetFrame, anchor)
+      
       PresetFrame:SetScript("OnShow", function(frame) ConfigUI:Refresh() end) 
       ConfigUI:Refresh()
    end)
@@ -345,8 +351,8 @@ Settings:
       ConfigUI:CreatePadActions(tab3, tab3, "SPADR", GamePadModifierActionMap, GamePadHotbarMap)
       ConfigUI:CreatePadActions(tab4, tab4, "PPADL", GamePadModifierActionMap, GamePadHotbarMap)
       ConfigUI:CreatePadActions(tab5, tab5, "PPADR", GamePadModifierActionMap, GamePadHotbarMap)
-
-      table.insert(self.RefreshCallbacks, function()
+      
+      ConfigUI:AddRefreshCallback(self.ActionFrame, function()
          local spadlactive = false
          local spadractive = false
          local ppadlactive = false
@@ -764,12 +770,12 @@ function ConfigUI:CreatePresets(configFrame, anchorFrame)
 
    scrollFrame:SetScrollChild(descriptfileeditbox)
    
-   table.insert(self.RefreshCallbacks, function()
-                   PresetsDropDown:GenerateMenu()
-                   presetdeletebutton:SetEnabled(CrossHotbar_DB.Presets[ConfigUI.preset].Mutable)
-                   presetfileeditbox:SetText(config.Name)
-                   descriptfileeditbox:SetText(config.Description)
-                end)
+   ConfigUI:AddRefreshCallback(self.PresetFrame, function()
+      PresetsDropDown:GenerateMenu()
+      presetdeletebutton:SetEnabled(CrossHotbar_DB.Presets[ConfigUI.preset].Mutable)
+      presetfileeditbox:SetText(config.Name)
+      descriptfileeditbox:SetText(config.Description)
+   end)
    
    return PresetsDropDown
 end
@@ -817,6 +823,29 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
    bindingsubtitle:SetJustifyV("TOP")
    bindingsubtitle:SetText("Binding")
 
+   ConfigUI:AddToolTip(bindingsubtitle, Locale.bindingToolTip, true)
+   
+   local function IsBindingSelected(data)
+      local button, binding = unpack(data)
+      return config.PadActions[button].BIND == binding;
+   end
+   
+   local function SetBindingSelected(data)
+      local button, binding = unpack(data)
+      if binding ~= "NONE" then
+         for btn, attributes in pairs(config.PadActions) do
+            if btn ~= arg1 then
+               if attributes.BIND == binding then
+                  config.PadActions[btn].BIND = "NONE"
+                  break
+               end
+            end
+         end
+      end
+      config.PadActions[button].BIND = binding;
+      ConfigUI:Refresh(true)
+   end
+   
    local buttoninset = self.Inset
    local buttonanchor = buttonsubtitle
    local bindinganchor = bindingsubtitle
@@ -833,29 +862,10 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
          buttonsubtitle:SetText(addon:GetButtonIcon(button))
          buttonsubtitle:SetScript("OnShow", function(frame) buttonsubtitle:SetText(addon:GetButtonIcon(button)) end) 
 
-         local function IsSelected(binding)
-            return config.PadActions[button].BIND == binding;
-         end
-         
-         local function SetSelected(binding)
-            if binding ~= "NONE" then
-               for btn, attributes in pairs(config.PadActions) do
-                  if btn ~= arg1 then
-                     if attributes.BIND == binding then
-                        config.PadActions[btn].BIND = "NONE"
-                        break
-                     end
-                  end
-               end
-            end
-            config.PadActions[button].BIND = binding;
-            ConfigUI:Refresh(true)
-         end
-
          local function GeneratorFunction(owner, rootDescription)
             rootDescription:CreateTitle("Bindings");
             for _,binding in ipairs(GamePadBindingList) do
-               rootDescription:CreateRadio(binding, IsSelected, SetSelected, binding);
+               rootDescription:CreateRadio(binding, IsBindingSelected, SetBindingSelected, {button, binding});
             end
          end;
          
@@ -865,10 +875,8 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
          BindingDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
          BindingDropDown:SetHeight(buttonsubtitle:GetHeight())
          BindingDropDown:SetupMenu(GeneratorFunction);
-         
-         table.insert(self.RefreshCallbacks, function() BindingDropDown:GenerateMenu() end)
-         
-         ConfigUI:AddToolTip(BindingDropDown, Locale.bindingToolTip, true)
+
+         ConfigUI:AddRefreshCallback(self.ActionFrame, function() BindingDropDown:GenerateMenu() end)
          
          buttoninset = 0
          buttonanchor = buttonsubtitle
@@ -894,7 +902,9 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
    actionsubtitle:SetJustifyH("CENTER")
    actionsubtitle:SetJustifyV("TOP")
    actionsubtitle:SetText("Action")
-
+   
+   ConfigUI:AddToolTip(actionsubtitle, Locale.actionToolTip, true)
+   
    local hotbarsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
    hotbarsubtitle:SetHeight(self.TextHeight)
    hotbarsubtitle:SetWidth(DropDownWidth)
@@ -904,29 +914,64 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
    hotbarsubtitle:SetJustifyV("TOP")
    hotbarsubtitle:SetText("Hotbar Action")
 
+   ConfigUI:AddToolTip(hotbarsubtitle, Locale.hotbaractionToolTip, true)
+   
+   local function IsActionSelected(data)
+      local button, action = unpack(data)
+      return config.PadActions[button][prefix .. "ACTION"] == action;
+   end
+   
+   local function SetActionSelected(data)
+      local button, action = unpack(data)
+      if action ~= "NONE" then
+         for btn, attributes in pairs(config.PadActions) do
+            if btn ~= button then
+               if attributes[prefix .. "ACTION"] == action then
+                  config.PadActions[btn][prefix .. "ACTION"] = "NONE"
+                  break
+               end
+            end
+         end
+      end
+      config.PadActions[button][prefix .. "ACTION"] = action;
+      ConfigUI:Refresh(true)
+   end
+
+   local function IsHotbarActionSelected(data)
+      local button, action = unpack(data)
+      return config.PadActions[button][prefix .. "TRIGACTION"] == action;
+   end
+   
+   local function SetHotbarActionSelected(data)
+      local button, action = unpack(data)
+      if action ~= "NONE" then
+         for btn, attributes in pairs(config.PadActions) do
+            if btn ~= button then
+               if attributes[prefix .. "TRIGACTION"] == action then
+                  config.PadActions[btn][prefix .. "TRIGACTION"] = "NONE"
+                  break
+               end
+            end
+         end
+      end
+      config.PadActions[button][prefix .. "TRIGACTION"] = action;
+      ConfigUI:Refresh(true)
+   end
+
+   local actionToolTip = function(tooltip, elementDescription)
+      GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription))
+      GameTooltip_AddNormalLine(tooltip, Locale.actionToolTip)
+   end
+
+   local hotActionToolTip = function(tooltip, elementDescription)
+      GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription))
+      GameTooltip_AddNormalLine(tooltip, Locale.hotbaractionToolTip)
+   end
+
    local actionanchor = actionsubtitle
    local hotbaranchor = hotbarsubtitle
    for i,button in ipairs(GamePadButtonList) do
       if config.PadActions[button] then
-
-         local function IsActionSelected(action)
-            return config.PadActions[button][prefix .. "ACTION"] == action;
-         end
-         
-         local function SetActionSelected(action)
-            if action ~= "NONE" then
-               for btn, attributes in pairs(config.PadActions) do
-                  if btn ~= button then
-                     if attributes[prefix .. "ACTION"] == action then
-                        config.PadActions[btn][prefix .. "ACTION"] = "NONE"
-                        break
-                     end
-                  end
-               end
-            end
-            config.PadActions[button][prefix .. "ACTION"] = action;
-            ConfigUI:Refresh(true)
-         end
 
          local function ActionGeneratorFunction(owner, rootDescription)
             rootDescription:CreateTitle("Actions");
@@ -935,7 +980,8 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                actions = ActionMap[button]
             end
             for _,action in ipairs(actions) do
-               rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, action);
+               local button = rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, {button, action});
+               --button:SetTooltip(actionToolTip)
             end
          end;
          
@@ -945,28 +991,8 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
          ActionDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
          ActionDropDown:SetHeight(32)
          ActionDropDown:SetupMenu(ActionGeneratorFunction);
-         
-         ConfigUI:AddToolTip(ActionDropDown, Locale.actionToolTip, true)
-         table.insert(self.RefreshCallbacks, function() ActionDropDown:GenerateMenu() end)
 
-         local function IsHotbarActionSelected(action)
-            return config.PadActions[button][prefix .. "TRIGACTION"] == action;
-         end
-         
-         local function SetHotbarActionSelected(action)
-            if action ~= "NONE" then
-               for btn, attributes in pairs(config.PadActions) do
-                  if btn ~= button then
-                     if attributes[prefix .. "TRIGACTION"] == action then
-                        config.PadActions[btn][prefix .. "TRIGACTION"] = "NONE"
-                        break
-                     end
-                  end
-               end
-            end
-            config.PadActions[button][prefix .. "TRIGACTION"] = action;
-            ConfigUI:Refresh(true)
-         end
+         ConfigUI:AddRefreshCallback(configFrame, function() ActionDropDown:GenerateMenu() end)
 
          local function HotbarActionGeneratorFunction(owner, rootDescription)
             rootDescription:CreateTitle("Hotbar Actions");
@@ -975,7 +1001,8 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                actions = HotbarMap[button]
             end
             for _,action in ipairs(actions) do
-               rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, action);
+               local button = rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, {button, action});
+               --button:SetTooltip(hotActionToolTip)
             end
          end;
          
@@ -986,8 +1013,7 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
          HotbarActionDropDown:SetHeight(32)
          HotbarActionDropDown:SetupMenu(HotbarActionGeneratorFunction);
          
-         ConfigUI:AddToolTip(HotbarActionDropDown, Locale.hotbaractionToolTip, true)
-         table.insert(self.RefreshCallbacks, function() HotbarActionDropDown:GenerateMenu() end)
+         ConfigUI:AddRefreshCallback(configFrame, function() HotbarActionDropDown:GenerateMenu() end)
          
          actionanchor = ActionDropDown
          hotbaranchor = HotbarActionDropDown
@@ -1070,7 +1096,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    HBarDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    HBarDropDown:SetupMenu(HBarTypeGeneratorFunction);
    
-   ConfigUI:AddToolTip(HBarDropDown, Locale.hotbarTypeToolTip, true)
+   ConfigUI:AddToolTip(hbarsubtitle, Locale.hotbarTypeToolTip, true)
    
    --[[
       HKEY hotbar button layout
@@ -1107,7 +1133,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    HKeyDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    HKeyDropDown:SetupMenu(HKeyTypeGeneratorFunction);
    
-   ConfigUI:AddToolTip(HKeyDropDown, Locale.hotkeyTypeToolTip, true)
+   ConfigUI:AddToolTip(hkeysubtitle, Locale.hotkeyTypeToolTip, true)
    
    --[[
       Expanded button settings
@@ -1144,7 +1170,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    WXHBDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    WXHBDropDown:SetupMenu(WXHBTypeGeneratorFunction);
    
-   ConfigUI:AddToolTip(WXHBDropDown, Locale.expandedTypeToolTip, true)
+   ConfigUI:AddToolTip(wxhbsubtitle, Locale.expandedTypeToolTip, true)
 
    --[[
       DDAA hotbar button layout
@@ -1181,7 +1207,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    DDAADropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    DDAADropDown:SetupMenu(DDAATypeGeneratorFunction);
    
-   ConfigUI:AddToolTip(DDAADropDown, Locale.dadaTypeToolTip, true)
+   ConfigUI:AddToolTip(ddaasubtitle, Locale.dadaTypeToolTip, true)
 
    --[[
        Actionbar paging
@@ -1231,7 +1257,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    LPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    LPageDropDown:SetupMenu(LPageGeneratorFunction);
    
-   ConfigUI:AddToolTip(LPageDropDown, Locale.pageIndexToolTip, true)
+   ConfigUI:AddToolTip(lpagesubtitle, Locale.pageIndexToolTip, true)
 
    --[[
        RHotbar page index
@@ -1268,7 +1294,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    RPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    RPageDropDown:SetupMenu(RPageGeneratorFunction);
    
-   ConfigUI:AddToolTip(RPageDropDown, Locale.pageIndexToolTip, true)
+   ConfigUI:AddToolTip(rpagesubtitle, Locale.pageIndexToolTip, true)
 
    --[[
        LRHotbar page index
@@ -1305,7 +1331,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    LRPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    LRPageDropDown:SetupMenu(LRPageGeneratorFunction);
    
-   ConfigUI:AddToolTip(LRPageDropDown, Locale.pageIndexToolTip, true)
+   ConfigUI:AddToolTip(lrpagesubtitle, Locale.pageIndexToolTip, true)
 
    --[[
        RLHotbar page index
@@ -1342,7 +1368,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    RLPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    RLPageDropDown:SetupMenu(RLPageGeneratorFunction);
    
-   ConfigUI:AddToolTip(RLPageDropDown, Locale.pageIndexToolTip, true)
+   ConfigUI:AddToolTip(rlpagesubtitle, Locale.pageIndexToolTip, true)
 
    local conditionalsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
    conditionalsubtitle:SetHeight(self.TextHeight)
@@ -1379,7 +1405,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
 
-   ConfigUI:AddToolTip(lhotbareditbox, Locale.pagePrefixToolTip, true)
+   ConfigUI:AddToolTip(lpagepresubtitle, Locale.pagePrefixToolTip, true)
 
    --[[
        RHotbar page prefix
@@ -1407,7 +1433,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
 
-   ConfigUI:AddToolTip(rhotbareditbox, Locale.pagePrefixToolTip, true)
+   ConfigUI:AddToolTip(rpagepresubtitle, Locale.pagePrefixToolTip, true)
 
    --[[
        LRHotbar page prefix
@@ -1435,7 +1461,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
 
-   ConfigUI:AddToolTip(lrhotbareditbox, Locale.pagePrefixToolTip, true)
+   ConfigUI:AddToolTip(lrpagepresubtitle, Locale.pagePrefixToolTip, true)
 
    --[[
        RLHotbar page prefix
@@ -1463,9 +1489,9 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
 
-   ConfigUI:AddToolTip(rlhotbareditbox, Locale.pagePrefixToolTip, true)
+   ConfigUI:AddToolTip(rlpagepresubtitle, Locale.pagePrefixToolTip, true)
 
-   table.insert(self.RefreshCallbacks, function()
+   ConfigUI:AddRefreshCallback(self.HotbarFrame, function()
                    HBarDropDown:GenerateMenu()
                    HKeyDropDown:GenerateMenu()
                    WXHBDropDown:GenerateMenu()
@@ -1528,7 +1554,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
 
-   ConfigUI:AddToolTip(gamepadenablebutton, Locale.enabeGamePadToolTip, true)
+   ConfigUI:AddToolTip(gamepadenablesubtitle, Locale.enabeGamePadToolTip, true)
    
    --[[
       CVars Enable
@@ -1559,7 +1585,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
    
-   ConfigUI:AddToolTip(cvarenablebutton, Locale.enabeCVarToolTip, true)
+   ConfigUI:AddToolTip(cvarenablesubtitle, Locale.enabeCVarToolTip, true)
    
    --[[
       GamePadLook Enable
@@ -1590,7 +1616,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
 
-   ConfigUI:AddToolTip(gamepadlookbutton, Locale.gamepadLookToolTip, true)
+   ConfigUI:AddToolTip(gamepadlooksubtitle, Locale.gamepadLookToolTip, true)
    
    --[[
       Mouselook Enable
@@ -1622,7 +1648,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    end)
 
    
-   ConfigUI:AddToolTip(mouselookbutton, Locale.mouseLookToolTip, true)
+   ConfigUI:AddToolTip(mouselooksubtitle, Locale.mouseLookToolTip, true)
    
    --[[
       CVars
@@ -1688,7 +1714,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    DeviceDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    DeviceDropDown:SetupMenu(DeviceGeneratorFunction);
    
-   ConfigUI:AddToolTip(DeviceDropDown, Locale.deviceToolTip, true)
+   ConfigUI:AddToolTip(devicetitle, Locale.deviceToolTip, true)
 
    --[[
       Left mouse button
@@ -1728,7 +1754,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    LClickDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    LClickDropDown:SetupMenu(LClickGeneratorFunction)
    
-   ConfigUI:AddToolTip(LClickDropDown, Locale.leftclickToolTip, true)
+   ConfigUI:AddToolTip(leftclicktitle, Locale.leftclickToolTip, true)
    
    --[[
       Right mouse button
@@ -1768,7 +1794,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    RClickDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
    RClickDropDown:SetupMenu(RClickGeneratorFunction)
    
-   ConfigUI:AddToolTip(RClickDropDown, Locale.rightclickToolTip, true)
+   ConfigUI:AddToolTip(rightclicktitle, Locale.rightclickToolTip, true)
 
    --[[
        Yaw speed
@@ -1848,7 +1874,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end)
    
-   table.insert(self.RefreshCallbacks, function()
+   ConfigUI:AddRefreshCallback(self.GamePadFrame, function()
       if GetCVar('GamePadEnable') == "0" then
          gamepadenablebutton:SetText("Enable")
       else
