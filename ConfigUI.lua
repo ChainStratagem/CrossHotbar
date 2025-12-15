@@ -157,7 +157,6 @@ local Locale = {
    spadrTabToolTip = "Actions and hotbar assignments when under the RIGHTSHOULDER modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    ppadlTabToolTip = "Actions and hotbar assignments when under the LEFTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    ppadrTabToolTip = "Actions and hotbar assignments when under the RIGHTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
-   hotbarTypeToolTip = "Hotbars can be internally recreated or reuse the existing Blizzard Actionbars. When using Blizzard Actiobars Edit Mode can change the hotbar positions. Interacting with the Crosshotbar will restore the positions if moved.",
    hotkeyTypeToolTip = "Button icons used in the gui and hotkeys can be set to shapes or letters.",
    expandedTypeToolTip = "When either LEFTHOTBAR or RIGHTHOTBAR  are double clicked HOTBARBTN[9-12] are mapped to HOTBARBTN[1-4]. This setting controls the visual cue of their activation.",
    dadaTypeToolTip = "The Cross hotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
@@ -192,10 +191,6 @@ local Locale = {
    CATEGORY_UNIT_NAVIGATION_TOOLTIP = "Actions to navigate unit frames self, party and raid.",
    CATEGORY_CONTROLLER = "Controller buttons",
    CATEGORY_KEYBOARD = "Keyboard buttons",
-   hbartypestr = {
-      ["LIBA"] = "Create hotbars internally.",
-      ["BLIZ"] = "Reuse Blizzard actionbars.",
-   },
    hkeytypestr = {
       ["_SHP"] = "Use shapes for button icons.",
       ["_LTR"] = "Use letters for button icons.",
@@ -1116,47 +1111,47 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    featuresubtitle:SetJustifyH("Left")
    featuresubtitle:SetJustifyV("TOP")
    featuresubtitle:SetText("Features")
-
-   --[[
-      Hotbar button type
-   --]]
    
-   local hbarsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-   hbarsubtitle:SetHeight(self.TextHeight)
-   hbarsubtitle:SetWidth(DropDownWidth)
-   hbarsubtitle:SetPoint("TOPLEFT", featuresubtitle, "BOTTOMLEFT", 0, -self.ConfigSpacing)
-   hbarsubtitle:SetNonSpaceWrap(true)
-   hbarsubtitle:SetJustifyH("CENTER")
-   hbarsubtitle:SetJustifyV("TOP")
-   hbarsubtitle:SetText("Hotbar Type")
+   --[[
+      DDAA hotbar button layout
+   --]]    
 
-   local function IsHBarTypeSelected(type)
-      return CrossHotbar_DB.HBARType == type
+   local ddaasubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   ddaasubtitle:SetHeight(self.TextHeight)
+   ddaasubtitle:SetWidth(DropDownWidth)
+   ddaasubtitle:SetPoint("TOPLEFT", featuresubtitle, "BOTTOMLEFT", 0, -self.ConfigSpacing)
+   ddaasubtitle:SetNonSpaceWrap(true)
+   ddaasubtitle:SetJustifyH("CENTER")
+   ddaasubtitle:SetJustifyV("TOP")
+   ddaasubtitle:SetText("Hotbar Layout")
+
+   local function IsDDAATypeSelected(type)
+      return config.Hotbar.DDAAType == type
    end
    
-   local function SetHBarTypeSelected(type)
-      CrossHotbar_DB.HBARType = type
+   local function SetDDAATypeSelected(type)
+      config.Hotbar.DDAAType = type
       ConfigUI:Refresh(true)
    end
 
-   local function HBarTypeGeneratorFunction(owner, rootDescription)
-      for i,data in ipairs(addon.HotbarHBARTypes) do         
+   local function DDAATypeGeneratorFunction(owner, rootDescription)      
+      for i,data in ipairs(addon.HotbarDDAATypes) do
          if Locale:GetText(data.cat) ~= "" then
             rootDescription:CreateTitle(Locale:GetText(data.cat))
          end
-         for i,hbartype in ipairs(data.values) do
-            rootDescription:CreateRadio(Locale.hbartypestr[hbartype], IsHBarTypeSelected, SetHBarTypeSelected, hbartype);
+         for i,ddaatype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.ddaatypestr[ddaatype], IsDDAATypeSelected, SetDDAATypeSelected, ddaatype);
          end
       end
    end;
 
-   local HBarDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   HBarDropDown:SetDefaultText("Hotbar Type");
-   HBarDropDown:SetPoint("TOP", hbarsubtitle, "BOTTOM", 0, 0)
-   HBarDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   HBarDropDown:SetupMenu(HBarTypeGeneratorFunction);
+   local DDAADropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
+   DDAADropDown:SetDefaultText("Layout Types");
+   DDAADropDown:SetPoint("TOP", ddaasubtitle, "BOTTOM", 0, 0)
+   DDAADropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
+   DDAADropDown:SetupMenu(DDAATypeGeneratorFunction);
    
-   ConfigUI:AddToolTip(hbarsubtitle, Locale.hotbarTypeToolTip, true)
+   ConfigUI:AddToolTip(ddaasubtitle, Locale.dadaTypeToolTip, true)
    
    --[[
       HKEY hotbar button layout
@@ -1165,7 +1160,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    local hkeysubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
    hkeysubtitle:SetHeight(self.TextHeight)
    hkeysubtitle:SetWidth(DropDownWidth)
-   hkeysubtitle:SetPoint("TOPLEFT", hbarsubtitle, "TOPRIGHT", 0, 0)
+   hkeysubtitle:SetPoint("TOPLEFT", ddaasubtitle, "TOPRIGHT", 0, 0)
    hkeysubtitle:SetNonSpaceWrap(true)
    hkeysubtitle:SetJustifyH("CENTER")
    hkeysubtitle:SetJustifyV("TOP")
@@ -1206,7 +1201,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    local wxhbsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
    wxhbsubtitle:SetHeight(self.TextHeight)
    wxhbsubtitle:SetWidth(DropDownWidth)
-   wxhbsubtitle:SetPoint("TOP", HBarDropDown, "BOTTOM", 0, -self.ConfigSpacing)
+   wxhbsubtitle:SetPoint("TOP", DDAADropDown, "BOTTOM", 0, -self.ConfigSpacing)
    wxhbsubtitle:SetNonSpaceWrap(true)
    wxhbsubtitle:SetJustifyH("CENTER")
    wxhbsubtitle:SetJustifyV("TOP")
@@ -1239,47 +1234,6 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    WXHBDropDown:SetupMenu(WXHBTypeGeneratorFunction);
    
    ConfigUI:AddToolTip(wxhbsubtitle, Locale.expandedTypeToolTip, true)
-
-   --[[
-      DDAA hotbar button layout
-   --]]    
-
-   local ddaasubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-   ddaasubtitle:SetHeight(self.TextHeight)
-   ddaasubtitle:SetWidth(DropDownWidth)
-   ddaasubtitle:SetPoint("TOPLEFT", wxhbsubtitle, "TOPRIGHT", 0, 0)
-   ddaasubtitle:SetNonSpaceWrap(true)
-   ddaasubtitle:SetJustifyH("CENTER")
-   ddaasubtitle:SetJustifyV("TOP")
-   ddaasubtitle:SetText("Hotbar Layout")
-
-   local function IsDDAATypeSelected(type)
-      return config.Hotbar.DDAAType == type
-   end
-   
-   local function SetDDAATypeSelected(type)
-      config.Hotbar.DDAAType = type
-      ConfigUI:Refresh(true)
-   end
-
-   local function DDAATypeGeneratorFunction(owner, rootDescription)      
-      for i,data in ipairs(addon.HotbarDDAATypes) do
-         if Locale:GetText(data.cat) ~= "" then
-            rootDescription:CreateTitle(Locale:GetText(data.cat))
-         end
-         for i,ddaatype in ipairs(data.values) do
-            rootDescription:CreateRadio(Locale.ddaatypestr[ddaatype], IsDDAATypeSelected, SetDDAATypeSelected, ddaatype);
-         end
-      end
-   end;
-
-   local DDAADropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   DDAADropDown:SetDefaultText("Layout Types");
-   DDAADropDown:SetPoint("TOP", ddaasubtitle, "BOTTOM", 0, 0)
-   DDAADropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   DDAADropDown:SetupMenu(DDAATypeGeneratorFunction);
-   
-   ConfigUI:AddToolTip(ddaasubtitle, Locale.dadaTypeToolTip, true)
 
    --[[
        Actionbar paging
@@ -1604,7 +1558,6 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    ConfigUI:AddToolTip(rlpagepresubtitle, Locale.pagePrefixToolTip, true)
 
    ConfigUI:AddRefreshCallback(self.HotbarFrame, function()
-                   HBarDropDown:GenerateMenu()
                    HKeyDropDown:GenerateMenu()
                    WXHBDropDown:GenerateMenu()
                    DDAADropDown:GenerateMenu()
