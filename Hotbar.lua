@@ -5,26 +5,26 @@ local HBARList = {
    ["LIBA"] = true,
    ["BLIZ"] = true,
 }
-config:ConfigListAdd("HotbarHBARTypes", HBARList)
+config:ConfigListAdd("HotbarHBARTypes", "CATEGORY_HOTBAR_TYPE", HBARList)
 
 local HKEYList = {
    ["_SHP"] = true,
    ["_LTR"] = true,
 }
-config:ConfigListAdd("HotbarHKEYTypes", HKEYList)
+config:ConfigListAdd("HotbarHKEYTypes", "CATEGORY_HOTBAR_KEY", HKEYList)
 
 local WXHBList = {
    ["HIDE"] = true,
    ["FADE"] = true,
    ["SHOW"] = true
 }
-config:ConfigListAdd("HotbarWXHBTypes", WXHBList)
+config:ConfigListAdd("HotbarWXHBTypes", "CATEGORY_HOTBAR_WXHB", WXHBList)
 
 local DDAAList = {
    ["DADA"] = true,
    ["DDAA"] = true,
 }
-config:ConfigListAdd("HotbarDDAATypes", DDAAList)
+config:ConfigListAdd("HotbarDDAATypes", "CATEGORY_HOTBAR_DDAA", DDAAList)
 
 local ButtonLayout = {
    ["DADA"] = {

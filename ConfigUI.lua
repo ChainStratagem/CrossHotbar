@@ -5,52 +5,59 @@ local config = addon.Config
 local GamePadButtonList = addon.GamePadButtonList
 
 local GamePadBindingList = {
-"PAD1",
-"PAD2",
-"PAD3",
-"PAD4",
-"PAD5",
-"PAD6",
-"PADDRIGHT",
-"PADDUP",
-"PADDDOWN",
-"PADDLEFT",
-"PADLSTICK",
-"PADRSTICK",
-"PADLSHOULDER",
-"PADRSHOULDER",
-"PADLTRIGGER",
-"PADRTRIGGER",
-"PADFORWARD",
-"PADBACK",
-"PADSYSTEM",
-"PADSOCIAL",
-"PADPADDLE1",
-"PADPADDLE2",
-"PADPADDLE3",
-"PADPADDLE4",
-"1", 
-"2", 
-"3", 
-"4" ,
-"5", 
-"6", 
-"7", 
-"8", 
-"9", 
-"0", 
-"-", 
-"=", 
-"[", 
-"]", 
-"\\",
-"'",
-",",
-".",
-"'",
-";",
-"/",
-"`"
+   { cat = nil, values = { "NONE" } },
+   { cat = "CATEGORY_CONTROLLER",
+     values = {
+        "PAD1",
+        "PAD2",
+        "PAD3",
+        "PAD4",
+        "PAD5",
+        "PAD6",
+        "PADDRIGHT",
+        "PADDUP",
+        "PADDDOWN",
+        "PADDLEFT",
+        "PADLSTICK",
+        "PADRSTICK",
+        "PADLSHOULDER",
+        "PADRSHOULDER",
+        "PADLTRIGGER",
+        "PADRTRIGGER",
+        "PADFORWARD",
+        "PADBACK",
+        "PADSYSTEM",
+        "PADSOCIAL",
+        "PADPADDLE1",
+        "PADPADDLE2",
+        "PADPADDLE3",
+        "PADPADDLE4"
+   }},
+   { cat = "CATEGORY_KEYBOARD",
+     values = {
+        "1", 
+        "2", 
+        "3", 
+        "4" ,
+        "5", 
+        "6", 
+        "7", 
+        "8", 
+        "9", 
+        "0", 
+        "-", 
+        "=", 
+        "[", 
+        "]", 
+        "\\",
+        "'",
+        ",",
+        ".",
+        "'",
+        ";",
+        "/",
+        "`"
+   }}
 }
 
 local GamePadActionMap = {
@@ -162,9 +169,46 @@ local Locale = {
    mouseLookToolTip = "Toggle mouse look handling. Enabling allows camera look control for keyboard binding setup.",
    deviceToolTip = "The DeviceId of the gamepad.",
    leftclickToolTip = "Left click binding for mouse mode.",
-   rightclickToolTip = "Right click binding for mouse mode."
+   rightclickToolTip = "Right click binding for mouse mode.",
+   CATEGORY_HOTBAR_ACTIONS = "Hotbar actions",
+   CATEGORY_HOTBAR_TYPE = "Hotbar types",
+   CATEGORY_HOTBAR_KEY = "Hotkey types",
+   CATEGORY_HOTBAR_WXHB = "Expand types",
+   CATEGORY_HOTBAR_DDAA = "Hotbar Layouts",
+   CATEGORY_MODIFIERS = "Modifiers",
+   CATEGORY_ACTIONS = "Actions",
+   CATEGORY_MACRO = "Macro",
+   CATEGORY_TARGETING = "Targeting",
+   CATEGORY_CAMERA = "Camera",
+   CATEGORY_PAGING = "Paging",
+   CATEGORY_UNIT_NAVIGATION = "Unit Navigation",
+   CATEGORY_CONTROLLER = "Controller buttons",
+   CATEGORY_KEYBOARD = "Keyboard buttons",
+   hbartypestr = {
+      ["LIBA"] = "Create hotbars internally.",
+      ["BLIZ"] = "Reuse Blizzard actionbars.",
+   },
+   hkeytypestr = {
+      ["_SHP"] = "Use shapes for button icons.",
+      ["_LTR"] = "Use letters for button icons.",
+   },
+   wxhbtypestr = {
+      ["HIDE"] = "Hide extra actions when not active",
+      ["FADE"] = "Fade extra actions when not active",
+      ["SHOW"] = "Show extra actions when not active"
+   },
+   ddaatypestr = {
+      ["DADA"] = "DPad + Action / DPad + Action",
+      ["DDAA"] = "DPad + DPad / Action + Action"
+   }
 }
 
+function Locale:GetText(text)
+   if text ~= nil and text ~= "" then
+      return Locale[text];
+   end
+   return ""
+end
 
 local ConfigUI = {
    preset = 0,
@@ -357,6 +401,7 @@ Settings:
          local spadractive = false
          local ppadlactive = false
          local ppadractive = false
+         
          for i,button in ipairs(GamePadButtonList) do
             if config.PadActions[button].ACTION == "LEFTSHOULDER" then spadlactive = true end
             if config.PadActions[button].ACTION == "RIGHTSHOULDER" then spadractive = true end
@@ -863,9 +908,12 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
          buttonsubtitle:SetScript("OnShow", function(frame) buttonsubtitle:SetText(addon:GetButtonIcon(button)) end) 
 
          local function GeneratorFunction(owner, rootDescription)
-            rootDescription:CreateTitle("Bindings");
-            for _,binding in ipairs(GamePadBindingList) do
-               rootDescription:CreateRadio(binding, IsBindingSelected, SetBindingSelected, {button, binding});
+            rootDescription:SetScrollMode(bindingframe:GetHeight()*0.75);
+            for i,data in ipairs(GamePadBindingList) do
+               if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+               for _,binding in ipairs(data.values) do
+                  rootDescription:CreateRadio(binding, IsBindingSelected, SetBindingSelected, {button, binding});
+               end
             end
          end;
          
@@ -974,14 +1022,17 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
       if config.PadActions[button] then
 
          local function ActionGeneratorFunction(owner, rootDescription)
-            rootDescription:CreateTitle("Actions");
-            local actions = {"NONE"}
+            rootDescription:SetScrollMode(configFrame:GetHeight()*.75);
+            local actionlists = {{ cat = "", values =  { "NONE" } }}
             if ActionsAvailable(button, prefix, "ACTION") then
-               actions = ActionMap[button]
-            end
-            for _,action in ipairs(actions) do
-               local button = rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, {button, action});
-               --button:SetTooltip(actionToolTip)
+               actionlists = ActionMap[button]
+            end 
+            for i,data in ipairs(actionlists) do
+               if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+               for _,action in ipairs(data.values) do
+                  local button = rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, {button, action});
+                  --button:SetTooltip(actionToolTip)
+               end
             end
          end;
          
@@ -995,14 +1046,17 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
          ConfigUI:AddRefreshCallback(configFrame, function() ActionDropDown:GenerateMenu() end)
 
          local function HotbarActionGeneratorFunction(owner, rootDescription)
-            rootDescription:CreateTitle("Hotbar Actions");
-            local actions = {"NONE"}
+            rootDescription:SetScrollMode(configFrame:GetHeight()*0.75);
+            local actionlists = {{ cat = "", values =  {"NONE"} }}
             if ActionsAvailable(button, prefix, "TRIGACTION") then
-               actions = HotbarMap[button]
+               actionlists = HotbarMap[button]
             end
-            for _,action in ipairs(actions) do
-               local button = rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, {button, action});
-               --button:SetTooltip(hotActionToolTip)
+            for i,data in ipairs(actionlists) do
+               if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+               for _,action in ipairs(data.values) do
+                  local button = rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, {button, action});
+                  --button:SetTooltip(hotActionToolTip)
+               end
             end
          end;
          
@@ -1027,29 +1081,7 @@ end
    Hotbar settings.
 --]]  
 
-function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
-
-   local hbartypestr = {
-      ["LIBA"] = "Create hotbars internally.",
-      ["BLIZ"] = "Reuse Blizzard actionbars.",
-   }
-
-   local hkeytypestr = {
-      ["_SHP"] = "Use shapes for button icons.",
-      ["_LTR"] = "Use letters for button icons.",
-   }
-   
-   local wxhbtypestr = {
-      ["HIDE"] = "Hide extra actions when not active",
-      ["FADE"] = "Fade extra actions when not active",
-      ["SHOW"] = "Show extra actions when not active"
-   }
-
-   local ddaatypestr = {
-      ["DADA"] = "DPad + Action / DPad + Action",
-      ["DDAA"] = "DPad + DPad / Action + Action"
-   }
-   
+function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)   
    local DropDownWidth = (configFrame:GetWidth() - 2*self.Inset)/2
 
    local featuresubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
@@ -1084,9 +1116,11 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    end
 
    local function HBarTypeGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Hotbar Types");
-      for i,hbartype in ipairs(addon.HotbarHBARTypes) do
-         rootDescription:CreateRadio(hbartypestr[hbartype], IsHBarTypeSelected, SetHBarTypeSelected, hbartype);
+      for i,data in ipairs(addon.HotbarHBARTypes) do         
+         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         for i,hbartype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.hbartypestr[hbartype], IsHBarTypeSelected, SetHBarTypeSelected, hbartype);
+         end
       end
    end;
 
@@ -1120,10 +1154,12 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end
 
-   local function HKeyTypeGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Hotbar Types");
-      for i,hkeytype in ipairs(addon.HotbarHKEYTypes) do
-         rootDescription:CreateRadio(hkeytypestr[hkeytype], IsHKeyTypeSelected, SetHKeyTypeSelected, hkeytype);
+   local function HKeyTypeGeneratorFunction(owner, rootDescription)      
+      for i,data in ipairs(addon.HotbarHKEYTypes) do
+         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         for i,hkeytype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.hkeytypestr[hkeytype], IsHKeyTypeSelected, SetHKeyTypeSelected, hkeytype);
+         end
       end
    end;
 
@@ -1158,9 +1194,11 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    end
 
    local function WXHBTypeGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Expand Types");
-      for i,wxhbtype in ipairs(addon.HotbarWXHBTypes) do
-         rootDescription:CreateRadio(wxhbtypestr[wxhbtype], IsWXHBTypeSelected, SetWXHBTypeSelected, wxhbtype);
+      for i,data in ipairs(addon.HotbarWXHBTypes) do
+         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         for i,wxhbtype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.wxhbtypestr[wxhbtype], IsWXHBTypeSelected, SetWXHBTypeSelected, wxhbtype);
+         end
       end
    end;
 
@@ -1194,10 +1232,12 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
       ConfigUI:Refresh(true)
    end
 
-   local function DDAATypeGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Expand Types");
-      for i,ddaatype in ipairs(addon.HotbarDDAATypes) do
-         rootDescription:CreateRadio(ddaatypestr[ddaatype], IsDDAATypeSelected, SetDDAATypeSelected, ddaatype);
+   local function DDAATypeGeneratorFunction(owner, rootDescription)      
+      for i,data in ipairs(addon.HotbarDDAATypes) do
+         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         for i,ddaatype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.ddaatypestr[ddaatype], IsDDAATypeSelected, SetDDAATypeSelected, ddaatype);
+         end
       end
    end;
 

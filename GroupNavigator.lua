@@ -11,8 +11,8 @@ local ActionList = {
    ["UNITNAVRIGHT"] = true,
    ["CLEARTARGETING"] = true
 }
-config:ConfigListAdd("GamePadActions", ActionList, "NONE")
-config:ConfigListAdd("GamePadModifierActions", ActionList, "NONE")
+config:ConfigListAdd("GamePadActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
+config:ConfigListAdd("GamePadModifierActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
 
 local GroupNavigatorMixin = {
    SoftTargetFrame = CrossHotbarAddon_GroupNavigator_SoftTarget,

@@ -17,7 +17,7 @@ local ActionList = {
    ["HOTBARBTN11"] = true,
    ["HOTBARBTN12"] = true
 }
-config:ConfigListAdd("HotbarActions", ActionList, "NONE")
+config:ConfigListAdd("HotbarActions", "CATEGORY_HOTBAR_ACTIONS", ActionList, "NONE")
 
 CrossHotbarMixin = {}
 

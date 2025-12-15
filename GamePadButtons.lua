@@ -12,7 +12,7 @@ local ModifierList = {
    ["LEFTPADDLE"] = true,
    ["RIGHTPADDLE"] = true
 }
-config:ConfigListAdd("GamePadModifiers", ModifierList, "NONE")
+config:ConfigListAdd("GamePadModifiers", "CATEGORY_MODIFIERS", ModifierList, "NONE")
 
 local ActionList = {
    ["JUMP"] = true,
@@ -24,7 +24,7 @@ local ActionList = {
    ["FRIENDNAMEPLATES"] = true,
    ["ALLNAMEPLATES"] = true
 }
-config:ConfigListAdd("GamePadActions", ActionList, "NONE")
+config:ConfigListAdd("GamePadActions", "CATEGORY_ACTIONS", ActionList, "NONE")
 
 local ModifierActions = {
    ["SIT"] = [[ local down = ...
@@ -37,14 +37,26 @@ local ModifierActions = {
          self:SetAttribute("macrotext1", "/loot")
       end
    ]],
-   ["GAMEPADMOUSE"] = [[ local down = ...
+   ["EXTRAACTIONBUTTON1"] = [[ local down = ...
+      if down then
+         self:SetAttribute("macrotext1", "/click ExtraActionButton1")
+      end
+   ]],
+   ["TOGGLESHEATH"] = [[local down = ...
       if down then
         local GamePadButtons = self:GetFrameRef('GamePadButtons')
         if GamePadButtons then
-           GamePadButtons:CallMethod("SetGamePadMouse", nil)
+           GamePadButtons:CallMethod("ToggleSheath")
         end
       end
-   ]],
+   ]]
+}
+
+config:ConfigListAdd("GamePadActions", "CATEGORY_ACTIONS", ModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifierActions", "CATEGORY_ACTIONS", ModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifiers", "CATEGORY_ACTIONS", ModifierActions, "NONE")
+
+local MacroModifierActions = {
    ["MACRO CH_MACRO_1"] = [[ local down = ...
       if down then
          self:SetAttribute("macro", "CH_MACRO_1")
@@ -64,12 +76,14 @@ local ModifierActions = {
       if down then
          self:SetAttribute("macro", "CH_MACRO_4")
       end
-   ]],
-   ["EXTRAACTIONBUTTON1"] = [[ local down = ...
-      if down then
-         self:SetAttribute("macrotext1", "/click ExtraActionButton1")
-      end
-   ]],
+   ]]
+}
+
+config:ConfigListAdd("GamePadActions", "CATEGORY_MACRO", MacroModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifierActions", "CATEGORY_MACRO", MacroModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifiers", "CATEGORY_MACRO", MacroModifierActions, "NONE")
+
+local TargetModifierActions = {
    ["FOCUSTARGET"] = [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/focus")
@@ -139,15 +153,14 @@ local ModifierActions = {
       if down then
          self:SetAttribute("macrotext1", "/target party4")
       end
-   ]],
-   ["TOGGLESHEATH"] = [[local down = ...
-      if down then
-        local GamePadButtons = self:GetFrameRef('GamePadButtons')
-        if GamePadButtons then
-           GamePadButtons:CallMethod("ToggleSheath")
-        end
-      end
-   ]],
+   ]]
+}
+
+config:ConfigListAdd("GamePadActions", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifierActions", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifiers", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
+
+local CameraModifierActions = {
    ["ZOOMIN"] = [[local down = ...
       local GamePadButtons = self:GetFrameRef('GamePadButtons')
       if GamePadButtons then
@@ -190,6 +203,21 @@ local ModifierActions = {
          GamePadButtons:CallMethod("HoldCameraLook", down)
       end
    ]],
+   ["GAMEPADMOUSE"] = [[ local down = ...
+      if down then
+        local GamePadButtons = self:GetFrameRef('GamePadButtons')
+        if GamePadButtons then
+           GamePadButtons:CallMethod("SetGamePadMouse", nil)
+        end
+      end
+   ]]
+}
+
+config:ConfigListAdd("GamePadActions", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifierActions", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifiers", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
+
+local PageModifierActions = {
    ["NEXTPAGE"] = [[local down = ...
       if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
@@ -263,9 +291,15 @@ local ModifierActions = {
          end
    ]]
 }
-config:ConfigListAdd("GamePadActions", ModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifierActions", ModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifiers", ModifierActions, "NONE")
+
+config:ConfigListAdd("GamePadActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifierActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifiers", "CATEGORY_PAGING", PageModifierActions, "NONE")
+
+for key, value in pairs(MacroModifierActions) do ModifierActions[key] = value  end
+for key, value in pairs(TargetModifierActions) do ModifierActions[key] = value  end
+for key, value in pairs(CameraModifierActions) do ModifierActions[key] = value  end
+for key, value in pairs(PageModifierActions) do ModifierActions[key] = value  end
 
 local GamePadButtonsMixin = {
    GamePadEnabled = true,

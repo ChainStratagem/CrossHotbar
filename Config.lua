@@ -317,20 +317,30 @@ addon.Config.Name = ""
 function addon.Config:SetHotKeyText()
 end
 
-function addon.Config:ConfigListAdd(listname, valuetable, initvalue)
+function addon.Config:ConfigListAdd(listname, category, valuetable, defaultvalue)
    if addon[listname] == nil then
-      addon[listname] = {initvalue}
+      addon[listname] = {{ cat = "", values = {defaultvalue} }}
+   end
+
+   local idx = 0
+   for i,data in ipairs(addon[listname]) do
+      if data.cat == category then
+          idx = i
+      end
+   end
+   if idx == 0 then
+      table.insert(addon[listname], { cat = category, values = {} })
+      idx = #addon[listname]
    end
    
-   local keys = {}
    for key in pairs(valuetable) do
-      table.insert(keys, key)
+      table.insert(addon[listname][idx].values, key)
    end
-   table.sort(keys)
 
-   for i,key in ipairs(keys) do
-      table.insert(addon[listname], key)
-   end
+   table.sort(addon[listname][idx].values)
+   table.sort(addon[listname], function (a, b)
+      return(a.cat < b.cat)
+   end)
 end
 
 function addon.Config:StorePreset(to, from)
