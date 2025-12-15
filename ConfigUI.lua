@@ -170,18 +170,26 @@ local Locale = {
    deviceToolTip = "The DeviceId of the gamepad.",
    leftclickToolTip = "Left click binding for mouse mode.",
    rightclickToolTip = "Right click binding for mouse mode.",
-   CATEGORY_HOTBAR_ACTIONS = "Hotbar actions",
    CATEGORY_HOTBAR_TYPE = "Hotbar types",
    CATEGORY_HOTBAR_KEY = "Hotkey types",
    CATEGORY_HOTBAR_WXHB = "Expand types",
    CATEGORY_HOTBAR_DDAA = "Hotbar Layouts",
+   CATEGORY_HOTBAR_ACTIONS = "Hotbar actions",
+   CATEGORY_HOTBAR_ACTIONS_TOOLTIP = "Selects the Action bar binding to use when the Hotbar modifier is activated. Requires LEFTHOTBAR/RIGHTHOTBAR modifier to be held.",
    CATEGORY_MODIFIERS = "Modifiers",
+   CATEGORY_MODIFIERS_TOOLTIP = "Binding used to overide/modify other buttons. Similar to shift and control modifiers.",
    CATEGORY_ACTIONS = "Actions",
+   CATEGORY_ACTIONS_TOOLTIP = "Button actions for basic commands.",
    CATEGORY_MACRO = "Macro",
+   CATEGORY_MACRO_TOOLTIP = "Will call the named marco if it exists. Exampe: MACRO CH_MACRO_1 will call the user macro named CH_MACRO_1.",
    CATEGORY_TARGETING = "Targeting",
-   CATEGORY_CAMERA = "Camera",
+   CATEGORY_TARGETING_TOOLTIP = "Actions to control targeting.",
+   CATEGORY_CAMERA = "Camera/Cursor",
+   CATEGORY_CAMERA_TOOLTIP = "Actions to control camera look (show/hide cursor), zoom, and mouse mode.",
    CATEGORY_PAGING = "Paging",
+   CATEGORY_PAGING_TOOLTIP = "Actions to change the paging of the crosshor bar.",
    CATEGORY_UNIT_NAVIGATION = "Unit Navigation",
+   CATEGORY_UNIT_NAVIGATION_TOOLTIP = "Actions to navigate unit frames self, party and raid.",
    CATEGORY_CONTROLLER = "Controller buttons",
    CATEGORY_KEYBOARD = "Keyboard buttons",
    hbartypestr = {
@@ -910,7 +918,9 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
          local function GeneratorFunction(owner, rootDescription)
             rootDescription:SetScrollMode(bindingframe:GetHeight()*0.75);
             for i,data in ipairs(GamePadBindingList) do
-               if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+               if Locale:GetText(data.cat) ~= "" then
+                  rootDescription:CreateTitle(Locale:GetText(data.cat))
+               end
                for _,binding in ipairs(data.values) do
                   rootDescription:CreateRadio(binding, IsBindingSelected, SetBindingSelected, {button, binding});
                end
@@ -1028,10 +1038,17 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                actionlists = ActionMap[button]
             end 
             for i,data in ipairs(actionlists) do
-               if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+               if Locale:GetText(data.cat) ~= "" then
+                  local title = rootDescription:CreateTitle(Locale:GetText(data.cat))
+               end
                for _,action in ipairs(data.values) do
-                  local button = rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, {button, action});
-                  --button:SetTooltip(actionToolTip)
+                  local radio = rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, {button, action})
+                  if Locale:GetText(data.cat .. "_TOOLTIP") ~= nil then
+                     radio:SetTooltip(function(tooltip, elementDescription)
+                        GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
+                        GameTooltip_AddNormalLine(tooltip, Locale:GetText(data.cat .. "_TOOLTIP"));
+                     end)
+                  end
                end
             end
          end;
@@ -1052,10 +1069,17 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                actionlists = HotbarMap[button]
             end
             for i,data in ipairs(actionlists) do
-               if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+               if Locale:GetText(data.cat) ~= "" then
+                  rootDescription:CreateTitle(Locale:GetText(data.cat))
+               end
                for _,action in ipairs(data.values) do
-                  local button = rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, {button, action});
-                  --button:SetTooltip(hotActionToolTip)
+                  local radio = rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, {button, action})
+                  if Locale:GetText(data.cat .. "_TOOLTIP") ~= nil then                     
+                     radio:SetTooltip(function(tooltip, elementDescription)
+                        GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
+                        GameTooltip_AddNormalLine(tooltip, Locale:GetText(data.cat .. "_TOOLTIP"));
+                     end)
+                  end
                end
             end
          end;
@@ -1117,7 +1141,9 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
 
    local function HBarTypeGeneratorFunction(owner, rootDescription)
       for i,data in ipairs(addon.HotbarHBARTypes) do         
-         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
          for i,hbartype in ipairs(data.values) do
             rootDescription:CreateRadio(Locale.hbartypestr[hbartype], IsHBarTypeSelected, SetHBarTypeSelected, hbartype);
          end
@@ -1156,7 +1182,9 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
 
    local function HKeyTypeGeneratorFunction(owner, rootDescription)      
       for i,data in ipairs(addon.HotbarHKEYTypes) do
-         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
          for i,hkeytype in ipairs(data.values) do
             rootDescription:CreateRadio(Locale.hkeytypestr[hkeytype], IsHKeyTypeSelected, SetHKeyTypeSelected, hkeytype);
          end
@@ -1195,7 +1223,9 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
 
    local function WXHBTypeGeneratorFunction(owner, rootDescription)
       for i,data in ipairs(addon.HotbarWXHBTypes) do
-         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
          for i,wxhbtype in ipairs(data.values) do
             rootDescription:CreateRadio(Locale.wxhbtypestr[wxhbtype], IsWXHBTypeSelected, SetWXHBTypeSelected, wxhbtype);
          end
@@ -1234,7 +1264,9 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
 
    local function DDAATypeGeneratorFunction(owner, rootDescription)      
       for i,data in ipairs(addon.HotbarDDAATypes) do
-         if Locale:GetText(data.cat) ~= "" then rootDescription:CreateTitle(Locale:GetText(data.cat)) end
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
          for i,ddaatype in ipairs(data.values) do
             rootDescription:CreateRadio(Locale.ddaatypestr[ddaatype], IsDDAATypeSelected, SetDDAATypeSelected, ddaatype);
          end
