@@ -177,6 +177,8 @@ local Locale = {
    CATEGORY_HOTBAR_ACTIONS_TOOLTIP = "Selects the Action bar binding to use when the Hotbar modifier is activated. Requires LEFTHOTBAR/RIGHTHOTBAR modifier to be held.",
    CATEGORY_MODIFIERS = "Modifiers",
    CATEGORY_MODIFIERS_TOOLTIP = "Binding used to overide/modify other buttons. Similar to shift and control modifiers.",
+   CATEGORY_HOTBAR_EXPANDED = "Hotbar Expand",
+   CATEGORY_HOTBAR_EXPANDED_TOOLTIP = "Actions to expand the hotbar by a button press.",
    CATEGORY_ACTIONS = "Actions",
    CATEGORY_ACTIONS_TOOLTIP = "Button actions for basic commands.",
    CATEGORY_MACRO = "Macro",
@@ -191,6 +193,9 @@ local Locale = {
    CATEGORY_UNIT_NAVIGATION_TOOLTIP = "Actions to navigate unit frames self, party and raid.",
    CATEGORY_CONTROLLER = "Controller buttons",
    CATEGORY_KEYBOARD = "Keyboard buttons",
+   HOLDEXPANDED_TOOLTIP = "Action to expand the active hotbar when held. This action can be used as a double click binding in an external tool (ex. Steam) to better control the double click timing.",
+   LEFTEXPANDED_TOOLTIP = "Action to activate and expand the left hotbar.",
+   RIGHTEXPANDED_TOOLTIP = "Action to activate and expand the right hotbar.",
    hkeytypestr = {
       ["_SHP"] = "Use shapes for button icons.",
       ["_LTR"] = "Use letters for button icons.",
@@ -245,7 +250,10 @@ local function ActionsAvailable(button, prefix, ActionType)
          return false
       end
       if config.PadActions[button]["ACTION"] == "LEFTHOTBAR" or
-         config.PadActions[button]["ACTION"] == "RIGHTHOTBAR" then
+         config.PadActions[button]["ACTION"] == "RIGHTHOTBAR" or
+         config.PadActions[button]["ACTION"] == "HOLDEXPANDED" or
+         config.PadActions[button]["ACTION"] == "LEFTEXPANDED" or
+         config.PadActions[button]["ACTION"] == "RIGHTEXPANDED" then
          return false
       end
    end
@@ -284,6 +292,29 @@ end
 
 function ConfigUI:OnConfigInit()
    ConfigUI.preset = CrossHotbar_DB.ActivePreset 
+end
+
+function ConfigUI:ClearLayout()
+   -- EditModeManger is picking up Crosshotbar frames which causes taint.
+   -- This function removes referances to Crosshotbar.
+   local bool foundTaint = false
+   layoutInfo = C_EditMode.GetLayouts()
+   for i,layout in ipairs(layoutInfo.layouts) do
+      for i,system in ipairs(layout.systems) do
+         if system.anchorInfo then
+            if string.find(system.anchorInfo.relativeTo, "Crosshotbar") then
+               system.anchorInfo.relativeTo = UIParent:GetName()
+               foundTaint = true
+            end
+         end
+      end
+   end
+   if foundTaint then
+      print("Removing frame from EditMode")
+      C_EditMode.SaveLayouts(layoutInfo)
+   else
+      print("Not taint found.")
+   end
 end
 
 function ConfigUI:CreateFrame()
@@ -479,7 +510,11 @@ Settings:
 
    SLASH_CROSSHOTBAR1, SLASH_CROSSHOTBAR2 = '/chb', '/wxhb';
    local function slashcmd(msg, editBox)
-      Settings.OpenToCategory(category:GetID())
+      if msg == "clear layout" then
+         self:ClearLayout()
+      else
+         Settings.OpenToCategory(category:GetID())
+      end
    end
    SlashCmdList["CROSSHOTBAR"] = slashcmd;
 
@@ -1031,6 +1066,8 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
             local actionlists = {{ cat = "", values =  { "NONE" } }}
             if ActionsAvailable(button, prefix, "ACTION") then
                actionlists = ActionMap[button]
+            else
+               config.PadActions[button][prefix .. "ACTION"] = "NONE"
             end 
             for i,data in ipairs(actionlists) do
                if Locale:GetText(data.cat) ~= "" then
@@ -1038,10 +1075,12 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                end
                for _,action in ipairs(data.values) do
                   local radio = rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, {button, action})
-                  if Locale:GetText(data.cat .. "_TOOLTIP") ~= nil then
+                  local tiptext = Locale:GetText(action .. "_TOOLTIP")
+                  if tiptext == nil then tiptext = Locale:GetText(data.cat .. "_TOOLTIP") end
+                  if tiptext ~= nil then
                      radio:SetTooltip(function(tooltip, elementDescription)
                         GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
-                        GameTooltip_AddNormalLine(tooltip, Locale:GetText(data.cat .. "_TOOLTIP"));
+                        GameTooltip_AddNormalLine(tooltip, tiptext);
                      end)
                   end
                end
@@ -1062,6 +1101,8 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
             local actionlists = {{ cat = "", values =  {"NONE"} }}
             if ActionsAvailable(button, prefix, "TRIGACTION") then
                actionlists = HotbarMap[button]
+            else
+               config.PadActions[button][prefix .. "TRIGACTION"] = "NONE"
             end
             for i,data in ipairs(actionlists) do
                if Locale:GetText(data.cat) ~= "" then
@@ -1069,10 +1110,12 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                end
                for _,action in ipairs(data.values) do
                   local radio = rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, {button, action})
-                  if Locale:GetText(data.cat .. "_TOOLTIP") ~= nil then                     
+                  local tiptext = Locale:GetText(action .. "_TOOLTIP")
+                  if tiptext == nil then tiptext = Locale:GetText(data.cat .. "_TOOLTIP") end
+                  if tiptext ~= nil then
                      radio:SetTooltip(function(tooltip, elementDescription)
                         GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
-                        GameTooltip_AddNormalLine(tooltip, Locale:GetText(data.cat .. "_TOOLTIP"));
+                        GameTooltip_AddNormalLine(tooltip, tiptext);
                      end)
                   end
                end

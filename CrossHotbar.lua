@@ -134,10 +134,18 @@ function CrossHotbarMixin:AddTriggerHandler()
       self:SetAttribute("triggerstate", newstate)
 
       local expanded = self:GetAttribute("expanded")
-      if not ((expanded == 1 and (newstate == 6 or newstate == 3)) or
-              (expanded == 2 and (newstate == 7 or newstate == 5))) then
-         expanded = 0
-         self:SetAttribute("expanded", 0)
+
+      local hotbar_expanded = 0
+      if expanded == 3 then
+         if (newstate == 6 or newstate == 3 or newstate == 1) then hotbar_expanded = 1 end
+         if (newstate == 7 or newstate == 5 or newstate == 2) then hotbar_expanded = 2 end
+      else
+         if not ((expanded == 1 and (newstate == 6 or newstate == 3)) or
+                (expanded == 2 and (newstate == 7 or newstate == 5))) then
+            expanded = 0
+            self:SetAttribute("expanded", 0)
+         end
+         hotbar_expanded = expanded
       end
 
       local state = 0
@@ -148,7 +156,7 @@ function CrossHotbarMixin:AddTriggerHandler()
 
       for i=1,8 do
          local hotbar = self:GetFrameRef('Hotbar'..i)
-         hotbar:SetAttribute("state-hotbar-expanded", expanded)
+         hotbar:SetAttribute("state-hotbar-expanded", hotbar_expanded)
          hotbar:SetAttribute("state-hotbar-visibility", state)
       end
   ]])
@@ -189,15 +197,10 @@ end
 function CrossHotbarMixin:AddExpandHandler()
    self:SetAttribute('_onstate-expanded', [[
       local expanded = self:GetAttribute("expanded")
-      if expanded == 0 then
-         local hotbarstate = self:GetAttribute("triggerstate")
-         if hotbarstate == 4 then               
-            self:SetAttribute("expanded", newstate)
-            for i=1,8 do
-               local hotbar = self:GetFrameRef('Hotbar'..i)
-               hotbar:SetAttribute("state-hotbar-expanded", newstate)
-            end
-         end
+      self:SetAttribute("expanded", newstate)
+      for i=1,8 do
+         local hotbar = self:GetFrameRef('Hotbar'..i)
+         hotbar:SetAttribute("state-hotbar-expanded", newstate)
       end
   ]])
 end

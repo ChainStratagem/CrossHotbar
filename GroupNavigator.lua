@@ -8,8 +8,7 @@ local ActionList = {
    ["UNITNAVUP"] = true,
    ["UNITNAVDOWN"] = true,
    ["UNITNAVLEFT"] = true,
-   ["UNITNAVRIGHT"] = true,
-   ["CLEARTARGETING"] = true
+   ["UNITNAVRIGHT"] = true
 }
 config:ConfigListAdd("GamePadActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
 config:ConfigListAdd("GamePadModifierActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
@@ -28,7 +27,7 @@ function GroupNavigatorMixin:OnLoad()
    self:RegisterEvent("UNIT_NAME_UPDATE")
    self:RegisterEvent("PLAYER_ROLES_ASSIGNED")
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-   self:WrapOnClickDiscrete()
+   self:WrapOnClick()
    
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
 end
@@ -94,8 +93,6 @@ function GroupNavigatorMixin:AddStateHandlers()
       if binding and binding ~= "" then self:SetBindingClick(true, binding, self:GetName(), "LeftButton") end
       binding = self:GetAttribute(prefix .. "UNITNAVRIGHT")
       if binding and binding ~= "" then self:SetBindingClick(true, binding, self:GetName(), "RightButton") end
-      binding = self:GetAttribute(prefix .. "CLEARTARGETING")                  
-      if binding and binding ~= "" then self:SetBindingClick(true, binding, self:GetName(), "MiddleButton") end
     ]])
 end
 
@@ -130,79 +127,12 @@ function GroupNavigatorMixin:updateRoster()
    if not InCombatLockdown() then 
       local raid_id = UnitInRaid("player")
       if raid_id then
-         
-         local raid_units = {}
-         for i=1, 40 do
-            table.insert(raid_units, "raid"..i)
-         end
-         
-         if CompactRaidFrameContainer.groupMode == "flush" then
-            table.sort(raid_units, CompactRaidFrameContainer.flowSortFunc);
-         end
-         
-         local raid_size = GetNumGroupMembers()
-         
-         local player_unit = "1"
-         local player_group = "1"
-         
-         group_units = {}
-         for i = 1, raid_size do  
-            local id = tonumber(string.sub(raid_units[i], 5));
-            name, rank, subgroup = GetRaidRosterInfo(id);
-            if group_units[subgroup] == nil then group_units[subgroup] = {} end
-            table.insert(group_units[subgroup], raid_units[i])
-            if id == raid_id then 
-               player_unit = tostring(table.getn(group_units[subgroup]))
-               player_group = tostring(subgroup)
-            end
-         end
-         
-         local r_str = ""
-         for i, group in ipairs(group_units) do
-            r_str = r_str .. "["
-            for j, unit in ipairs(group) do
-               r_str = r_str .. " " .. unit
-            end
-            r_str = r_str .. "]"
-         end
-         
-         self:SetAttribute("player_unit", player_unit)
-         self:SetAttribute("player_group", player_group)
+         self:SetAttribute("player_id", "raid"..raid_id)
          self:SetAttribute("group_change", "true")
-         self:SetAttribute("group_units", r_str) 
          self:AddUnitFrameRefs()
       elseif UnitInParty("player") then
-         local party_size = GetNumGroupMembers()
-         
-         local party_units = {}
-         table.insert(party_units, "player")
-         for i=2, 5 do
-            table.insert(party_units, "party"..(i-1))
-         end
-         
-         if CompactRaidFrameContainer.groupMode == "flush" then
-            table.sort(party_units, CompactRaidFrameContainer.flowSortFunc);
-         end
-         
-         local player_unit = "1"
-         local p_str = ""
-         for i = 1, party_size do
-            if party_units[i] == "player" then 
-               player_unit = tostring(i)
-            end
-            if (i-1) % party_size == 0 then
-               p_str = p_str .. "["
-            end
-            p_str = p_str .. " " .. party_units[i]
-            if i % party_size == 0 then
-               p_str = p_str .. "]"
-            end
-         end
-         
-         self:SetAttribute("player_unit", player_unit)
-         self:SetAttribute("player_group", "1")
+         self:SetAttribute("player_id", "player")
          self:SetAttribute("group_change", "true")
-         self:SetAttribute("group_units", p_str)
          self:AddUnitFrameRefs()
       end
    end
@@ -221,14 +151,36 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
       local hasUnits = false
       
       if CompactRaidFrameContainer.groupMode == "flush" then
+         --local orientation = CompactRaidFrameContainer.flowOrientation
+         local maxPerLine = CompactRaidFrameContainer.flowMaxPerLine
+         local i = 1
+         local j = 1
+         local max_i = 0
+         local max_j = 0
          for _,frame in pairs(CompactRaidFrameContainer.flowFrames) do
-            if frame.unit then
-               hasUnits = true
-               SecureHandlerSetFrameRef(self, frame.unit, frame)
+            if frame and frame.IsVisible and frame:IsVisible() then 
+               if frame.unit then
+                  hasUnits = true
+                  if max_i < i then max_i = i end
+                  if max_j < j then max_j = j end
+                  SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
+                  j = j + 1
+                  if j > (maxPerLine) then
+                     i = i + 1
+                     j = 1
+                  end
+               end
             end
          end
-         self:WrapOnClickFlush()
-      else
+         
+         if hasUnits == true then
+               self:SetAttribute("max_group", max_i)
+               self:SetAttribute("max_unit", max_j)
+            self:WrapOnClick()
+         end
+      end
+      
+      if hasUnits == false then
          if inparty == false then
             for i = 1,8 do
                for j = 1,5 do
@@ -282,6 +234,9 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                   end
                end
             end
+            self:SetAttribute("max_group", 8)
+            self:SetAttribute("max_unit", 5)
+            self:WrapOnClick()
          else
             for j = 1,5 do
                local frame = _G["PartyFrame"]
@@ -326,10 +281,12 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                      hasUnits = true
                      SecureHandlerSetFrameRef(self, "1_" .. j, frame)
                   end
-               end
-            end
+               end              
+            end            
+            self:SetAttribute("max_group", 1)
+            self:SetAttribute("max_unit", 5)
+            self:WrapOnClick()
          end
-         self:WrapOnClickDiscrete()
       end
       
       if hasUnits then
@@ -341,7 +298,7 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
    end
 end
 
-function GroupNavigatorMixin:WrapOnClickDiscrete()
+function GroupNavigatorMixin:WrapOnClick()
    SecureHandlerUnwrapScript(self, "OnClick")
    SecureHandlerWrapScript(self, "OnClick", self,  [[
 
@@ -349,10 +306,14 @@ function GroupNavigatorMixin:WrapOnClickDiscrete()
 
    if not lastunit then lastunit = 1 end
    if not lastgroup then lastgroup = 1 end
-   
+
+   local max_group = self:GetAttribute("max_group")
+   local max_unit = self:GetAttribute("max_unit")
+
    local newunit = "player"
-   local player_unit = tonumber(self:GetAttribute("player_unit"))
-   local player_group = tonumber(self:GetAttribute("player_group"))
+   local player_id = self:GetAttribute("player_id")
+   local player_unit = 1
+   local player_group = 1
    
    if not group_units then group_units = table.new() end
    if not hidden_units then hidden_units = table.new() end
@@ -370,17 +331,12 @@ function GroupNavigatorMixin:WrapOnClickDiscrete()
    if recalc then
       -- print("Re-Calc Units")
 
-      local max_group = 1
-      if PlayerInGroup() == "raid" then
-         max_group = 8
-      end
-
       group_units = table.new()
       hidden_units = table.new()
 
       for x = 1,max_group do
          local newgroup = true
-         for y = 1,5 do
+         for y = 1,max_unit do
             local frame = self:GetFrameRef(x .. "_" .. y)
             if frame then
                if frame:IsVisible() then 
@@ -389,6 +345,10 @@ function GroupNavigatorMixin:WrapOnClickDiscrete()
                      newgroup = false
                   end
                   table.insert(group_units[#group_units], frame)
+                  if player_id == frame:GetAttribute("unit") then
+                     player_unit = y
+                     player_group = x
+                  end
                else
                   -- print("hidden")
                   table.insert(hidden_units, frame)
@@ -500,131 +460,6 @@ function GroupNavigatorMixin:WrapOnClickDiscrete()
    ]])
 end
 
-function GroupNavigatorMixin:WrapOnClickFlush()
-   SecureHandlerUnwrapScript(self, "OnClick")
-   SecureHandlerWrapScript(self, "OnClick", self,  [[
-
-   if not down then return end
-
-   if not lastunit then lastunit = 1 end
-   if not lastgroup then lastgroup = 1 end
-   if not group_units then group_units = table.new() end
-   local newunit = "player"
-   local player_unit = tonumber(self:GetAttribute("player_unit"))
-   local player_group = tonumber(self:GetAttribute("player_group"))
-   if self:GetAttribute("group_change") == "true" then
-      local g_str = self:GetAttribute("group_units")
-      group_units = table.new()
-      local i = 1
-      for subgrp in string.gmatch(g_str, "%[([%w+%s]+)%]") do 
-         group_units[i] = table.new()
-         local j = 1
-         for unitid in string.gmatch(subgrp, "%w+") do 
-            table.insert(group_units[i], unitid)
-            j = j + 1
-         end
-         i = i + 1
-      end
-      local num_groups = #group_units
-      if num_groups > 0 then 
-         if lastgroup > num_groups then
-            lastgroup = num_groups
-         end
-         local num_units = #(group_units[lastgroup])
-         if num_units > 0 then
-            if lastunit > num_units then
-               lastunit = num_units
-            end
-         end
-      end
-      self:SetAttribute("group_change", "false")
-   end
-   
-   local num_groups = #group_units
-   if num_groups > 0 then 
-      local num_units = #(group_units[lastgroup])
-      if num_units > 0 then
-         if PlayerInGroup() == "party" or PlayerInGroup() == "raid" then
-            
-            local unitfound = false
-            local softtarget = self:GetFrameRef("softtarget")
-            if softtarget then
-               local frame = self:GetFrameRef(group_units[lastgroup][lastunit])
-               if frame and frame:IsVisible() then
-                  local frame_unit = frame:GetAttribute("unit")
-                  if frame_unit == group_units[lastgroup][lastunit] then
-                     unitfound = true
-                  end
-               end
-            end
-            
-            if unitfound then
-               local targetunit = group_units[lastgroup][lastunit]
-               if (UnitPlayerOrPetInRaid("target") or UnitPlayerOrPetInParty("target")) or
-                  not (UnitPlayerOrPetInRaid(targetunit) or UnitPlayerOrPetInParty(targetunit)) then      
-                  if button == "Button4" then
-                     lastunit = (lastunit + num_units - 1) % num_units
-                  elseif button == "Button5" then
-                     lastunit = (lastunit + 1) % num_units
-                  elseif button == "LeftButton" then
-                     lastgroup = (lastgroup + num_groups - 1) % num_groups
-                  elseif button == "RightButton" then
-                     lastgroup = (lastgroup + 1) % num_groups
-                  end
-                  
-                  if lastgroup == 0 then
-                     lastgroup = num_groups
-                  end
-                  
-                  num_units = #(group_units[lastgroup])
-                  
-                  if lastunit > num_units then
-                     lastunit = num_units
-                  elseif lastunit == 0 then
-                     lastunit = num_units
-                  end
-               end
-            else 
-               lastgroup = player_group
-               lastunit = player_unit
-            end
-            
-            newunit = group_units[lastgroup][lastunit]
-            self:SetAttribute("unit", newunit)
-               
-            if softtarget then
-               local found = false
-               local frame = self:GetFrameRef(newunit)
-               if frame and frame:IsVisible() then
-                  local frame_unit = frame:GetAttribute("unit")
-                  if frame_unit == newunit then
-                     softtarget:SetParent(frame)
-                     softtarget:ClearAllPoints()
-                     softtarget:SetPoint("CENTER", frame, "CENTER")
-                     local frameWidth = frame:GetWidth();
-                     local frameHeight = frame:GetHeight();
-                     softtarget:SetWidth(frameWidth+6)
-                     softtarget:SetHeight(frameHeight+6)
-                     softtarget:SetAlpha(0.75)
-                     found = true
-                  end
-               end
-               if found == false then
-                  softtarget:SetAlpha(0)
-               end
-            end
-         else
-            self:SetAttribute("unit", newunit)
-         end
-      else
-         self:SetAttribute("unit", newunit)
-      end
-   else
-      self:SetAttribute("unit", newunit)
-   end
-   ]])
-end
-
 local CreateGroupNavigator = function(parent)
    local GroupNavigator = CreateFrame("Button", ADDON .. "GroupNavigator", parent,
                                       "SecureActionButtonTemplate, SecureHandlerStateTemplate")
@@ -644,8 +479,8 @@ local CreateGroupNavigator = function(parent)
    GroupNavigator:SetAttribute("*type5", "target")
    GroupNavigator:SetAttribute("unit", "player")
    GroupNavigator:SetAttribute("group_change", "true")
-   GroupNavigator:SetAttribute("group_units", "[player party1 party2 party3 party4]")
-   GroupNavigator:SetAttribute("macrotext3", "/cleartarget\n/stopspelltarget\n")
+   GroupNavigator:SetAttribute("max_group", 1)
+   GroupNavigator:SetAttribute("max_unit", 5)
 
    GroupNavigator:AddStateHandlers()
 

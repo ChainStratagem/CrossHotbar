@@ -56,6 +56,78 @@ config:ConfigListAdd("GamePadActions", "CATEGORY_ACTIONS", ModifierActions, "NON
 config:ConfigListAdd("GamePadModifierActions", "CATEGORY_ACTIONS", ModifierActions, "NONE")
 config:ConfigListAdd("GamePadModifiers", "CATEGORY_ACTIONS", ModifierActions, "NONE")
 
+local ExpandedModifierActions = {
+   ["HOLDEXPANDED"] = [[local down = ...
+      local GamePadButtons = self:GetFrameRef('GamePadButtons')
+      local Crosshotbar = self:GetFrameRef('Crosshotbar')
+      if GamePadButtons ~= nil and Crosshotbar ~= nil then
+         local expanded = 0
+         if down == true then expanded = 3 end
+         local triggerstate = GamePadButtons:GetAttribute("triggerstate")
+         local expandedstate = Crosshotbar:GetAttribute("expanded")
+         if expandedstate == 0 or expandedstate == 3 then
+            if triggerstate == 4 then
+               GamePadButtons:SetAttribute("state-expanded", expanded)
+            else
+               GamePadButtons:SetAttribute("state-trigger", 4)
+               GamePadButtons:SetAttribute("state-expanded", expanded)
+               GamePadButtons:SetAttribute("state-trigger", triggerstate)
+            end
+         end
+      end
+   ]],
+   ["LEFTEXPANDED"] = [[local down = ...
+      local GamePadButtons = self:GetFrameRef('GamePadButtons')
+      local Crosshotbar = self:GetFrameRef('Crosshotbar')
+      if GamePadButtons ~= nil and Crosshotbar ~= nil then
+         local expanded = 0
+         if down == true then expanded = 3 end
+         local triggerstate = GamePadButtons:GetAttribute("triggerstate")
+         local expandedstate = Crosshotbar:GetAttribute("expanded")
+         if triggerstate == 4 or expandedstate == 3 then
+            if expandedstate == 0 or expandedstate == 3 then
+               if expanded == 3 then
+                  GamePadButtons:SetAttribute("state-trigger", 4)
+                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-trigger", 6)
+               end
+               if expanded == 0 then
+                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-trigger", 4)
+               end
+            end
+         end
+      end
+   ]],
+   ["RIGHTEXPANDED"] = [[local down = ...
+      local GamePadButtons = self:GetFrameRef('GamePadButtons')
+      local Crosshotbar = self:GetFrameRef('Crosshotbar')
+      if GamePadButtons ~= nil and Crosshotbar ~= nil then
+         local expanded = 0
+         if down == true then expanded = 3 end
+         local triggerstate = GamePadButtons:GetAttribute("triggerstate")
+         local expandedstate = Crosshotbar:GetAttribute("expanded")
+         if triggerstate == 4 or expandedstate == 3 then
+            if expandedstate == 0 or expandedstate == 3 then
+               if expanded == 3 then
+                  GamePadButtons:SetAttribute("state-trigger", 4)
+                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-trigger", 7)
+               end
+               if expanded == 0 then
+                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-trigger", 4)
+               end
+            end
+         end
+      end
+   ]]
+}
+
+config:ConfigListAdd("GamePadActions", "CATEGORY_HOTBAR_EXPANDED", ExpandedModifierActions, "NONE")
+config:ConfigListAdd("GamePadModifierActions", "CATEGORY_HOTBAR_EXPANDED", {["HOLDEXPANDED"]=true}, "NONE")
+config:ConfigListAdd("GamePadModifiers", "CATEGORY_HOTBAR_EXPANDED", ExpandedModifierActions, "NONE")
+
 local MacroModifierActions = {
    ["MACRO CH_MACRO_1"] = [[ local down = ...
       if down then
@@ -152,6 +224,11 @@ local TargetModifierActions = {
    ["TARGETPARTYMEMBER4"] = [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/target party4")
+      end
+   ]],
+   ["CLEARTARGETING"] = [[local down = ...
+      if down then
+         self:SetAttribute("macrotext1", "/cleartarget\n/stopspelltarget\n")
       end
    ]]
 }
@@ -296,6 +373,7 @@ config:ConfigListAdd("GamePadActions", "CATEGORY_PAGING", PageModifierActions, "
 config:ConfigListAdd("GamePadModifierActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
 config:ConfigListAdd("GamePadModifiers", "CATEGORY_PAGING", PageModifierActions, "NONE")
 
+for key, value in pairs(ExpandedModifierActions) do ModifierActions[key] = value  end
 for key, value in pairs(MacroModifierActions) do ModifierActions[key] = value  end
 for key, value in pairs(TargetModifierActions) do ModifierActions[key] = value  end
 for key, value in pairs(CameraModifierActions) do ModifierActions[key] = value  end
@@ -527,12 +605,17 @@ local SetButtonExpanded = [[
 
    local GamePadButtons = self:GetFrameRef('GamePadButtons')
    if GamePadButtons ~= nill then
+      local state = GamePadButtons:GetAttribute("triggerstate")
+      GamePadButtons:SetAttribute("state-trigger", 4)
+      
       if button == "LeftButton" then
          GamePadButtons:SetAttribute("state-expanded", 1)
       end
       if button == "RightButton" then
          GamePadButtons:SetAttribute("state-expanded", 2)
       end
+
+      --GamePadButtons:SetAttribute("state-trigger", state)
    end
 ]]
 
@@ -603,8 +686,7 @@ function GamePadButtonsMixin:CreateLeftTriggerButton()
    SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton,
                            [[self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")]])
    SecureHandlerWrapScript(self.LeftTriggerButton, "OnDoubleClick", self.LeftTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "LeftButton", false, "trigger")
-                             self:RunAttribute("SetButtonExpanded", "LeftButton")]])
+                           [[self:RunAttribute("SetButtonExpanded", "LeftButton")]])
 end
 
 function GamePadButtonsMixin:CreateRightTriggerButton()
@@ -614,8 +696,7 @@ function GamePadButtonsMixin:CreateRightTriggerButton()
    SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton,
                            [[self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")]])
    SecureHandlerWrapScript(self.RightTriggerButton, "OnDoubleClick", self.RightTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "RightButton", false, "trigger")
-                             self:RunAttribute("SetButtonExpanded", "RightButton")]])
+                           [[self:RunAttribute("SetButtonExpanded", "RightButton")]])
 end
 
 function GamePadButtonsMixin:CreateLeftShoulderButton()
@@ -774,9 +855,7 @@ function GamePadButtonsMixin:AddPaddleHandler()
 end
 
 function GamePadButtonsMixin:AddExpandedHandler()
-   self:SetAttribute("expandstate", 4)
    self:SetAttribute("_onstate-expanded", [[
-      self:SetAttribute("expandstate", newstate)
       local Crosshotbar = self:GetFrameRef('Crosshotbar')
       if Crosshotbar ~= nil then
          Crosshotbar:SetAttribute("state-expanded", newstate)
@@ -818,26 +897,11 @@ end
 function GamePadButtonsMixin:OnEvent(event, ...)
    -- print(event)
    if event == 'PLAYER_ENTERING_WORLD' then
+      --[[
       isInitialLogin, isReloadingUi = ...
       if isInitialLogin or isReloadingUi then
-         -- EditModeManger is picking up Crosshotbar frames which causes taint.
-         local bool foundTaint = false
-         layoutInfo = C_EditMode.GetLayouts()
-         for i,layout in ipairs(layoutInfo.layouts) do
-            for i,system in ipairs(layout.systems) do
-               if system.anchorInfo then
-                  if system.anchorInfo.relativeTo == 'Crosshotbar' then
-                     system.anchorInfo.relativeTo = UIParent:GetName()
-                     foundTaint = true
-                  end
-               end
-            end
-         end
-         if foundTaint then
-            print("Removing frame from EditMode")
-            C_EditMode.SaveLayouts(layoutInfo)
-         end
       end
+      --]]
    elseif event == 'CURSOR_CHANGED' then
    elseif event == 'CURRENT_SPELL_CAST_CHANGED' then
       if SpellIsTargeting() then
