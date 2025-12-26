@@ -4,6 +4,13 @@ local config = addon.Config
 local GamePadButtonList = addon.GamePadButtonList
 local GamePadModifierList = addon.GamePadModifierList
 
+local DCLKList = {
+   ["DISABLE"] = 0,
+   ["ENABLE"] = 1,
+   ["VISUAL"] = 2
+}
+config:ConfigListAdd("HotbarDCLKTypes", "CATEGORY_HOTBAR_DCLK", DCLKList)
+
 local ModifierList = {
    ["LEFTSHOULDER"] = true,
    ["RIGHTSHOULDER"] = true,
@@ -603,19 +610,54 @@ local SetButtonPairState = [[
 local SetButtonExpanded = [[
    local button = ...
 
-   local GamePadButtons = self:GetFrameRef('GamePadButtons')
-   if GamePadButtons ~= nill then
-      local state = GamePadButtons:GetAttribute("triggerstate")
-      GamePadButtons:SetAttribute("state-trigger", 4)
-      
-      if button == "LeftButton" then
-         GamePadButtons:SetAttribute("state-expanded", 1)
-      end
-      if button == "RightButton" then
-         GamePadButtons:SetAttribute("state-expanded", 2)
-      end
+   local type = 0
+   if button == "LeftButton" then type = 2 end
+   if button == "RightButton" then type = 3 end
 
-      --GamePadButtons:SetAttribute("state-trigger", state)
+   local GamePadButtons = self:GetFrameRef('GamePadButtons')
+   if GamePadButtons ~= nil and type ~= 0 then
+      local dclktype = GamePadButtons:GetAttribute("wxhbdclk")
+      local state = GamePadButtons:GetAttribute("triggerstate")
+      if dclktype > 0 and state ~= 3 and state ~= 5 then
+         GamePadButtons:SetAttribute("state-trigger", 4)
+         if button == "LeftButton" then
+            GamePadButtons:SetAttribute("state-expanded", 1)
+         end
+         if button == "RightButton" then
+            GamePadButtons:SetAttribute("state-expanded", 2)
+         end
+         if dclktype == 2 then
+            local Crosshotbar = self:GetFrameRef('Crosshotbar')
+            if Crosshotbar ~= nil then
+               Crosshotbar:RunAttribute("update-expanded")
+            end
+         end
+      else
+         local a = 0
+         if state == 6 or state == 3 then a = 2 end
+         if state == 7 or state == 5 then a = 3 end
+         local b = a - state + 4
+
+         if a == 0 then
+            a = b
+            b = 0
+         end
+
+         local found = true
+         if  a == type then
+            a = 0
+         elseif b == type then
+            b = 0
+         else
+            found = false
+         end
+
+         local newstate = 4
+         if found then
+            newstate = a - b + 4
+         end
+         GamePadButtons:SetAttribute("state-trigger", newstate)
+      end
    end
 ]]
 
@@ -866,6 +908,7 @@ end
 function GamePadButtonsMixin:OnLoad()
    self:SetAttribute("modname", "")
    self:SetAttribute("modtype", "")
+   self:SetAttribute("wxhbdclk", 0)
    self:SetAttribute("UpdateModifierName", UpdateModifierName)
 
    self:AddTriggerHandler()
@@ -1231,6 +1274,10 @@ function GamePadButtonsMixin:ApplyConfig()
          end
       end
       self:SetAttribute(button, attributes.BIND)
+   end
+
+   if DCLKList[config.Hotbar.DCLKType] ~= nil  then
+      self:SetAttribute("wxhbdclk", DCLKList[config.Hotbar.DCLKType])
    end
    
    self:Execute([[

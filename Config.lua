@@ -69,6 +69,7 @@ addon.Defaults_DB = {
          Description="Preset for PS4/5 Controllers which mirrors FFXIV controller settings. The default dpad is set to party and raid unit naviation for both up and down and left and right. Zoom actions are moved from L1 RSTICK to L1 DPad up and DPad down. Paging is available with R1 and Face buttons with next and previous page in DPad up and down.",
          Hotbar = {
             WXHBType = "HIDE",
+            DCLKType = "VISUAL",
             DDAAType = "DADA",
             HKEYType = "_SHP",
             LPagePrefix = "",
@@ -130,6 +131,7 @@ addon.Defaults_DB = {
          Description="Preset for keyboard binding swhich mirrors FFXIV controller settings. The default dpad is set to party and raid unit naviation for both up and down and left and right. Zoom actions are moved from L1 RSTICK to L1 DPad up and DPad down. Paging is available with R1 and Face buttons with next and previous page in DPad up and down.",
          Hotbar = {
             WXHBType = "HIDE",
+            DCLKType = "VISUAL",
             DDAAType = "DADA",
             HKEYType = "_LTR",
             LPagePrefix = "",
@@ -191,6 +193,7 @@ addon.Defaults_DB = {
          Description="Preset for Steam Controller with Face buttons on the touch pad and dpad mapped to controller face buttons. DPad swap with left back paddle. Quick party select with R1 and Face buttons. Hold mouse with right back paddle for mouse over actions. Requires correct steam config.",
          Hotbar = {
             WXHBType = "SHOW",
+            DCLKType = "VISUAL",
             DDAAType = "DDAA",
             HKEYType = "_LTR",
             LPagePrefix = "[overridebar][possessbar][shapeshift][bonusbar:5]possess;[bonusbar:3]9;[bonusbar:1,stealth:1]8;[bonusbar:1]7;[bonusbar:4]10;",
@@ -252,6 +255,7 @@ addon.Defaults_DB = {
          Description="Preset for DS5 Edge with back paddles. DPad swap with left back paddle. Quick party select with R1 and Face buttons. Hold mouse with right back paddle for mouse over actions.",
          Hotbar = {
             WXHBType = "SHOW",
+            DCLKType = "VISUAL",
             DDAAType = "DDAA",
             HKEYType = "_SHP",
             LPagePrefix = "[overridebar][possessbar][shapeshift][bonusbar:5]possess;[bonusbar:3]9;[bonusbar:1,stealth:1]8;[bonusbar:1]7;[bonusbar:4]10;",
@@ -351,17 +355,17 @@ function addon.Config:StorePreset(to, from)
          to.Name = ""
       end
       to.Description = from.Description
-      to.Hotbar = {}
+      if to.Hotbar == nil then to.Hotbar = {} end
       for key, value in pairs(from.Hotbar) do
          to.Hotbar[key] = value 
       end
       
-      to.GamePad = {}
+      if to.GamePad == nil then to.GamePad = {} end
       for key, value in pairs(from.GamePad) do
          to.GamePad[key] = value 
       end
       
-      to.PadActions = {}
+      if to.PadActions == nil then to.PadActions = {} end
       for button, attributes in pairs(from.PadActions) do
          for key, value in pairs(attributes) do
             if to.PadActions[button] == nil then
@@ -430,8 +434,8 @@ function addon:InitConfig()
    
    local preset = CrossHotbar_DB.ActivePreset;
    local hassaves = false
-   for k,preset in pairs(CrossHotbar_DB.Presets) do
-      if preset.Mutable then
+   for k,p in pairs(CrossHotbar_DB.Presets) do
+      if p.Mutable then
          hassaves = true
       end
    end
@@ -452,6 +456,7 @@ function addon:InitConfig()
       end
    end
 
+   addon.Config:StorePreset(addon.Config, CrossHotbar_DB.Presets[1])
    addon.Config:StorePreset(addon.Config, CrossHotbar_DB.Presets[preset])
    for i,callback in ipairs(addon.InitializeCallbacks) do
       callback()

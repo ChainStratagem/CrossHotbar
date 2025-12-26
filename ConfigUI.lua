@@ -158,7 +158,8 @@ local Locale = {
    ppadlTabToolTip = "Actions and hotbar assignments when under the LEFTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    ppadrTabToolTip = "Actions and hotbar assignments when under the RIGHTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    hotkeyTypeToolTip = "Button icons used in the gui and hotkeys can be set to shapes or letters.",
-   expandedTypeToolTip = "When either LEFTHOTBAR or RIGHTHOTBAR  are double clicked HOTBARBTN[9-12] are mapped to HOTBARBTN[1-4]. This setting controls the visual cue of their activation.",
+   expandedTypeToolTip = "Sets the visual appearance of the extra action buttons.",
+   dclkTypeToolTip = "Sets the hotbar double click behavior. Double click is registered upon two quick releases presses",
    dadaTypeToolTip = "The Cross hotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
    pageIndexToolTip = "The default page displayed by the hotbar.",
    pagePrefixToolTip = "The prefix macro conditional to control paging under certain conditionals. Default page should not be included in this string.",
@@ -171,8 +172,9 @@ local Locale = {
    rightclickToolTip = "Right click binding for mouse mode.",
    CATEGORY_HOTBAR_TYPE = "Hotbar types",
    CATEGORY_HOTBAR_KEY = "Hotkey types",
-   CATEGORY_HOTBAR_WXHB = "Expand types",
-   CATEGORY_HOTBAR_DDAA = "Hotbar Layouts",
+   CATEGORY_HOTBAR_WXHB = "Expanded types",
+   CATEGORY_HOTBAR_DCLK = "Expanded double click",
+   CATEGORY_HOTBAR_DDAA = "Hotbar layouts",
    CATEGORY_HOTBAR_ACTIONS = "Hotbar actions",
    CATEGORY_HOTBAR_ACTIONS_TOOLTIP = "Selects the Action bar binding to use when the Hotbar modifier is activated. Requires LEFTHOTBAR/RIGHTHOTBAR modifier to be held.",
    CATEGORY_MODIFIERS = "Modifiers",
@@ -193,9 +195,13 @@ local Locale = {
    CATEGORY_UNIT_NAVIGATION_TOOLTIP = "Actions to navigate unit frames self, party and raid.",
    CATEGORY_CONTROLLER = "Controller buttons",
    CATEGORY_KEYBOARD = "Keyboard buttons",
-   HOLDEXPANDED_TOOLTIP = "Action to expand the active hotbar when held. This action can be used as a double click binding in an external tool (ex. Steam) to better control the double click timing.",
-   LEFTEXPANDED_TOOLTIP = "Action to activate and expand the left hotbar.",
-   RIGHTEXPANDED_TOOLTIP = "Action to activate and expand the right hotbar.",
+   CATEGORY_HOTBAR_EXPANDED_HOLDEXPANDED_TOOLTIP = "Action to expand the active hotbar when held. This action can be used as a double click binding in an external tool (ex. Steam) to better control the double click timing.",
+   CATEGORY_HOTBAR_EXPANDED_LEFTEXPANDED_TOOLTIP = "Action to activate and expand the left hotbar.",
+   CATEGORY_HOTBAR_EXPANDED_RIGHTEXPANDED_TOOLTIP = "Action to activate and expand the right hotbar.",
+   ddaatypestr = {
+      ["DADA"] = "DPad + Action / DPad + Action",
+      ["DDAA"] = "DPad + DPad / Action + Action"
+   },
    hkeytypestr = {
       ["_SHP"] = "Use shapes for button icons.",
       ["_LTR"] = "Use letters for button icons.",
@@ -205,9 +211,10 @@ local Locale = {
       ["FADE"] = "Fade extra actions when not active",
       ["SHOW"] = "Show extra actions when not active"
    },
-   ddaatypestr = {
-      ["DADA"] = "DPad + Action / DPad + Action",
-      ["DDAA"] = "DPad + DPad / Action + Action"
+   dclktypestr = {
+      ["ENABLE"] = "Enable extra actions.",
+      ["VISUAL"] = "Enable extra actions with visual.",
+      ["DISABLE"] = "Disable double click."
    }
 }
 
@@ -216,6 +223,18 @@ function Locale:GetText(text)
       return Locale[text];
    end
    return ""
+end
+
+function Locale:GetToolTip(category, action)
+   local tiptext = nil
+   if category ~= nil then
+      if action ~= nil then
+         tiptext = Locale:GetText(category .. "_" .. action .. "_TOOLTIP")
+      end
+      if tiptext == nil then
+         tiptext = Locale:GetText(category .. "_TOOLTIP")
+      end
+   end
 end
 
 local ConfigUI = {
@@ -1075,8 +1094,7 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                end
                for _,action in ipairs(data.values) do
                   local radio = rootDescription:CreateRadio(action, IsActionSelected, SetActionSelected, {button, action})
-                  local tiptext = Locale:GetText(action .. "_TOOLTIP")
-                  if tiptext == nil then tiptext = Locale:GetText(data.cat .. "_TOOLTIP") end
+                  local tiptext = Locale:GetToolTip(data.cat, action)
                   if tiptext ~= nil then
                      radio:SetTooltip(function(tooltip, elementDescription)
                         GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
@@ -1110,8 +1128,7 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                end
                for _,action in ipairs(data.values) do
                   local radio = rootDescription:CreateRadio(action, IsHotbarActionSelected, SetHotbarActionSelected, {button, action})
-                  local tiptext = Locale:GetText(action .. "_TOOLTIP")
-                  if tiptext == nil then tiptext = Locale:GetText(data.cat .. "_TOOLTIP") end
+                  local tiptext = Locale:GetToolTip(data.cat, action)
                   if tiptext ~= nil then
                      radio:SetTooltip(function(tooltip, elementDescription)
                         GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
@@ -1238,7 +1255,7 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    ConfigUI:AddToolTip(hkeysubtitle, Locale.hotkeyTypeToolTip, true)
    
    --[[
-      Expanded button settings
+      Expanded type settings
    --]]
    
    local wxhbsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -1278,6 +1295,52 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    
    ConfigUI:AddToolTip(wxhbsubtitle, Locale.expandedTypeToolTip, true)
 
+
+   --[[
+      Expanded double click
+   --]]
+   
+   local dclksubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   dclksubtitle:SetHeight(self.TextHeight)
+   dclksubtitle:SetWidth(DropDownWidth)
+   dclksubtitle:SetPoint("TOPLEFT", wxhbsubtitle, "TOPRIGHT", 0, 0)
+   dclksubtitle:SetNonSpaceWrap(true)
+   dclksubtitle:SetJustifyH("CENTER")
+   dclksubtitle:SetJustifyV("TOP")
+   dclksubtitle:SetText("Expanded Double Click")
+
+   local function IsDCLKTypeSelected(type)
+      return config.Hotbar.DCLKType == type
+   end
+   
+   local function SetDCLKTypeSelected(type)
+      config.Hotbar.DCLKType = type
+      ConfigUI:Refresh(true)
+   end
+
+   local function DCLKTypeGeneratorFunction(owner, rootDescription)
+      for i,data in ipairs(addon.HotbarDCLKTypes) do
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
+         for i,dclktype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.dclktypestr[dclktype], IsDCLKTypeSelected, SetDCLKTypeSelected, dclktype);
+         end
+      end
+   end;
+
+   local DCLKDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
+   DCLKDropDown:SetDefaultText("Expanded Types");
+   DCLKDropDown:SetPoint("TOP", dclksubtitle, "BOTTOM", 0, 0)
+   DCLKDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
+   DCLKDropDown:SetupMenu(DCLKTypeGeneratorFunction);
+   
+   ConfigUI:AddToolTip(dclksubtitle, Locale.dclkTypeToolTip, true)
+
+
+
+
+   
    --[[
        Actionbar paging
    --]]    

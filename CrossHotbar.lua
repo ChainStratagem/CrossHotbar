@@ -198,9 +198,12 @@ function CrossHotbarMixin:AddExpandHandler()
    self:SetAttribute('_onstate-expanded', [[
       local expanded = self:GetAttribute("expanded")
       self:SetAttribute("expanded", newstate)
+  ]])
+   self:SetAttribute('update-expanded', [[
+      local expanded = self:GetAttribute("expanded")
       for i=1,8 do
          local hotbar = self:GetFrameRef('Hotbar'..i)
-         hotbar:SetAttribute("state-hotbar-expanded", newstate)
+         hotbar:SetAttribute("state-hotbar-expanded", expanded)
       end
   ]])
 end
