@@ -235,6 +235,7 @@ function Locale:GetToolTip(category, action)
          tiptext = Locale:GetText(category .. "_TOOLTIP")
       end
    end
+   return tiptext
 end
 
 local ConfigUI = {
