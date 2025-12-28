@@ -1,6 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
-  <Frame name="CrossHotbarAddon_GroupNavigator_SoftTarget" parent="UIParent" frameStrata="LOW" hidden="true" enableMouse="false" protected="true" >
-    <Size x="554" y="120"/>
+  <Frame name="CrossHotbarAddon_GroupNavigator_SoftTarget" parent="UIParent" frameStrata="MEDIUM" frameLevel="100" hidden="true" enableMouse="false" protected="false" >
     <Anchors><Anchor point="TOPLEFT" relativePoint="TOPLEFT" x="0" y="0" /></Anchors>
     <Layers>
       <Layer level="OVERLAY">

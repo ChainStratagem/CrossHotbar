@@ -941,7 +941,7 @@ function GamePadButtonsMixin:OnEvent(event, ...)
    -- print(event)
    if event == 'PLAYER_ENTERING_WORLD' then
       --[[
-      isInitialLogin, isReloadingUi = ...
+      local isInitialLogin, isReloadingUi = ...
       if isInitialLogin or isReloadingUi then
       end
       --]]

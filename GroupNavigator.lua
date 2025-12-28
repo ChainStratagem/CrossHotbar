@@ -19,6 +19,7 @@ local GroupNavigatorMixin = {
 }
 
 function GroupNavigatorMixin:OnLoad()
+   self:RegisterForClicks("AnyUp", "AnyDown")
    self:RegisterEvent("ADDON_LOADED")
    self:RegisterEvent("GROUP_JOINED")
    self:RegisterEvent("GROUP_LEFT")
@@ -27,6 +28,7 @@ function GroupNavigatorMixin:OnLoad()
    self:RegisterEvent("UNIT_NAME_UPDATE")
    self:RegisterEvent("PLAYER_ROLES_ASSIGNED")
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+   self:RegisterEvent("PLAYER_TARGET_CHANGED")
    self:WrapOnClick()
    
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
@@ -35,17 +37,12 @@ end
 function GroupNavigatorMixin:OnEvent(event, ...)
    if event == "ADDON_LOADED" then
       self:updateRoster()
-      local value = GetCVarBool("ActionButtonUseKeyDown");
-      self:RegisterForClicks("AnyUp", "AnyDown")
-      self:UnregisterEvent("ADDON_LOADED")
+      --self:UnregisterEvent("ADDON_LOADED")
    elseif event == "GROUP_JOINED" then
       self:updateRoster()
    elseif event == "GROUP_LEFT" then
       self:updateRoster()
-      self.SoftTargetFrame:SetAlpha(0)      
-      if not InCombatLockdown() then
-         self.SoftTargetFrame:Hide()
-      end
+      self.SoftTargetFrame:Hide()
    elseif event == "GROUP_ROSTER_UPDATE" then
       self:updateRoster()
    elseif event == "ZONE_CHANGED_NEW_AREA" then
@@ -59,19 +56,28 @@ function GroupNavigatorMixin:OnEvent(event, ...)
       if ChatFrame1EditBox then
          ChatFrame1EditBox:SetAltArrowKeyMode(false)
       end
-      local texCoords = { ["Raid-TargetFrame"] = { 0.00781250, 0.55468750, 0.28906250, 0.55468750 }}
-      
       self.SoftTargetFrame.selectionHighlight:SetTexture("Interface\\RaidFrame\\Raid-FrameHighlights");
-      self.SoftTargetFrame.selectionHighlight:SetTexCoord(unpack(texCoords["Raid-TargetFrame"]));
-      self.SoftTargetFrame.selectionHighlight:SetVertexColor(0.2, 1.0, 0.6);
+      self.SoftTargetFrame.selectionHighlight:SetTexCoord(0.00781250, 0.55468750, 0.28906250, 0.55468750 );
+      self.SoftTargetFrame.selectionHighlight:SetVertexColor(1.0, 1.0, 1.0);
       self.SoftTargetFrame.selectionHighlight:SetAllPoints(self.SoftTargetFrame);
-      
-      self.SoftTargetFrame:SetAlpha(0)
       self.SoftTargetFrame:Hide()
       
       SecureHandlerSetFrameRef(self, "softtarget", self.SoftTargetFrame)
+      self:updateRoster()
+      
+      self.SoftTargetFrame:Hide()
+   elseif event == "PLAYER_TARGET_CHANGED" then
       if UnitInRaid("player") or UnitInParty("player") then
-         self:updateRoster()
+         local color = {0.2, 1.0, 0.6}
+         if UnitInRaid("target") or UnitInParty("target") then
+            if GetUnitName("target") == GetUnitName(self:GetAttribute("unit")) then
+               color = {1.0, 1.0, 1.0}
+            end
+         end
+         self.SoftTargetFrame.selectionHighlight:SetVertexColor(unpack(color))
+         self.SoftTargetFrame:Show()
+      else
+         self.SoftTargetFrame:Hide()
       end
    end
 end
@@ -140,7 +146,8 @@ end
 
 function GroupNavigatorMixin:AddUnitFrameRefs()
 
-   if not InCombatLockdown() then 
+   if not InCombatLockdown() then
+      self.units =  {}
       local inparty = true
       local groupType = CompactRaidGroupTypeEnum.Party;
       if UnitInRaid("player") then 
@@ -163,6 +170,7 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                   hasUnits = true
                   if max_i < i then max_i = i end
                   if max_j < j then max_j = j end
+                  self.units[i .. "_" .. j] = frame
                   SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
                   j = j + 1
                   if j > (maxPerLine) then
@@ -184,52 +192,25 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
          if inparty == false then
             for i = 1,8 do
                for j = 1,5 do
-                  local frame = _G["CompactRaidGroup"..i.."Member"..j]
-                  if frame and frame:IsVisible() then 
-                     local frame_unit = frame:GetAttribute("unit")
-                     if frame_unit then
-                        hasUnits = true
+                  
+                  local framePrefixes = {
+                     {"CompactRaidGroup", "Member"},
+                     {"CellRaidFrameHeader", "UnitButton"},
+                     {"Grid2LayoutHeader", "UnitButton"},
+                     {"ElvUF_Raid1Group", "UnitButton"},
+                     {"ElvUF_Raid2Group", "UnitButton"},
+                     {"ElvUF_Raid3Group", "UnitButton"}
+                  }
+                  
+                  for _,prefix in ipairs(framePrefixes) do
+                     local frame = _G[prefix[1] .. i .. prefix[2] ..j]
+                     if frame and frame:IsVisible() then 
+                        local frame_unit = frame:GetAttribute("unit")
+                        if frame_unit then
+                           hasUnits = true
+                        self.units[i .. "_" .. j] = frame
                         SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
-                     end
-                  end               
-                  local frame = _G["CellRaidFrameHeader"..i.."UnitButton"..j]
-                  if frame and frame:IsVisible() then
-                     local frame_unit = frame:GetAttribute("unit")
-                     if frame_unit then
-                        hasUnits = true
-                        SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
-                     end
-                  end
-                  local frame = _G["Grid2LayoutHeader"..i.."UnitButton"..j]
-                  if frame and frame:IsVisible() then
-                     local frame_unit = frame:GetAttribute("unit")
-                     if frame_unit then
-                        hasUnits = true
-                        SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
-                     end
-                  end
-                  local frame = _G["ElvUF_Raid1Group"..i.."UnitButton"..j]
-                  if frame and frame:IsVisible() then
-                     local frame_unit = frame:GetAttribute("unit")
-                     if frame_unit then
-                        hasUnits = true
-                        SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
-                     end
-                  end
-                  local frame = _G["ElvUF_Raid2Group"..i.."UnitButton"..j]
-                  if frame and frame:IsVisible() then
-                     local frame_unit = frame:GetAttribute("unit")
-                     if frame_unit then
-                        hasUnits = true
-                        SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
-                     end
-                  end
-                  local frame = _G["ElvUF_Raid3Group"..i.."UnitButton"..j]
-                  if frame and frame:IsVisible() then
-                     local frame_unit = frame:GetAttribute("unit")
-                     if frame_unit then
-                        hasUnits = true
-                        SecureHandlerSetFrameRef(self, i .. "_" .. j, frame)
+                        end
                      end
                   end
                end
@@ -246,55 +227,51 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                      local frame_unit = memberFrame:GetAttribute("unit")
                      if frame_unit then
                         hasUnits = true
+                        self.units["1_" .. j] = memberFrame
                         SecureHandlerSetFrameRef(self, "1_" .. j, memberFrame)
                      end
                   end
                end
-               local frame = _G["CompactPartyFrameMember"..j]
-               if frame and frame:IsVisible() then
-                  local frame_unit = frame:GetAttribute("unit")
-                  if frame_unit then
-                     hasUnits = true
-                     SecureHandlerSetFrameRef(self, "1_" .. j, frame)
+               
+               local framePrefixes = {
+                  "CompactPartyFrameMember",
+                  "CellPartyFrameHeaderUnitButton",
+                  "Grid2LayoutHeader1UnitButton",
+                  "ElvUF_PartyGroup1UnitButton"
+               }
+            
+               for _,prefix in ipairs(framePrefixes) do
+                  local frame = _G[prefix .. j]
+                  if frame and frame:IsVisible() then
+                     local frame_unit = frame:GetAttribute("unit")
+                     if frame_unit then
+                        hasUnits = true
+                        self.units["1_" .. j] = frame
+                        SecureHandlerSetFrameRef(self, "1_" .. j, frame)
+                     end
                   end
                end
-               local frame = _G["CellPartyFrameHeaderUnitButton"..j]
-               if frame and frame:IsVisible() then
-                  local frame_unit = frame:GetAttribute("unit")
-                  if frame_unit then
-                     hasUnits = true
-                     SecureHandlerSetFrameRef(self, "1_" .. j, frame)
-                  end
-               end
-               local frame = _G["Grid2LayoutHeader1UnitButton"..j]
-               if frame and frame:IsVisible() then
-                  local frame_unit = frame:GetAttribute("unit")
-                  if frame_unit then
-                     hasUnits = true
-                     SecureHandlerSetFrameRef(self, "1_" .. j, frame)
-                  end
-               end
-               local frame = _G["ElvUF_PartyGroup1UnitButton"..j]
-               if frame and frame:IsVisible() then
-                  local frame_unit = frame:GetAttribute("unit")
-                  if frame_unit then
-                     hasUnits = true
-                     SecureHandlerSetFrameRef(self, "1_" .. j, frame)
-                  end
-               end              
-            end            
+            end
             self:SetAttribute("max_group", 1)
             self:SetAttribute("max_unit", 5)
             self:WrapOnClick()
          end
       end
-      
-      if hasUnits then
-         self.SoftTargetFrame:Show()
-         SecureHandlerSetFrameRef(self, "softtarget", self.SoftTargetFrame)
-      else
-         self.SoftTargetFrame:Hide()
-      end
+   end
+end
+
+function GroupNavigatorMixin:UpdateSoftTarget(frameName)
+   local frame = self.units[frameName]
+   if frame then
+      local width = frame:GetWidth();
+      local height = frame:GetHeight();
+      self.SoftTargetFrame:ClearAllPoints()
+      self.SoftTargetFrame:SetPoint("CENTER", frame, "CENTER")
+      self.SoftTargetFrame:SetWidth(width+5)
+      self.SoftTargetFrame:SetHeight(height+5)
+   else
+      self.SoftTargetFrame:Hide()
+      self.SoftTargetFrame.selectionHighlight:SetVertexColor(0.2, 1.0, 0.6);
    end
 end
 
@@ -329,8 +306,6 @@ function GroupNavigatorMixin:WrapOnClick()
    end
 
    if recalc then
-      -- print("Re-Calc Units")
-
       group_units = table.new()
       hidden_units = table.new()
 
@@ -350,7 +325,6 @@ function GroupNavigatorMixin:WrapOnClick()
                      player_group = x
                   end
                else
-                  -- print("hidden")
                   table.insert(hidden_units, frame)
                end
             end
@@ -381,14 +355,12 @@ function GroupNavigatorMixin:WrapOnClick()
          if PlayerInGroup() == "party" or PlayerInGroup() == "raid" then
             
             local unitfound = false
-            local softtarget = self:GetFrameRef("softtarget")
             local frame = group_units[lastgroup][lastunit]
 
-            if softtarget then
-               if frame and frame:IsVisible() then
-                  if softtarget:GetParent() == frame then
-                     unitfound = true
-                  end
+            if frame and frame:IsVisible() then
+               local target_frame = self:GetAttribute("target_frame")
+               if target_frame == frame then
+                  unitfound = true
                end
             end
             
@@ -417,8 +389,6 @@ function GroupNavigatorMixin:WrapOnClick()
                   elseif lastunit == 0 then
                      lastunit = num_units
                   end
-
-                  -- print(lastgroup, lastunit)
                end
             else 
                lastgroup = player_group
@@ -433,18 +403,10 @@ function GroupNavigatorMixin:WrapOnClick()
             if frame and frame:IsVisible() then
                newunit = frame:GetAttribute("unit")
                self:SetAttribute("unit", newunit)
-               if softtarget then
-                  softtarget:SetParent(frame)
-                  softtarget:ClearAllPoints()
-                  softtarget:SetPoint("CENTER", frame, "CENTER")
-                  local frameWidth = frame:GetWidth();
-                  local frameHeight = frame:GetHeight();
-                  softtarget:SetWidth(frameWidth+6)
-                  softtarget:SetHeight(frameHeight+6)
-                  softtarget:SetAlpha(0.75)
-               end
-            elseif softtarget then
-               softtarget:SetAlpha(0)
+               self:SetAttribute("target_frame", frame)
+               self:CallMethod("UpdateSoftTarget", lastgroup .. "_" .. lastunit)
+            else
+               self:CallMethod("UpdateSoftTarget", nil)
                self:SetAttribute("group_change", true)
             end
             
