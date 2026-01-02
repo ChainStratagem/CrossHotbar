@@ -161,8 +161,9 @@ local Locale = {
    expandedTypeToolTip = "Sets the visual appearance of the extra action buttons.",
    dclkTypeToolTip = "Sets the hotbar double click behavior. Double click is registered upon two quick releases presses",
    dadaTypeToolTip = "The Cross hotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
-   pageIndexToolTip = "The default page displayed by the hotbar.",
-   pagePrefixToolTip = "The prefix macro conditional to control paging under certain conditionals. Default page should not be included in this string.",
+   pageIndexToolTip = "The default page displayed by the hotbar for SET 1.",
+   pageIndexBackbarToolTip = "The default page displayed by the back hotbars. Unaffected by the active SET.",
+   pagePrefixToolTip = "The prefix macro conditional to control the hotbar paging under the specified conditionals. The default ActionPage should not be included in this string.",
    enabeGamePadToolTip = "Toggle global GamePad mode.",
    enabeCVarToolTip = "Toggle CVar settings and hooks used by Crosshotbar. Disabling requires reloading.",
    gamepadLookToolTip = "Toggle CrossHotbar camera look handling and mouse mode for GamePad controls.",
@@ -170,6 +171,10 @@ local Locale = {
    deviceToolTip = "The DeviceId of the gamepad.",
    leftclickToolTip = "Left click binding for mouse mode.",
    rightclickToolTip = "Right click binding for mouse mode.",
+   actionbarhideToolTip = "Settings to hide Blizzard's ActionBars.",
+   vehiclebarhideToolTip = "Settings to hide Blizzard's VehicleBar.",
+   partyorienToolTip = "Settings to control traversal direction when navigating party unit frames.",
+   raidorienToolTip = "Settings to control traversal direction when navigating raid unit frames.",
    CATEGORY_HOTBAR_TYPE = "Hotbar types",
    CATEGORY_HOTBAR_KEY = "Hotkey types",
    CATEGORY_HOTBAR_WXHB = "Expanded types",
@@ -190,21 +195,33 @@ local Locale = {
    CATEGORY_CAMERA = "Camera/Cursor",
    CATEGORY_CAMERA_TOOLTIP = "Actions to control camera look (show/hide cursor), zoom, and mouse mode.",
    CATEGORY_PAGING = "Paging",
-   CATEGORY_PAGING_TOOLTIP = "Actions to change the paging of the crosshor bar.",
+   CATEGORY_PAGING_TOOLTIP = "Actions to change the page set of the left and right hotbars. Sets are determined based off the default page index of the left and right hotbars.",
+   CATEGORY_PAGING_NEXTPAGE_TOOLTIP = "Action to advance the left and right hotBars to the next SET.",
+   CATEGORY_PAGING_PREVPAGE_TOOLTIP = "Action to advance the left and right hotBars to the previous SET.",
+   CATEGORY_PAGING_PAGEONE_TOOLTIP = "Action to change the left and right hotBars to SET 1 - Default hotbar ActionPages with conditional paging.",
+   CATEGORY_PAGING_PAGETWO_TOOLTIP = "Action to change the left and right hotBars to SET 2 - ActionPages [1,2].",
+   CATEGORY_PAGING_PAGETHREE_TOOLTIP = "Action to change the left and right hotBars to SET 3 - ActionPages [3,4].",
+   CATEGORY_PAGING_PAGEFOUR_TOOLTIP = "Action to change the left and right hotBars to SET 4 - ActionPages [5,6].",
+   CATEGORY_PAGING_PAGEFIVE_TOOLTIP = "Action to change the left and right hotBars to SET 4 - ActionPages [7,8].",
+   CATEGORY_PAGING_PAGESIX_TOOLTIP = "Action to change the left and right hotBars to SET 4 - ActionPages [9,10].",
    CATEGORY_UNIT_NAVIGATION = "Unit Navigation",
    CATEGORY_UNIT_NAVIGATION_TOOLTIP = "Actions to navigate unit frames self, party and raid.",
+   CATEGORY_UNIT_PARTYORIENTATION = "Party unit traversal direction.",
+   CATEGORY_UNIT_RAIDORIENTATION = "Raid unit traversal direction.",
    CATEGORY_CONTROLLER = "Controller buttons",
    CATEGORY_KEYBOARD = "Keyboard buttons",
    CATEGORY_HOTBAR_EXPANDED_HOLDEXPANDED_TOOLTIP = "Action to expand the active hotbar when held. This action can be used as a double click binding in an external tool (ex. Steam) to better control the double click timing.",
    CATEGORY_HOTBAR_EXPANDED_LEFTEXPANDED_TOOLTIP = "Action to activate and expand the left hotbar.",
    CATEGORY_HOTBAR_EXPANDED_RIGHTEXPANDED_TOOLTIP = "Action to activate and expand the right hotbar.",
+   CATEGORY_ACTIONBAR_HIDES = "Hide ActionBars",
+   CATEGORY_VEHICLEBAR_HIDES = "Hide VehcleBars",
    ddaatypestr = {
       ["DADA"] = "DPad + Action / DPad + Action",
       ["DDAA"] = "DPad + DPad / Action + Action"
    },
    hkeytypestr = {
-      ["_SHP"] = "Use shapes for button icons.",
-      ["_LTR"] = "Use letters for button icons.",
+      ["_SHP"] = "Use shapes for button icons",
+      ["_LTR"] = "Use letters for button icons",
    },
    wxhbtypestr = {
       ["HIDE"] = "Hide extra actions when not active",
@@ -212,15 +229,32 @@ local Locale = {
       ["SHOW"] = "Show extra actions when not active"
    },
    dclktypestr = {
-      ["ENABLE"] = "Enable extra actions.",
-      ["VISUAL"] = "Enable extra actions with visual.",
-      ["DISABLE"] = "Disable double click."
+      ["ENABLE"] = "Enable extra actions",
+      ["VISUAL"] = "Enable extra actions with visual",
+      ["DISABLE"] = "Disable double click"
+   },
+   actionbarhidetypestr = {
+      ["HIDEALL"] = "Hide all ActionBars",
+      ["HIDEMAIN"] = "Hide MainActionBar",
+      ["NOHIDE"] = "Show ActionBars"
+   },
+   vehiclebarhidetypestr = {
+      ["HIDEALL"] = "Hide VehicleBars",
+      ["NOHIDE"] = "Show VehicleBars"
+   },
+   partyorientypestr = {
+      ["VERTICAL"] = "Vertical",
+      ["HORIZONTAL"] = "Horizontal"
+   },
+   raidorientypestr = {
+      ["VERTICAL"] = "Vertical",
+      ["HORIZONTAL"] = "Horizontal"
    }
 }
 
 function Locale:GetText(text)
    if text ~= nil and text ~= "" then
-      return Locale[text];
+      return Locale[text]
    end
    return ""
 end
@@ -252,7 +286,7 @@ local ConfigUI = {
    DropDownSpacing = 20,
    EditBoxHeight = 30,
    EditBoxSpacing = 30,
-   InterfaceFrame = nil,
+   ConfigFrame = nil,
    RefreshCallbacks = {}
 }
 
@@ -338,35 +372,35 @@ function ConfigUI:ClearLayout()
 end
 
 function ConfigUI:CreateFrame()
-   self.InterfaceFrame = CreateFrame("Frame", ADDON .. "ConfigFrame", InterfaceOptionsFramePanelContainer)
-   self.InterfaceFrame.name = ADDON
-   self.InterfaceFrame:Hide()
+   self.ConfigFrame = CreateFrame("Frame", ADDON .. "ConfigFrame", InterfaceOptionsFramePanelContainer)
+   self.ConfigFrame.name = ADDON
+   self.ConfigFrame:Hide()
 
    addon:AddInitCallback(GenerateClosure(self.OnConfigInit, self))
 
-   self.InterfaceFrame:SetScript("OnShow", function(InterfaceFrame)
-      local title = InterfaceFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightHuge")
+   self.ConfigFrame:SetScript("OnShow", function(ConfigFrame)
+      local title = ConfigFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightHuge")
       title:SetPoint("TOPLEFT", self.Inset, -self.Inset)
       title:SetText("CrossHotbar")
 
-      local authortitle = InterfaceFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+      local authortitle = ConfigFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
       authortitle:SetPoint("TOPLEFT", title, "TOPLEFT", 0, -2 * self.ConfigSpacing)
       authortitle:SetText("Author")
       
-      local author = InterfaceFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+      local author = ConfigFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
       author:SetPoint("TOPLEFT", authortitle, "TOPLEFT", self.Inset, -self.TextHeight)
-      author:SetWidth(InterfaceFrame:GetWidth() - 4 * self.Inset)
+      author:SetWidth(ConfigFrame:GetWidth() - 4 * self.Inset)
       author:SetJustifyH("LEFT")
       author:SetText("ChainStratagem (phodoe)")
       author:SetTextColor(1,1,1,1)
       
-      local descripttitle = InterfaceFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+      local descripttitle = ConfigFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
       descripttitle:SetPoint("TOPLEFT", author, "TOPLEFT", -self.Inset, -self.ConfigSpacing)
       descripttitle:SetText("Description")
       
-      local descript = InterfaceFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+      local descript = ConfigFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
       descript:SetPoint("TOPLEFT", descripttitle, "TOPLEFT", self.Inset, -self.TextHeight)
-      descript:SetWidth(InterfaceFrame:GetWidth() - 4 * self.Inset)
+      descript:SetWidth(ConfigFrame:GetWidth() - 4 * self.Inset)
       descript:SetJustifyH("LEFT")
       descript:SetText([[
 Addon to reconfigure default Actionbars into the WXHB Crosshotbar found in FFXIV.
@@ -391,17 +425,19 @@ Settings:
 ]])
       descript:SetTextColor(1,1,1,1)
       
-      InterfaceFrame:SetScript("OnShow", function(frame) ConfigUI:Refresh() end) 
+      ConfigFrame:SetScript("OnShow", function(frame) ConfigUI:Refresh() end) 
       ConfigUI:Refresh()
    end)
 
-   local category, layout = Settings.RegisterCanvasLayoutCategory(self.InterfaceFrame,
-                                                                  self.InterfaceFrame.name)
+   local category, layout = Settings.RegisterCanvasLayoutCategory(self.ConfigFrame,
+                                                                  self.ConfigFrame.name)
    Settings.RegisterAddOnCategory(category)
+
+   -- Preset Frame
    
-   self.PresetFrame = CreateFrame("Frame", ADDON .. "PresetsSettings", self.InterfaceFrame)
+   self.PresetFrame = CreateFrame("Frame", ADDON .. "PresetsSettings", self.ConfigFrame)
    self.PresetFrame.name = "Presets"
-   self.PresetFrame.parent = self.InterfaceFrame.name
+   self.PresetFrame.parent = self.ConfigFrame.name
    self.PresetFrame:Hide()
    
    self.PresetFrame:SetScript("OnShow", function(PresetFrame)
@@ -418,10 +454,12 @@ Settings:
    Settings.RegisterCanvasLayoutSubcategory(category,
                                             self.PresetFrame,
                                             self.PresetFrame.name)
+
+   -- Action Frame 
    
-   self.ActionFrame = CreateFrame("Frame", ADDON .. "ActionsSettings", self.InterfaceFrame)
+   self.ActionFrame = CreateFrame("Frame", ADDON .. "ActionsSettings", self.ConfigFrame)
    self.ActionFrame.name = "Actions"
-   self.ActionFrame.parent = self.InterfaceFrame.name
+   self.ActionFrame.parent = self.ConfigFrame.name
    self.ActionFrame:Hide()
 
    self.ActionFrame:SetScript("OnShow", function(ActionFrame)
@@ -475,10 +513,12 @@ Settings:
    Settings.RegisterCanvasLayoutSubcategory(category,
                                             self.ActionFrame,
                                             self.ActionFrame.name)
+
+   -- Hotbar Frame
    
-   self.HotbarFrame = CreateFrame("Frame", ADDON .. "HotbarsSettings", self.InterfaceFrame)
+   self.HotbarFrame = CreateFrame("Frame", ADDON .. "HotbarsSettings", self.ConfigFrame)
    self.HotbarFrame.name = "Hotbars"
-   self.HotbarFrame.parent = self.InterfaceFrame.name
+   self.HotbarFrame.parent = self.ConfigFrame.name
    self.HotbarFrame:Hide()
 
    self.HotbarFrame:SetScript("OnShow", function(HotbarFrame)
@@ -506,10 +546,35 @@ Settings:
    Settings.RegisterCanvasLayoutSubcategory(category,
                                             self.HotbarFrame,
                                             self.HotbarFrame.name)
+
+   -- Interface Frame
    
-   self.GamePadFrame = CreateFrame("Frame", ADDON .. "GamePadSettings", self.InterfaceFrame)
+   self.InterfaceFrame = CreateFrame("Frame", ADDON .. "InterfaceSettings", self.ConfigFrame)
+   self.InterfaceFrame.name = "Interface"
+   self.InterfaceFrame.parent = self.ConfigFrame.name
+   self.InterfaceFrame:Hide()
+
+   self.InterfaceFrame:SetScript("OnShow", function(InterfaceFrame)
+      local title = InterfaceFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightHuge")
+      title:SetPoint("TOPLEFT", self.Inset, -self.Inset)
+      title:SetText("Interface Settings")
+
+      local anchor = title
+      anchor = ConfigUI:CreateInterfaceSettings(InterfaceFrame, anchor)
+      
+      InterfaceFrame:SetScript("OnShow", function(frame) ConfigUI:Refresh() end) 
+      ConfigUI:Refresh()
+      
+   end)      
+
+   Settings.RegisterCanvasLayoutSubcategory(category,
+                                            self.InterfaceFrame,
+                                            self.InterfaceFrame.name)
+   -- GamePad Frame
+   
+   self.GamePadFrame = CreateFrame("Frame", ADDON .. "GamePadSettings", self.ConfigFrame)
    self.GamePadFrame.name = "GamePad"
-   self.GamePadFrame.parent = self.InterfaceFrame.name
+   self.GamePadFrame.parent = self.ConfigFrame.name
    self.GamePadFrame:Hide()
 
    self.GamePadFrame:SetScript("OnShow", function(GamePadFrame)
@@ -528,7 +593,9 @@ Settings:
                                             self.GamePadFrame,
                                             self.GamePadFrame.name)
 
-   SLASH_CROSSHOTBAR1, SLASH_CROSSHOTBAR2 = '/chb', '/wxhb';
+   -- Slash commands
+   
+   SLASH_CROSSHOTBAR1, SLASH_CROSSHOTBAR2 = '/chb', '/wxhb'
    local function slashcmd(msg, editBox)
       if msg == "clear layout" then
          self:ClearLayout()
@@ -536,7 +603,7 @@ Settings:
          Settings.OpenToCategory(category:GetID())
       end
    end
-   SlashCmdList["CROSSHOTBAR"] = slashcmd;
+   SlashCmdList["CROSSHOTBAR"] = slashcmd
 
 end
 
@@ -732,25 +799,25 @@ function ConfigUI:CreatePresets(configFrame, anchorFrame)
    presetsubtitle:SetText("Presets")
 
    local function IsSelected(index)
-      return ConfigUI.preset == index;
+      return ConfigUI.preset == index
    end
    
    local function SetSelected(index)
-      ConfigUI.preset = index;
+      ConfigUI.preset = index
    end
 
    local function GeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Saved Presets");
+      rootDescription:CreateTitle("Saved Presets")
       for i,p in ipairs(CrossHotbar_DB.Presets) do
-         rootDescription:CreateRadio(p.Name, IsSelected, SetSelected, i);
+         rootDescription:CreateRadio(p.Name, IsSelected, SetSelected, i)
       end
-   end;
+   end
 
-   local PresetsDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   PresetsDropDown:SetDefaultText("Presets");
+   local PresetsDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   PresetsDropDown:SetDefaultText("Presets")
    PresetsDropDown:SetPoint("TOP", presetsubtitle, "BOTTOM", 0, 0)
    PresetsDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   PresetsDropDown:SetupMenu(GeneratorFunction);
+   PresetsDropDown:SetupMenu(GeneratorFunction)
    
    local presetloadbutton = CreateFrame("Button", nil, configFrame, "UIPanelButtonTemplate")
    presetloadbutton:SetPoint("TOPLEFT", PresetsDropDown, "TOPRIGHT", 24, 0)
@@ -760,7 +827,7 @@ function ConfigUI:CreatePresets(configFrame, anchorFrame)
    
    presetloadbutton:SetScript("OnClick", function(self, button, down)
       CrossHotbar_DB.ActivePreset = ConfigUI.preset
-      config:StorePreset(config, CrossHotbar_DB.Presets[ConfigUI.preset])
+      addon:StorePreset(config, CrossHotbar_DB.Presets[ConfigUI.preset])
       ConfigUI:Refresh(true)
    end)
    
@@ -781,7 +848,7 @@ function ConfigUI:CreatePresets(configFrame, anchorFrame)
          CrossHotbar_DB.ActivePreset = ConfigUI.preset
       end
       config.Name = "Custom"
-      config:StorePreset(config, CrossHotbar_DB.Presets[ConfigUI.preset])
+      addon:StorePreset(config, CrossHotbar_DB.Presets[ConfigUI.preset])
    end)
 
    local filesubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -821,14 +888,14 @@ function ConfigUI:CreatePresets(configFrame, anchorFrame)
             local newpreset = {
                Mutable = true
             }
-            config:StorePreset(newpreset, config)
+            addon:StorePreset(newpreset, config)
             table.insert(CrossHotbar_DB.Presets, newpreset)
             ConfigUI.preset = #CrossHotbar_DB.Presets
             CrossHotbar_DB.ActivePreset = ConfigUI.preset
          elseif CrossHotbar_DB.Presets[foundpreset].Mutable then
             ConfigUI.preset = foundpreset
             CrossHotbar_DB.ActivePreset = ConfigUI.preset
-            config:StorePreset(CrossHotbar_DB.Presets[ConfigUI.preset], config)
+            addon:StorePreset(CrossHotbar_DB.Presets[ConfigUI.preset], config)
          end
       end
       ConfigUI:Refresh(true)
@@ -930,7 +997,7 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
    
    local function IsBindingSelected(data)
       local button, binding = unpack(data)
-      return config.PadActions[button].BIND == binding;
+      return config.PadActions[button].BIND == binding
    end
    
    local function SetBindingSelected(data)
@@ -945,7 +1012,7 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
             end
          end
       end
-      config.PadActions[button].BIND = binding;
+      config.PadActions[button].BIND = binding
       ConfigUI:Refresh(true)
    end
    
@@ -966,23 +1033,23 @@ function ConfigUI:CreatePadBindings(configFrame, anchorFrame)
          buttonsubtitle:SetScript("OnShow", function(frame) buttonsubtitle:SetText(addon:GetButtonIcon(button)) end) 
 
          local function GeneratorFunction(owner, rootDescription)
-            rootDescription:SetScrollMode(bindingframe:GetHeight()*0.75);
+            rootDescription:SetScrollMode(bindingframe:GetHeight()*0.75)
             for i,data in ipairs(GamePadBindingList) do
                if Locale:GetText(data.cat) ~= "" then
                   rootDescription:CreateTitle(Locale:GetText(data.cat))
                end
                for _,binding in ipairs(data.values) do
-                  rootDescription:CreateRadio(binding, IsBindingSelected, SetBindingSelected, {button, binding});
+                  rootDescription:CreateRadio(binding, IsBindingSelected, SetBindingSelected, {button, binding})
                end
             end
-         end;
+         end
          
-         local BindingDropDown = CreateFrame("DropdownButton", nil, bindingframe, "WowStyle1DropdownTemplate");
-         BindingDropDown:SetDefaultText("NONE");
+         local BindingDropDown = CreateFrame("DropdownButton", nil, bindingframe, "WowStyle1DropdownTemplate")
+         BindingDropDown:SetDefaultText("NONE")
          BindingDropDown:SetPoint("TOP", bindinganchor, "BOTTOM", 0, 0)
          BindingDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
          BindingDropDown:SetHeight(buttonsubtitle:GetHeight())
-         BindingDropDown:SetupMenu(GeneratorFunction);
+         BindingDropDown:SetupMenu(GeneratorFunction)
 
          ConfigUI:AddRefreshCallback(self.ActionFrame, function() BindingDropDown:GenerateMenu() end)
          
@@ -1026,7 +1093,7 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
    
    local function IsActionSelected(data)
       local button, action = unpack(data)
-      return config.PadActions[button][prefix .. "ACTION"] == action;
+      return config.PadActions[button][prefix .. "ACTION"] == action
    end
    
    local function SetActionSelected(data)
@@ -1041,13 +1108,13 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
             end
          end
       end
-      config.PadActions[button][prefix .. "ACTION"] = action;
+      config.PadActions[button][prefix .. "ACTION"] = action
       ConfigUI:Refresh(true)
    end
 
    local function IsHotbarActionSelected(data)
       local button, action = unpack(data)
-      return config.PadActions[button][prefix .. "TRIGACTION"] == action;
+      return config.PadActions[button][prefix .. "TRIGACTION"] == action
    end
    
    local function SetHotbarActionSelected(data)
@@ -1062,7 +1129,7 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
             end
          end
       end
-      config.PadActions[button][prefix .. "TRIGACTION"] = action;
+      config.PadActions[button][prefix .. "TRIGACTION"] = action
       ConfigUI:Refresh(true)
    end
 
@@ -1082,7 +1149,7 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
       if config.PadActions[button] then
 
          local function ActionGeneratorFunction(owner, rootDescription)
-            rootDescription:SetScrollMode(configFrame:GetHeight()*.75);
+            rootDescription:SetScrollMode(configFrame:GetHeight()*.75)
             local actionlists = {{ cat = "", values =  { "NONE" } }}
             if ActionsAvailable(button, prefix, "ACTION") then
                actionlists = ActionMap[button]
@@ -1098,25 +1165,25 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                   local tiptext = Locale:GetToolTip(data.cat, action)
                   if tiptext ~= nil then
                      radio:SetTooltip(function(tooltip, elementDescription)
-                        GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
-                        GameTooltip_AddNormalLine(tooltip, tiptext);
+                        GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription))
+                        GameTooltip_AddNormalLine(tooltip, tiptext)
                      end)
                   end
                end
             end
-         end;
+         end
          
-         local ActionDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-         ActionDropDown:SetDefaultText("NONE");
+         local ActionDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+         ActionDropDown:SetDefaultText("NONE")
          ActionDropDown:SetPoint("TOP", actionanchor, "BOTTOM", 0, 0)
          ActionDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
          ActionDropDown:SetHeight(32)
-         ActionDropDown:SetupMenu(ActionGeneratorFunction);
+         ActionDropDown:SetupMenu(ActionGeneratorFunction)
 
          ConfigUI:AddRefreshCallback(configFrame, function() ActionDropDown:GenerateMenu() end)
 
          local function HotbarActionGeneratorFunction(owner, rootDescription)
-            rootDescription:SetScrollMode(configFrame:GetHeight()*0.75);
+            rootDescription:SetScrollMode(configFrame:GetHeight()*0.75)
             local actionlists = {{ cat = "", values =  {"NONE"} }}
             if ActionsAvailable(button, prefix, "TRIGACTION") then
                actionlists = HotbarMap[button]
@@ -1132,20 +1199,20 @@ function ConfigUI:CreatePadActions(configFrame, anchorFrame, prefix, ActionMap, 
                   local tiptext = Locale:GetToolTip(data.cat, action)
                   if tiptext ~= nil then
                      radio:SetTooltip(function(tooltip, elementDescription)
-                        GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription));
-                        GameTooltip_AddNormalLine(tooltip, tiptext);
+                        GameTooltip_SetTitle(tooltip, MenuUtil.GetElementText(elementDescription))
+                        GameTooltip_AddNormalLine(tooltip, tiptext)
                      end)
                   end
                end
             end
-         end;
+         end
          
-         local HotbarActionDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-         HotbarActionDropDown:SetDefaultText("NONE");
+         local HotbarActionDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+         HotbarActionDropDown:SetDefaultText("NONE")
          HotbarActionDropDown:SetPoint("TOP", hotbaranchor, "BOTTOM", 0, 0)
          HotbarActionDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
          HotbarActionDropDown:SetHeight(32)
-         HotbarActionDropDown:SetupMenu(HotbarActionGeneratorFunction);
+         HotbarActionDropDown:SetupMenu(HotbarActionGeneratorFunction)
          
          ConfigUI:AddRefreshCallback(configFrame, function() HotbarActionDropDown:GenerateMenu() end)
          
@@ -1201,16 +1268,16 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
             rootDescription:CreateTitle(Locale:GetText(data.cat))
          end
          for i,ddaatype in ipairs(data.values) do
-            rootDescription:CreateRadio(Locale.ddaatypestr[ddaatype], IsDDAATypeSelected, SetDDAATypeSelected, ddaatype);
+            rootDescription:CreateRadio(Locale.ddaatypestr[ddaatype], IsDDAATypeSelected, SetDDAATypeSelected, ddaatype)
          end
       end
-   end;
+   end
 
-   local DDAADropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   DDAADropDown:SetDefaultText("Layout Types");
+   local DDAADropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   DDAADropDown:SetDefaultText("Layout Types")
    DDAADropDown:SetPoint("TOP", ddaasubtitle, "BOTTOM", 0, 0)
    DDAADropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   DDAADropDown:SetupMenu(DDAATypeGeneratorFunction);
+   DDAADropDown:SetupMenu(DDAATypeGeneratorFunction)
    
    ConfigUI:AddToolTip(ddaasubtitle, Locale.dadaTypeToolTip, true)
    
@@ -1242,16 +1309,16 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
             rootDescription:CreateTitle(Locale:GetText(data.cat))
          end
          for i,hkeytype in ipairs(data.values) do
-            rootDescription:CreateRadio(Locale.hkeytypestr[hkeytype], IsHKeyTypeSelected, SetHKeyTypeSelected, hkeytype);
+            rootDescription:CreateRadio(Locale.hkeytypestr[hkeytype], IsHKeyTypeSelected, SetHKeyTypeSelected, hkeytype)
          end
       end
-   end;
+   end
 
-   local HKeyDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   HKeyDropDown:SetDefaultText("Hotkey Type");
+   local HKeyDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   HKeyDropDown:SetDefaultText("Hotkey Type")
    HKeyDropDown:SetPoint("TOP", hkeysubtitle, "BOTTOM", 0, 0)
    HKeyDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   HKeyDropDown:SetupMenu(HKeyTypeGeneratorFunction);
+   HKeyDropDown:SetupMenu(HKeyTypeGeneratorFunction)
    
    ConfigUI:AddToolTip(hkeysubtitle, Locale.hotkeyTypeToolTip, true)
    
@@ -1283,16 +1350,16 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
             rootDescription:CreateTitle(Locale:GetText(data.cat))
          end
          for i,wxhbtype in ipairs(data.values) do
-            rootDescription:CreateRadio(Locale.wxhbtypestr[wxhbtype], IsWXHBTypeSelected, SetWXHBTypeSelected, wxhbtype);
+            rootDescription:CreateRadio(Locale.wxhbtypestr[wxhbtype], IsWXHBTypeSelected, SetWXHBTypeSelected, wxhbtype)
          end
       end
-   end;
+   end
 
-   local WXHBDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   WXHBDropDown:SetDefaultText("Expand Types");
+   local WXHBDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   WXHBDropDown:SetDefaultText("Expand Types")
    WXHBDropDown:SetPoint("TOP", wxhbsubtitle, "BOTTOM", 0, 0)
    WXHBDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   WXHBDropDown:SetupMenu(WXHBTypeGeneratorFunction);
+   WXHBDropDown:SetupMenu(WXHBTypeGeneratorFunction)
    
    ConfigUI:AddToolTip(wxhbsubtitle, Locale.expandedTypeToolTip, true)
 
@@ -1325,22 +1392,18 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
             rootDescription:CreateTitle(Locale:GetText(data.cat))
          end
          for i,dclktype in ipairs(data.values) do
-            rootDescription:CreateRadio(Locale.dclktypestr[dclktype], IsDCLKTypeSelected, SetDCLKTypeSelected, dclktype);
+            rootDescription:CreateRadio(Locale.dclktypestr[dclktype], IsDCLKTypeSelected, SetDCLKTypeSelected, dclktype)
          end
       end
-   end;
+   end
 
-   local DCLKDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   DCLKDropDown:SetDefaultText("Expanded Types");
+   local DCLKDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   DCLKDropDown:SetDefaultText("Expanded Types")
    DCLKDropDown:SetPoint("TOP", dclksubtitle, "BOTTOM", 0, 0)
    DCLKDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   DCLKDropDown:SetupMenu(DCLKTypeGeneratorFunction);
+   DCLKDropDown:SetupMenu(DCLKTypeGeneratorFunction)
    
    ConfigUI:AddToolTip(dclksubtitle, Locale.dclkTypeToolTip, true)
-
-
-
-
    
    --[[
        Actionbar paging
@@ -1378,17 +1441,17 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    end
 
    local function LPageGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Action pages");
+      rootDescription:CreateTitle("Action pages")
       for i = 1,10 do
-         rootDescription:CreateRadio("ActionPage ".. i, IsLPageSelected, SetLPageSelected, i);
+         rootDescription:CreateRadio("ActionPage ".. i, IsLPageSelected, SetLPageSelected, i)
       end
-   end;
+   end
 
-   local LPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   LPageDropDown:SetDefaultText("Action pages");
+   local LPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   LPageDropDown:SetDefaultText("Action pages")
    LPageDropDown:SetPoint("TOP", lpagesubtitle, "BOTTOM", 0, 0)
    LPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   LPageDropDown:SetupMenu(LPageGeneratorFunction);
+   LPageDropDown:SetupMenu(LPageGeneratorFunction)
    
    ConfigUI:AddToolTip(lpagesubtitle, Locale.pageIndexToolTip, true)
 
@@ -1415,17 +1478,17 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    end
 
    local function RPageGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Action pages");
+      rootDescription:CreateTitle("Action pages")
       for i = 1,10 do
-         rootDescription:CreateRadio("ActionPage ".. i, IsRPageSelected, SetRPageSelected, i);
+         rootDescription:CreateRadio("ActionPage ".. i, IsRPageSelected, SetRPageSelected, i)
       end
-   end;
+   end
 
-   local RPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   RPageDropDown:SetDefaultText("Action pages");
+   local RPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   RPageDropDown:SetDefaultText("Action pages")
    RPageDropDown:SetPoint("TOP", rpagesubtitle, "BOTTOM", 0, 0)
    RPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   RPageDropDown:SetupMenu(RPageGeneratorFunction);
+   RPageDropDown:SetupMenu(RPageGeneratorFunction)
    
    ConfigUI:AddToolTip(rpagesubtitle, Locale.pageIndexToolTip, true)
 
@@ -1452,19 +1515,19 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    end
 
    local function LRPageGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Action pages");
+      rootDescription:CreateTitle("Action pages")
       for i = 1,10 do
-         rootDescription:CreateRadio("ActionPage ".. i, IsLRPageSelected, SetLRPageSelected, i);
+         rootDescription:CreateRadio("ActionPage ".. i, IsLRPageSelected, SetLRPageSelected, i)
       end
-   end;
+   end
 
-   local LRPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   LRPageDropDown:SetDefaultText("Action pages");
+   local LRPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   LRPageDropDown:SetDefaultText("Action pages")
    LRPageDropDown:SetPoint("TOP", lrpagesubtitle, "BOTTOM", 0, 0)
    LRPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   LRPageDropDown:SetupMenu(LRPageGeneratorFunction);
+   LRPageDropDown:SetupMenu(LRPageGeneratorFunction)
    
-   ConfigUI:AddToolTip(lrpagesubtitle, Locale.pageIndexToolTip, true)
+   ConfigUI:AddToolTip(lrpagesubtitle, Locale.pageIndexBackbarToolTip, true)
 
    --[[
        RLHotbar page index
@@ -1489,19 +1552,19 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    end
 
    local function RLPageGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Action pages");
+      rootDescription:CreateTitle("Action pages")
       for i = 1,10 do
-         rootDescription:CreateRadio("ActionPage ".. i, IsRLPageSelected, SetRLPageSelected, i);
+         rootDescription:CreateRadio("ActionPage ".. i, IsRLPageSelected, SetRLPageSelected, i)
       end
-   end;
+   end
 
-   local RLPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   RLPageDropDown:SetDefaultText("Action pages");
+   local RLPageDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   RLPageDropDown:SetDefaultText("Action pages")
    RLPageDropDown:SetPoint("TOP", rlpagesubtitle, "BOTTOM", 0, 0)
    RLPageDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   RLPageDropDown:SetupMenu(RLPageGeneratorFunction);
+   RLPageDropDown:SetupMenu(RLPageGeneratorFunction)
    
-   ConfigUI:AddToolTip(rlpagesubtitle, Locale.pageIndexToolTip, true)
+   ConfigUI:AddToolTip(rlpagesubtitle, Locale.pageIndexBackbarToolTip, true)
 
    local conditionalsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
    conditionalsubtitle:SetHeight(self.TextHeight)
@@ -1681,6 +1744,352 @@ function ConfigUI:CreateHotbarSettings(configFrame, anchorFrame)
    return rlhotbareditbox
 end
 
+--[[
+   Interface settings.
+--]]  
+
+function ConfigUI:CreateInterfaceSettings(configFrame, anchorFrame)
+   local DropDownWidth = (configFrame:GetWidth() - 2*self.Inset)/2
+
+   --[[
+       ActionBar Hides
+   --]]   
+   
+   local blizframesubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
+   blizframesubtitle:SetHeight(self.ButtonHeight)
+   blizframesubtitle:SetWidth(DropDownWidth)
+   blizframesubtitle:SetPoint("TOPLEFT", anchorFrame, "BOTTOMLEFT", 0, -self.ConfigSpacing)
+   blizframesubtitle:SetNonSpaceWrap(true)
+   blizframesubtitle:SetJustifyH("Left")
+   blizframesubtitle:SetJustifyV("TOP")
+   blizframesubtitle:SetText("Blizzard frames")
+
+   local actionbarhidesubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   actionbarhidesubtitle:SetHeight(self.ButtonHeight)
+   actionbarhidesubtitle:SetWidth(DropDownWidth)
+   actionbarhidesubtitle:SetPoint("TOPLEFT", blizframesubtitle, "BOTTOMLEFT", self.Inset, -self.ConfigSpacing)
+   actionbarhidesubtitle:SetNonSpaceWrap(true)
+   actionbarhidesubtitle:SetJustifyH("CENTER")
+   actionbarhidesubtitle:SetJustifyV("TOP")
+   actionbarhidesubtitle:SetText("Hide ActionBars")
+
+   local function IsActionBarHideTypeSelected(type)
+      return config.Interface.ActionBarHide == type
+   end
+   
+   local function SetActioBarHideTypeSelected(type)
+      config.Interface.ActionBarHide = type
+      ConfigUI:Refresh(true)
+   end
+
+   local function ActionBarHideGeneratorFunction(owner, rootDescription)      
+      for i,data in ipairs(addon.ActionBarHides) do
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
+         for i,hidetype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.actionbarhidetypestr[hidetype], IsActionBarHideTypeSelected, SetActioBarHideTypeSelected, hidetype)
+         end
+      end
+   end
+
+   local ActionBarHideDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   ActionBarHideDropDown:SetDefaultText("Layout Types")
+   ActionBarHideDropDown:SetPoint("TOP", actionbarhidesubtitle, "BOTTOM", 0, 0)
+   ActionBarHideDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
+   ActionBarHideDropDown:SetupMenu(ActionBarHideGeneratorFunction)
+   
+   ConfigUI:AddToolTip(actionbarhidesubtitle, Locale.actionbarhideToolTip, true)
+
+   --[[
+       VehicleBar Hides
+   --]] 
+   
+   local vehiclebarhidesubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   vehiclebarhidesubtitle:SetHeight(self.ButtonHeight)
+   vehiclebarhidesubtitle:SetWidth(DropDownWidth)
+   vehiclebarhidesubtitle:SetPoint("TOPLEFT", actionbarhidesubtitle, "TOPRIGHT", 0, 0)
+   vehiclebarhidesubtitle:SetNonSpaceWrap(true)
+   vehiclebarhidesubtitle:SetJustifyH("CENTER")
+   vehiclebarhidesubtitle:SetJustifyV("TOP")
+   vehiclebarhidesubtitle:SetText("Hide VehicleBar")
+
+   local function IsVehicleBarHideTypeSelected(type)
+      return config.Interface.VehicleBarHide == type
+   end
+   
+   local function SetActioBarHideTypeSelected(type)
+      config.Interface.VehicleBarHide = type
+      ConfigUI:Refresh(true)
+   end
+
+   local function VehicleBarHideGeneratorFunction(owner, rootDescription)      
+      for i,data in ipairs(addon.VehicleBarHides) do
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
+         for i,hidetype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.vehiclebarhidetypestr[hidetype], IsVehicleBarHideTypeSelected, SetVehicleBarHideTypeSelected, hidetype)
+         end
+      end
+   end
+
+   local VehicleBarHideDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   VehicleBarHideDropDown:SetDefaultText("Layout Types")
+   VehicleBarHideDropDown:SetPoint("TOP", vehiclebarhidesubtitle, "BOTTOM", 0, 0)
+   VehicleBarHideDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
+   VehicleBarHideDropDown:SetupMenu(VehicleBarHideGeneratorFunction)
+   
+   ConfigUI:AddToolTip(vehiclebarhidesubtitle, Locale.vehiclebarhideToolTip, true)
+
+   --[[
+       Unit Targeting
+   --]] 
+   
+   local unittargetsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontHighlightLarge")
+   unittargetsubtitle:SetHeight(self.ButtonHeight)
+   unittargetsubtitle:SetWidth(DropDownWidth)
+   unittargetsubtitle:SetPoint("TOP", ActionBarHideDropDown, "BOTTOM", 0, -self.ConfigSpacing)
+   unittargetsubtitle:SetPoint("LEFT", anchorFrame, "LEFT", 0, 0)
+   unittargetsubtitle:SetNonSpaceWrap(true)
+   unittargetsubtitle:SetJustifyH("Left")
+   unittargetsubtitle:SetJustifyV("TOP")
+   unittargetsubtitle:SetText("Unit highlight")
+
+   --[[
+       Party Orientation
+   --]] 
+   
+   local partyoriensubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   partyoriensubtitle:SetHeight(self.ButtonHeight)
+   partyoriensubtitle:SetWidth(DropDownWidth)
+   partyoriensubtitle:SetPoint("TOPLEFT", unittargetsubtitle, "BOTTOMLEFT", self.Inset, -self.ConfigSpacing)
+   partyoriensubtitle:SetNonSpaceWrap(true)
+   partyoriensubtitle:SetJustifyH("CENTER")
+   partyoriensubtitle:SetJustifyV("TOP")
+   partyoriensubtitle:SetText("Party Orientation")
+
+   local function IsPartyOrienTypeSelected(type)
+      return config.Interface.UnitPartyOrientation == type
+   end
+   
+   local function SetActioBarHideTypeSelected(type)
+      config.Interface.UnitPartyOrientation = type
+      ConfigUI:Refresh(true)
+   end
+
+   local function PartyOrienGeneratorFunction(owner, rootDescription)      
+      for i,data in ipairs(addon.PartyOrientation) do
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
+         for i,orientype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.partyorientypestr[orientype], IsPartyOrienTypeSelected, SetPartyOrienTypeSelected, orientype)
+         end
+      end
+   end
+   
+   local PartyOrienDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   PartyOrienDropDown:SetDefaultText("Layout Types")
+   PartyOrienDropDown:SetPoint("TOP", partyoriensubtitle, "BOTTOM", 0, 0)
+   PartyOrienDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
+   PartyOrienDropDown:SetupMenu(PartyOrienGeneratorFunction)
+   
+   ConfigUI:AddToolTip(partyoriensubtitle, Locale.partyorienToolTip, true)
+   
+   --[[
+       Raid Orientation
+   --]]
+   
+   local raidoriensubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   raidoriensubtitle:SetHeight(self.ButtonHeight)
+   raidoriensubtitle:SetWidth(DropDownWidth)
+   raidoriensubtitle:SetPoint("TOPLEFT", partyoriensubtitle, "TOPRIGHT", 0, 0)
+   raidoriensubtitle:SetNonSpaceWrap(true)
+   raidoriensubtitle:SetJustifyH("CENTER")
+   raidoriensubtitle:SetJustifyV("TOP")
+   raidoriensubtitle:SetText("Raid Orientation")
+
+   local function IsRaidOrienTypeSelected(type)
+      return config.Interface.UnitRaidOrientation == type
+   end
+   
+   local function SetActioBarHideTypeSelected(type)
+      config.Interface.UnitRaidOrientation = type
+      ConfigUI:Refresh(true)
+   end
+
+   local function RaidOrienGeneratorFunction(owner, rootDescription)      
+      for i,data in ipairs(addon.RaidOrientation) do
+         if Locale:GetText(data.cat) ~= "" then
+            rootDescription:CreateTitle(Locale:GetText(data.cat))
+         end
+         for i,orientype in ipairs(data.values) do
+            rootDescription:CreateRadio(Locale.raidorientypestr[orientype], IsRaidOrienTypeSelected, SetRaidOrienTypeSelected, orientype)
+         end
+      end
+   end
+   
+   local RaidOrienDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   RaidOrienDropDown:SetDefaultText("Layout Types")
+   RaidOrienDropDown:SetPoint("TOP", raidoriensubtitle, "BOTTOM", 0, 0)
+   RaidOrienDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
+   RaidOrienDropDown:SetupMenu(RaidOrienGeneratorFunction)
+   
+   ConfigUI:AddToolTip(raidoriensubtitle, Locale.raidorienToolTip, true)
+
+   --[[
+        Highlight Color
+   --]]
+   
+   local targetcolorsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   targetcolorsubtitle:SetHeight(self.ButtonHeight)
+   targetcolorsubtitle:SetWidth(DropDownWidth)
+   targetcolorsubtitle:SetPoint("TOP", PartyOrienDropDown, "BOTTOM", 0, -self.ConfigSpacing)
+   targetcolorsubtitle:SetNonSpaceWrap(true)
+   targetcolorsubtitle:SetJustifyH("CENTER")
+   targetcolorsubtitle:SetJustifyV("TOP")
+   targetcolorsubtitle:SetText("Highlight colors")
+   
+   local ActiveTargetColorButtonsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite")
+   ActiveTargetColorButtonsubtitle:SetWidth(DropDownWidth/4-self.Inset)
+   ActiveTargetColorButtonsubtitle:SetPoint("TOPLEFT", targetcolorsubtitle, "BOTTOMLEFT", self.Inset, -self.ConfigSpacing/2)
+   ActiveTargetColorButtonsubtitle:SetNonSpaceWrap(true)
+   ActiveTargetColorButtonsubtitle:SetJustifyH("RIGHT")
+   ActiveTargetColorButtonsubtitle:SetJustifyV("TOP")
+   ActiveTargetColorButtonsubtitle:SetText("Active")
+
+   function ShowColorPicker(r, g, b, changedCallback)
+      ColorPickerFrame.Content.ColorPicker:SetColorRGB(r,g,b)
+      ColorPickerFrame.hasOpacity = false
+      ColorPickerFrame.previousValues = {r,g,b,a}
+      ColorPickerFrame.swatchFunc = changedCallback
+      ColorPickerFrame.opacityFunc = changedCallback
+      ColorPickerFrame.cancelFunc = changedCallback
+      ColorPickerFrame:Hide()
+      ColorPickerFrame:Show()
+   end
+           
+   local ActiveTargetEnabledCheckBox = CreateFrame("CheckButton", nil, configFrame, "ChatConfigCheckButtonTemplate")
+   ActiveTargetEnabledCheckBox:SetPoint("LEFT", ActiveTargetColorButtonsubtitle, "RIGHT", self.Inset, 0)
+   ActiveTargetEnabledCheckBox:SetHitRectInsets(0,0,0,0)
+   ActiveTargetEnabledCheckBox:SetChecked(config.Interface.UnitTargetActiveEnable)
+   
+   local ActiveTargetColorButton = CreateFrame("Button", nil, configFrame, "ColorSwatchTemplate")
+   ActiveTargetColorButton:SetPoint("LEFT", ActiveTargetEnabledCheckBox, "RIGHT", 0, 0)
+   ActiveTargetColorButton:SetColorRGB(unpack(config.Interface.UnitTargetActiveColor))
+   
+   ActiveTargetEnabledCheckBox:SetScript("OnClick", function(self)
+      config.Interface.UnitTargetActiveEnable = self:GetChecked()
+      if addon.SoftTargetFrame then
+         addon.SoftTargetFrame.activeHighlight.isEnabled = config.Interface.UnitTargetActiveEnable
+      end
+   end)
+     
+   ActiveTargetColorButton:SetScript("OnClick", function(self)
+      if ActiveTargetEnabledCheckBox:GetChecked() then
+         ShowColorPicker(1, 0, 0, function(restore)
+            if restore then
+               ActiveTargetColorButton:SetColorRGB(unpack(restore))
+               config.Interface.UnitTargetActiveColor = restore
+               if addon.SoftTargetFrame then
+                  addon.SoftTargetFrame.activeHighlight:SetVertexColor(unpack(config.Interface.UnitTargetActiveColor))
+               end
+            else
+               ActiveTargetColorButton:SetColorRGB(ColorPickerFrame:GetColorRGB())
+               config.Interface.UnitTargetActiveColor = {ColorPickerFrame:GetColorRGB()}
+               if addon.SoftTargetFrame then
+                  addon.SoftTargetFrame.activeHighlight:SetVertexColor(unpack(config.Interface.UnitTargetActiveColor))
+               end
+            end
+         end)
+      end
+   end)
+                               
+   local InActiveTargetColorButtonButtonsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite")
+   InActiveTargetColorButtonButtonsubtitle:SetWidth(DropDownWidth/4)
+   InActiveTargetColorButtonButtonsubtitle:SetPoint("LEFT", ActiveTargetColorButton, "RIGHT", self.Inset, 0)
+   InActiveTargetColorButtonButtonsubtitle:SetNonSpaceWrap(true)
+   InActiveTargetColorButtonButtonsubtitle:SetJustifyH("RIGHT")
+   InActiveTargetColorButtonButtonsubtitle:SetJustifyV("TOP")
+   InActiveTargetColorButtonButtonsubtitle:SetText("Inactive")
+
+   local InActiveTargetEnabledCheckBox = CreateFrame("CheckButton", nil, configFrame, "ChatConfigCheckButtonTemplate")
+   InActiveTargetEnabledCheckBox:SetPoint("LEFT", InActiveTargetColorButtonButtonsubtitle, "RIGHT", self.Inset, 0)
+   InActiveTargetEnabledCheckBox:SetHitRectInsets(0,0,0,0)
+   InActiveTargetEnabledCheckBox:SetChecked(config.Interface.UnitTargetInActiveEnable)
+   
+   local InActiveTargetColorButtonButton = CreateFrame("Button", nil, configFrame, "ColorSwatchTemplate")
+   InActiveTargetColorButtonButton:SetPoint("LEFT", InActiveTargetEnabledCheckBox, "RIGHT", 0, 0)
+   InActiveTargetColorButtonButton:SetColorRGB(unpack(config.Interface.UnitTargetInActiveColor))
+    
+   InActiveTargetEnabledCheckBox:SetScript("OnClick", function(self)
+      config.Interface.UnitTargetInActiveEnable = self:GetChecked()
+      if addon.SoftTargetFrame then
+         addon.SoftTargetFrame.inactiveHighlight.isEnabled = config.Interface.UnitTargetInActiveEnable
+      end
+   end)
+     
+   InActiveTargetColorButtonButton:SetScript("OnClick", function(self)
+      if InActiveTargetEnabledCheckBox:GetChecked() then
+         ShowColorPicker(1, 0, 0, function(restore)
+            if restore then
+               InActiveTargetColorButtonButton:SetColorRGB(unpack(restore))
+               config.Interface.UnitTargetInActiveColor = restore
+               if addon.SoftTargetFrame then
+                  addon.SoftTargetFrame.inactiveHighlight:SetVertexColor(unpack(config.Interface.UnitTargetInActiveColor))
+               end
+            else
+               InActiveTargetColorButtonButton:SetColorRGB(ColorPickerFrame:GetColorRGB())
+               config.Interface.UnitTargetInActiveColor = {ColorPickerFrame:GetColorRGB()}
+               if addon.SoftTargetFrame then
+                  addon.SoftTargetFrame.inactiveHighlight:SetVertexColor(unpack(config.Interface.UnitTargetInActiveColor))
+               end
+            end
+         end)
+      end
+   end)
+
+   --[[
+        Highlight size offset
+   --]]
+   
+   local highlightoffsetsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   highlightoffsetsubtitle:SetHeight(self.ButtonHeight)
+   highlightoffsetsubtitle:SetWidth(DropDownWidth)
+   highlightoffsetsubtitle:SetPoint("TOP", RaidOrienDropDown, "BOTTOM", 0, -self.ConfigSpacing)
+   highlightoffsetsubtitle:SetNonSpaceWrap(true)
+   highlightoffsetsubtitle:SetJustifyH("CENTER")
+   highlightoffsetsubtitle:SetJustifyV("TOP")
+   highlightoffsetsubtitle:SetText("Highlight padding")
+   
+   local HighlightPaddingEditbox = CreateFrame("EditBox", nil, configFrame, "InputBoxTemplate")
+   HighlightPaddingEditbox:SetPoint("TOP", highlightoffsetsubtitle, "BOTTOM", 0, 0)
+   HighlightPaddingEditbox:SetWidth(self.ButtonWidth/2)
+   HighlightPaddingEditbox:SetHeight(self.EditBoxHeight)
+   HighlightPaddingEditbox:SetMovable(false)
+   HighlightPaddingEditbox:SetAutoFocus(false)
+   HighlightPaddingEditbox:EnableMouse(true)
+   HighlightPaddingEditbox:SetText(config.Interface.UnitTargetPadding)
+   HighlightPaddingEditbox:SetNumeric(true)
+   HighlightPaddingEditbox:SetJustifyH("CENTER")
+   HighlightPaddingEditbox:SetScript("OnEditFocusLost", function(self)
+      config.Interface.UnitTargetPadding = tonumber(self:GetText())
+      ConfigUI:Refresh(true)
+   end)
+
+   ConfigUI:AddRefreshCallback(self.InterfaceFrame, function()
+      ActionBarHideDropDown:GenerateMenu()
+      VehicleBarHideDropDown:GenerateMenu()
+      PartyOrienDropDown:GenerateMenu()
+      RaidOrienDropDown:GenerateMenu()
+      ActiveTargetEnabledCheckBox:SetChecked(config.Interface.UnitTargetActiveEnable)
+      ActiveTargetColorButton:SetColorRGB(unpack(config.Interface.UnitTargetActiveColor))
+      InActiveTargetEnabledCheckBox:SetChecked(config.Interface.UnitTargetInActiveEnable)
+      InActiveTargetColorButtonButton:SetColorRGB(unpack(config.Interface.UnitTargetInActiveColor))
+      HighlightPaddingEditbox:SetText(config.Interface.UnitTargetPadding)
+   end)
+end
 
 --[[
    GamePad settings.
@@ -1715,14 +2124,18 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    gamepadenablebutton:SetHeight(self.ButtonHeight)
    gamepadenablebutton:SetWidth(OptionWidth)
 
-   if GetCVar('GamePadEnable') == "0" then
+   if config.GamePad.GPEnable ~= 0 then
       gamepadenablebutton:SetText("Enable")
    else
       gamepadenablebutton:SetText("Disable")
    end
    
    gamepadenablebutton:SetScript("OnClick", function(self, button, down)
-      CrossHotbar_DB.GPEnable = config.GPEnable
+      if config.GamePad.GPEnable == 1 then
+         config.GamePad.GPEnable = 0
+      else
+         config.GamePad.GPEnable = 1
+      end
       ConfigUI:Refresh(true)
    end)
 
@@ -1866,7 +2279,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    end
 
    local function DeviceGeneratorFunction(owner, rootDescription)
-      rootDescription:CreateTitle("Devices");
+      rootDescription:CreateTitle("Devices")
       for i,device in ipairs(C_GamePad.GetAllDeviceIDs()) do
          local devicestate = C_GamePad.GetDeviceRawState(i-1)
          local name =""
@@ -1876,15 +2289,15 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
          if device == C_GamePad.GetCombinedDeviceID() then
             name = "Combined"
          end
-         rootDescription:CreateRadio(name, IsDeviceSelected, SetDeviceSelected, device);
+         rootDescription:CreateRadio(name, IsDeviceSelected, SetDeviceSelected, device)
       end
-   end;
+   end
 
-   local DeviceDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate");
-   DeviceDropDown:SetDefaultText("No devices found");
+   local DeviceDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
+   DeviceDropDown:SetDefaultText("No devices found")
    DeviceDropDown:SetPoint("TOP", devicetitle, "BOTTOM", 0, 0)
    DeviceDropDown:SetWidth(DropDownWidth-self.DropDownSpacing)
-   DeviceDropDown:SetupMenu(DeviceGeneratorFunction);
+   DeviceDropDown:SetupMenu(DeviceGeneratorFunction)
    
    ConfigUI:AddToolTip(devicetitle, Locale.deviceToolTip, true)
 
@@ -1918,7 +2331,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
       for i,binding in ipairs(bindings) do
          rootDescription:CreateRadio(binding, IsLClickSelected, SetLClickSelected, binding)
       end
-   end;
+   end
 
    local LClickDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
    LClickDropDown:SetDefaultText("None")
@@ -1958,7 +2371,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
       for i,binding in ipairs(bindings) do
          rootDescription:CreateRadio(binding, IsRClickSelected, SetRClickSelected, binding)
       end
-   end;
+   end
 
    local RClickDropDown = CreateFrame("DropdownButton", nil, configFrame, "WowStyle1DropdownTemplate")
    RClickDropDown:SetDefaultText("None")
@@ -1988,6 +2401,8 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    yaweditbox:SetMovable(false)
    yaweditbox:SetAutoFocus(false)
    yaweditbox:EnableMouse(true)
+   yaweditbox:SetNumeric(true)
+   yaweditbox:SetJustifyH("CENTER")
    yaweditbox:SetText(config.GamePad.GPYawSpeed)
    yaweditbox:SetScript("OnEditFocusLost", function(self)
       config.GamePad.GPYawSpeed = self:GetText()
@@ -2014,6 +2429,8 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    pitcheditbox:SetMovable(false)
    pitcheditbox:SetAutoFocus(false)
    pitcheditbox:EnableMouse(true)
+   pitcheditbox:SetNumeric(true)
+   pitcheditbox:SetJustifyH("CENTER")
    pitcheditbox:SetText(config.GamePad.GPPitchSpeed)
    pitcheditbox:SetScript("OnEditFocusLost", function(self)
       config.GamePad.GPPitchSpeed = self:GetText()
@@ -2040,6 +2457,8 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    overlapmouseeditbox:SetMovable(false)
    overlapmouseeditbox:SetAutoFocus(false)
    overlapmouseeditbox:EnableMouse(true)
+   overlapmouseeditbox:SetNumeric(true)
+   overlapmouseeditbox:SetJustifyH("CENTER")
    overlapmouseeditbox:SetText(config.GamePad.GPOverlapMouse)
    overlapmouseeditbox:SetScript("OnEditFocusLost", function(self)
       config.GamePad.GPOverlapMouse = self:GetText()
@@ -2047,7 +2466,7 @@ function ConfigUI:CreateGamePadSettings(configFrame, anchorFrame)
    end)
    
    ConfigUI:AddRefreshCallback(self.GamePadFrame, function()
-      if GetCVar('GamePadEnable') == "0" then
+      if config.GamePad.GPEnable == 0 then
          gamepadenablebutton:SetText("Enable")
       else
          gamepadenablebutton:SetText("Disable")

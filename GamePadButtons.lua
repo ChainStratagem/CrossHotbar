@@ -5,73 +5,76 @@ local GamePadButtonList = addon.GamePadButtonList
 local GamePadModifierList = addon.GamePadModifierList
 
 local DCLKList = {
-   ["DISABLE"] = 0,
-   ["ENABLE"] = 1,
-   ["VISUAL"] = 2
+   {"DISABLE", 0},
+   {"ENABLE", 1},
+   {"VISUAL", 2}
 }
-config:ConfigListAdd("HotbarDCLKTypes", "CATEGORY_HOTBAR_DCLK", DCLKList)
+addon:ActionListAdd("HotbarDCLKTypes", "CATEGORY_HOTBAR_DCLK", DCLKList)
+DCLKList = addon:ActionListToTable(DCLKList)
 
 local ModifierList = {
-   ["LEFTSHOULDER"] = true,
-   ["RIGHTSHOULDER"] = true,
-   ["LEFTHOTBAR"] = true,
-   ["RIGHTHOTBAR"] = true,
-   ["LEFTPADDLE"] = true,
-   ["RIGHTPADDLE"] = true
+   {"LEFTSHOULDER", true},
+   {"RIGHTSHOULDER", true},
+   {"LEFTHOTBAR", true},
+   {"RIGHTHOTBAR", true},
+   {"LEFTPADDLE", true},
+   {"RIGHTPADDLE", true}
 }
-config:ConfigListAdd("GamePadModifiers", "CATEGORY_MODIFIERS", ModifierList, "NONE")
+addon:ActionListAdd("GamePadModifiers", "CATEGORY_MODIFIERS", ModifierList, "NONE")
+ModifierList = addon:ActionListToTable(ModifierList)
 
 local ActionList = {
-   ["JUMP"] = true,
-   ["INTERACTTARGET"] = true,
-   ["TOGGLEWORLDMAP"] = true,
-   ["TOGGLEGAMEMENU"] = true,
-   ["OPENALLBAGS"] = true,
-   ["NAMEPLATES"] = true,
-   ["FRIENDNAMEPLATES"] = true,
-   ["ALLNAMEPLATES"] = true
+   {"JUMP", true},
+   {"INTERACTTARGET", true},
+   {"TOGGLEWORLDMAP", true},
+   {"TOGGLEGAMEMENU", true},
+   {"OPENALLBAGS", true},
+   {"NAMEPLATES", true},
+   {"FRIENDNAMEPLATES", true},
+   {"ALLNAMEPLATES", true}
 }
-config:ConfigListAdd("GamePadActions", "CATEGORY_ACTIONS", ActionList, "NONE")
+addon:ActionListAdd("GamePadActions", "CATEGORY_ACTIONS", ActionList, "NONE")
+ActionList = addon:ActionListToTable(ActionList)
 
 local ModifierActions = {
-   ["SIT"] = [[ local down = ...
+   {"SIT", [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/sit")
       end
-   ]],
-   ["LOOT"] = [[ local down = ...
+   ]]},
+   {"LOOT", [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/loot")
       end
-   ]],
-   ["EXTRAACTIONBUTTON1"] = [[ local down = ...
+   ]]},
+   {"EXTRAACTIONBUTTON1", [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/click ExtraActionButton1")
       end
-   ]],
-   ["TOGGLESHEATH"] = [[local down = ...
+   ]]},
+   {"TOGGLESHEATH", [[local down = ...
       if down then
         local GamePadButtons = self:GetFrameRef('GamePadButtons')
         if GamePadButtons then
            GamePadButtons:CallMethod("ToggleSheath")
         end
       end
-   ]]
+   ]]}
 }
 
-config:ConfigListAdd("GamePadActions", "CATEGORY_ACTIONS", ModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifierActions", "CATEGORY_ACTIONS", ModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifiers", "CATEGORY_ACTIONS", ModifierActions, "NONE")
+addon:ActionListAdd("GamePadActions", "CATEGORY_ACTIONS", ModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifierActions", "CATEGORY_ACTIONS", ModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifiers", "CATEGORY_ACTIONS", ModifierActions, "NONE")
+ModifierActions = addon:ActionListToTable(ModifierActions)
 
 local ExpandedModifierActions = {
-   ["HOLDEXPANDED"] = [[local down = ...
+   {"HOLDEXPANDED", [[local down = ...
       local GamePadButtons = self:GetFrameRef('GamePadButtons')
-      local Crosshotbar = self:GetFrameRef('Crosshotbar')
-      if GamePadButtons ~= nil and Crosshotbar ~= nil then
+      if GamePadButtons ~= nil then
          local expanded = 0
          if down == true then expanded = 3 end
          local triggerstate = GamePadButtons:GetAttribute("triggerstate")
-         local expandedstate = Crosshotbar:GetAttribute("expanded")
+         local expandedstate = GamePadButtons:GetAttribute("expandedstate")
          if expandedstate == 0 or expandedstate == 3 then
             if triggerstate == 4 then
                GamePadButtons:SetAttribute("state-expanded", expanded)
@@ -82,303 +85,334 @@ local ExpandedModifierActions = {
             end
          end
       end
-   ]],
-   ["LEFTEXPANDED"] = [[local down = ...
+   ]]},
+   {"LEFTEXPANDED", [[local down = ...
       local GamePadButtons = self:GetFrameRef('GamePadButtons')
-      local Crosshotbar = self:GetFrameRef('Crosshotbar')
-      if GamePadButtons ~= nil and Crosshotbar ~= nil then
+      if GamePadButtons ~= nil then
          local expanded = 0
-         if down == true then expanded = 3 end
          local triggerstate = GamePadButtons:GetAttribute("triggerstate")
-         local expandedstate = Crosshotbar:GetAttribute("expanded")
-         if triggerstate == 4 or expandedstate == 3 then
-            if expandedstate == 0 or expandedstate == 3 then
-               if expanded == 3 then
+         local expandedstate = GamePadButtons:GetAttribute("expandedstate")
+         if expandedstate == 0 or expandedstate == 3 or expandedstate == 4 then
+            if triggerstate == 4 or expandedstate == 4 then
+               if down then
                   GamePadButtons:SetAttribute("state-trigger", 4)
-                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-expanded", 4)
                   GamePadButtons:SetAttribute("state-trigger", 6)
-               end
-               if expanded == 0 then
-                  GamePadButtons:SetAttribute("state-expanded", expanded)
+               else
+                  GamePadButtons:SetAttribute("state-expanded", 0)
                   GamePadButtons:SetAttribute("state-trigger", 4)
+               end
+            else
+               if down == true then expanded = 3 end
+               if (triggerstate == 6 or triggerstate == 3 or triggerstate == 2) then
+                  GamePadButtons:SetAttribute("state-trigger", 4)
+                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-trigger", triggerstate)
                end
             end
          end
       end
-   ]],
-   ["RIGHTEXPANDED"] = [[local down = ...
+   ]]},
+   {"RIGHTEXPANDED", [[local down = ...
       local GamePadButtons = self:GetFrameRef('GamePadButtons')
-      local Crosshotbar = self:GetFrameRef('Crosshotbar')
-      if GamePadButtons ~= nil and Crosshotbar ~= nil then
+      if GamePadButtons ~= nil then
          local expanded = 0
-         if down == true then expanded = 3 end
          local triggerstate = GamePadButtons:GetAttribute("triggerstate")
-         local expandedstate = Crosshotbar:GetAttribute("expanded")
-         if triggerstate == 4 or expandedstate == 3 then
-            if expandedstate == 0 or expandedstate == 3 then
-               if expanded == 3 then
+         local expandedstate = GamePadButtons:GetAttribute("expandedstate")
+         if expandedstate == 0 or expandedstate == 3 or expandedstate == 5 then
+            if triggerstate == 4 or expandedstate == 5 then
+               if down then
                   GamePadButtons:SetAttribute("state-trigger", 4)
-                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-expanded", 5)
                   GamePadButtons:SetAttribute("state-trigger", 7)
-               end
-               if expanded == 0 then
-                  GamePadButtons:SetAttribute("state-expanded", expanded)
+               else
+                  GamePadButtons:SetAttribute("state-expanded", 0)
                   GamePadButtons:SetAttribute("state-trigger", 4)
+               end
+            else
+               if down == true then expanded = 3 end
+               if (triggerstate == 7 or triggerstate == 5 or triggerstate == 1) then
+                  GamePadButtons:SetAttribute("state-trigger", 4)
+                  GamePadButtons:SetAttribute("state-expanded", expanded)
+                  GamePadButtons:SetAttribute("state-trigger", triggerstate)
                end
             end
          end
       end
-   ]]
+   ]]}
 }
 
-config:ConfigListAdd("GamePadActions", "CATEGORY_HOTBAR_EXPANDED", ExpandedModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifierActions", "CATEGORY_HOTBAR_EXPANDED", {["HOLDEXPANDED"]=true}, "NONE")
-config:ConfigListAdd("GamePadModifiers", "CATEGORY_HOTBAR_EXPANDED", ExpandedModifierActions, "NONE")
+addon:ActionListAdd("GamePadActions", "CATEGORY_HOTBAR_EXPANDED", ExpandedModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifierActions", "CATEGORY_HOTBAR_EXPANDED", {{"HOLDEXPANDED",true}}, "NONE")
+addon:ActionListAdd("GamePadModifiers", "CATEGORY_HOTBAR_EXPANDED", ExpandedModifierActions, "NONE")
+ExpandedModifierActions = addon:ActionListToTable(ExpandedModifierActions)
 
 local MacroModifierActions = {
-   ["MACRO CH_MACRO_1"] = [[ local down = ...
+   {"MACRO CH_MACRO_1", [[ local down = ...
       if down then
          self:SetAttribute("macro", "CH_MACRO_1")
       end
-   ]],
-   ["MACRO CH_MACRO_2"] = [[ local down = ...
+   ]]},
+   {"MACRO CH_MACRO_2", [[ local down = ...
       if down then
          self:SetAttribute("macro", "CH_MACRO_2")
       end
-   ]],
-   ["MACRO CH_MACRO_3"] = [[ local down = ...
+   ]]},
+   {"MACRO CH_MACRO_3", [[ local down = ...
       if down then
          self:SetAttribute("macro", "CH_MACRO_3")
       end
-   ]],
-   ["MACRO CH_MACRO_4"] = [[ local down = ...
+   ]]},
+   {"MACRO CH_MACRO_4", [[ local down = ...
       if down then
          self:SetAttribute("macro", "CH_MACRO_4")
       end
-   ]]
+   ]]}
 }
 
-config:ConfigListAdd("GamePadActions", "CATEGORY_MACRO", MacroModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifierActions", "CATEGORY_MACRO", MacroModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifiers", "CATEGORY_MACRO", MacroModifierActions, "NONE")
+addon:ActionListAdd("GamePadActions", "CATEGORY_MACRO", MacroModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifierActions", "CATEGORY_MACRO", MacroModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifiers", "CATEGORY_MACRO", MacroModifierActions, "NONE")
+MacroModifierActions = addon:ActionListToTable(MacroModifierActions)
 
 local TargetModifierActions = {
-   ["FOCUSTARGET"] = [[ local down = ...
+   {"FOCUSTARGET", [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/focus")
       end
-   ]],
-   ["TARGETFOCUS"] = [[ local down = ...
+   ]]},
+   {"TARGETFOCUS", [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/target focus")
       end
-   ]],
-   ["ASSISTTARGET"] = [[ local down = ...
+   ]]},
+   {"ASSISTTARGET", [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/assist")
       end
-   ]],
-   ["TARGETLASTHOSTILE"] = [[ local down = ...
+   ]]},
+   {"TARGETLASTHOSTILE", [[ local down = ...
       if down then
          self:SetAttribute("macrotext1", "/targetlastenemy")
       end
-   ]],
-   ["TARGETLASTTARGET"] = [[local down = ...
+   ]]},
+   {"TARGETLASTTARGET", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/targetlasttarget")
       end
-   ]],
-   ["TARGETNEARESTFRIEND"] = [[local down = ...
+   ]]},
+   {"TARGETNEARESTFRIEND", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/targetfriend")
       end
-   ]],
-   ["TARGETPREVIOUSFRIEND"] = [[local down = ...
+   ]]},
+   {"TARGETPREVIOUSFRIEND", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/targetfriend 1")
       end
-   ]],
-   ["TARGETNEARESTENEMY"] = [[local down = ...
+   ]]},
+   {"TARGETNEARESTENEMY", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/targetenemy")
       end
-   ]],
-   ["TARGETPREVIOUSENEMY"] = [[local down = ...
+   ]]},
+   {"TARGETPREVIOUSENEMY", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/targetenemy 1")
       end
-   ]],
-   ["TARGETSELF"] = [[local down = ...
+   ]]},
+   {"TARGETSELF", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/target player")
       end
-   ]],
-   ["TARGETPARTYMEMBER1"] = [[local down = ...
+   ]]},
+   {"TARGETPARTYMEMBER1", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/target party1")
       end
-   ]],
-   ["TARGETPARTYMEMBER2"] = [[local down = ...
+   ]]},
+   {"TARGETPARTYMEMBER2", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/target party2")
       end
-   ]],
-   ["TARGETPARTYMEMBER3"] = [[local down = ...
+   ]]},
+   {"TARGETPARTYMEMBER3", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/target party3")
       end
-   ]],
-   ["TARGETPARTYMEMBER4"] = [[local down = ...
+   ]]},
+   {"TARGETPARTYMEMBER4", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/target party4")
       end
-   ]],
-   ["CLEARTARGETING"] = [[local down = ...
+   ]]},
+   {"CLEARTARGETING", [[local down = ...
       if down then
          self:SetAttribute("macrotext1", "/cleartarget\n/stopspelltarget\n")
       end
-   ]]
+   ]]}
 }
 
-config:ConfigListAdd("GamePadActions", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifierActions", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifiers", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
+addon:ActionListAdd("GamePadActions", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifierActions", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifiers", "CATEGORY_TARGETING", TargetModifierActions, "NONE")
+TargetModifierActions = addon:ActionListToTable(TargetModifierActions)
 
 local CameraModifierActions = {
-   ["ZOOMIN"] = [[local down = ...
+   {"ZOOMIN", [[local down = ...
       local GamePadButtons = self:GetFrameRef('GamePadButtons')
       if GamePadButtons then
          GamePadButtons:CallMethod("ZoomIn", down)
       end
-   ]],
-   ["ZOOMOUT"] = [[local down = ...
+   ]]},
+   {"ZOOMOUT", [[local down = ...
       local GamePadButtons = self:GetFrameRef('GamePadButtons')
       if GamePadButtons then
          GamePadButtons:CallMethod("ZoomOut", down)
       end
-   ]],
-   ["CAMERALOOKON"] = [[local down = ...
+   ]]},
+   {"CAMERALOOKON", [[local down = ...
       if down then
         local GamePadButtons = self:GetFrameRef('GamePadButtons')
         if GamePadButtons then
            GamePadButtons:CallMethod("SetCameraLook", false)
         end
       end
-   ]],
-   ["CAMERALOOKOFF"] = [[local down = ...
+   ]]},
+   {"CAMERALOOKOFF", [[local down = ...
       if down then
         local GamePadButtons = self:GetFrameRef('GamePadButtons')
         if GamePadButtons then
            GamePadButtons:CallMethod("SetCameraLook", true)
         end
       end
-   ]],
-   ["CAMERALOOKTOGGLE"] = [[local down = ...
+   ]]},
+   {"CAMERALOOKTOGGLE", [[local down = ...
       if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
          if GamePadButtons then
             GamePadButtons:CallMethod("ToggleCameraLook")
          end
       end
-   ]],
-   ["CAMERALOOKHOLD"] = [[local down = ...
+   ]]},
+   {"CAMERALOOKHOLD", [[local down = ...
       local GamePadButtons = self:GetFrameRef('GamePadButtons')
       if GamePadButtons then
          GamePadButtons:CallMethod("HoldCameraLook", down)
       end
-   ]],
-   ["GAMEPADMOUSE"] = [[ local down = ...
+   ]]},
+   {"GAMEPADMOUSE", [[ local down = ...
       if down then
         local GamePadButtons = self:GetFrameRef('GamePadButtons')
         if GamePadButtons then
            GamePadButtons:CallMethod("SetGamePadMouse", nil)
         end
       end
-   ]]
+   ]]}
 }
 
-config:ConfigListAdd("GamePadActions", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifierActions", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifiers", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
+addon:ActionListAdd("GamePadActions", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifierActions", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifiers", "CATEGORY_CAMERA", CameraModifierActions, "NONE")
+CameraModifierActions = addon:ActionListToTable(CameraModifierActions)
 
 local PageModifierActions = {
-   ["NEXTPAGE"] = [[local down = ...
+   {"NEXTPAGE", [[local down = ...
       if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
          if GamePadButtons then
             GamePadButtons:CallMethod("GPPlaySound", 1115)
          end
          local Crosshotbar = self:GetFrameRef('Crosshotbar')
-         local offset = (Crosshotbar:GetAttribute("pageoffset") + 2)%10
-         Crosshotbar:SetAttribute("state-nextpage", offset)
-         Crosshotbar:SetAttribute("pageoffset", offset)
+         local newset = abs(Crosshotbar:GetAttribute("activeset") + 1)%6
+         if newset == 0 then newset = 6 end
+         Crosshotbar:SetAttribute("state-page", newset)
       end
-   ]],
-   ["PREVPAGE"] = [[local down = ...
+   ]]},
+   {"PREVPAGE", [[local down = ...
       if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
          if GamePadButtons then
             GamePadButtons:CallMethod("GPPlaySound", 1115)
          end
          local Crosshotbar = self:GetFrameRef('Crosshotbar')
-         local offset = abs(Crosshotbar:GetAttribute("pageoffset") + 8)%10
-         Crosshotbar:SetAttribute("state-nextpage", offset)
-         Crosshotbar:SetAttribute("pageoffset", offset)
+         local newset = abs(Crosshotbar:GetAttribute("activeset") + 5)%6
+         if newset == 0 then newset = 6 end
+         Crosshotbar:SetAttribute("state-page", newset)
       end
-   ]],
-   ["PAGEONE"] = [[local down = ...
+   ]]},
+   {"PAGEONE", [[local down = ...
       if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
          if GamePadButtons then
             GamePadButtons:CallMethod("GPPlaySound", 1115)
          end
          local Crosshotbar = self:GetFrameRef('Crosshotbar')
-         local offset = 2
-         Crosshotbar:SetAttribute("state-nextpage", offset)
-         Crosshotbar:SetAttribute("pageoffset", offset)
+         local newset = 1
+         Crosshotbar:SetAttribute("state-page", newset)
       end
-   ]],
-   ["PAGETWO"] = [[local down = ...
+   ]]},
+   {"PAGETWO", [[local down = ...
       if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
          if GamePadButtons then
             GamePadButtons:CallMethod("GPPlaySound", 1115)
          end
          local Crosshotbar = self:GetFrameRef('Crosshotbar')
-         local offset = 0
-         Crosshotbar:SetAttribute("state-nextpage", offset)
-         Crosshotbar:SetAttribute("pageoffset", offset)
+         local newset = 2
+         Crosshotbar:SetAttribute("state-page", newset)
       end
-   ]],
-   ["PAGETHREE"] = [[local down = ...
+   ]]},
+   {"PAGETHREE", [[local down = ...
       if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
          if GamePadButtons then
             GamePadButtons:CallMethod("GPPlaySound", 1115)
          end
          local Crosshotbar = self:GetFrameRef('Crosshotbar')
-         local offset = 4
-         Crosshotbar:SetAttribute("state-nextpage", offset)
-         Crosshotbar:SetAttribute("pageoffset", offset)
+         local newset = 3
+         Crosshotbar:SetAttribute("state-page", newset)
       end
-   ]],
-   ["PAGEFOUR"] = [[local down = ...
-         if down then
+   ]]},
+   {"PAGEFOUR", [[local down = ...
+      if down then
          local GamePadButtons = self:GetFrameRef('GamePadButtons')
          if GamePadButtons then
             GamePadButtons:CallMethod("GPPlaySound", 1115)
          end
-            local Crosshotbar = self:GetFrameRef('Crosshotbar')
-            local offset = 6
-            Crosshotbar:SetAttribute("state-nextpage", offset)
-            Crosshotbar:SetAttribute("pageoffset", offset)
+         local Crosshotbar = self:GetFrameRef('Crosshotbar')
+         local newset = 4
+         Crosshotbar:SetAttribute("state-page", newset)
+      end
+   ]]},
+   {"PAGEFIVE", [[local down = ...
+      if down then
+         local GamePadButtons = self:GetFrameRef('GamePadButtons')
+         if GamePadButtons then
+            GamePadButtons:CallMethod("GPPlaySound", 1115)
          end
-   ]]
+         local Crosshotbar = self:GetFrameRef('Crosshotbar')
+         local newset = 5
+         Crosshotbar:SetAttribute("state-page", newset)
+      end
+   ]]},
+   {"PAGESIX", [[local down = ...
+      if down then
+         local GamePadButtons = self:GetFrameRef('GamePadButtons')
+         if GamePadButtons then
+            GamePadButtons:CallMethod("GPPlaySound", 1115)
+         end
+         local Crosshotbar = self:GetFrameRef('Crosshotbar')
+         local newset = 6
+         Crosshotbar:SetAttribute("state-page", newset)
+      end
+   ]]}
 }
 
-config:ConfigListAdd("GamePadActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifierActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
-config:ConfigListAdd("GamePadModifiers", "CATEGORY_PAGING", PageModifierActions, "NONE")
+addon:ActionListAdd("GamePadActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifierActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
+addon:ActionListAdd("GamePadModifiers", "CATEGORY_PAGING", PageModifierActions, "NONE")
+PageModifierActions = addon:ActionListToTable(PageModifierActions)
 
 for key, value in pairs(ExpandedModifierActions) do ModifierActions[key] = value  end
 for key, value in pairs(MacroModifierActions) do ModifierActions[key] = value  end
@@ -410,7 +444,8 @@ local GamePadButtonsMixin = {
    RightShoulderButton = nil,
    LeftPaddleButton = nil,
    RightPaddleButton = nil,
-   MouseLookState = false
+   MouseLookState = false,
+   EnableSounds = false
 }
 
 function GamePadButtonsMixin:SetMouseLook(enable)
@@ -456,7 +491,9 @@ function GamePadButtonsMixin:SetGamePadCursorControl(enable)
 end
 
 function GamePadButtonsMixin:GPPlaySound(soundid)
-   PlaySound(soundid)
+   if self.EnableSounds then
+      PlaySound(soundid)
+   end
 end
 
 function GamePadButtonsMixin:ToggleSheath()
@@ -549,6 +586,7 @@ function GamePadButtonsMixin:SetGamePadMouse(enable)
             SetCVar('GamePadCursorRightClick', self.GamePadRightClick);
             self.GamePadMouseMode = true
             SetGamePadCursorControl(true)
+            self:GPPlaySound(100)
          else
             SetCVar('GamePadCursorAutoEnable', self.GamePadAutoEnable)
             SetCVar('GamePadCursorAutoDisableSticks', self.GamePadAutoDisableSticks)
@@ -557,9 +595,9 @@ function GamePadButtonsMixin:SetGamePadMouse(enable)
             SetCVar('GamePadCursorRightClick', 'NONE');      
             self.GamePadMouseMode = false
             SetGamePadCursorControl(false)
+            self:GPPlaySound(100)
          end
       end
-      self:GPPlaySound(100)
    end
 end
 
@@ -573,6 +611,13 @@ local SetButtonPairState = [[
    local GamePadButtons = self:GetFrameRef('GamePadButtons')
 
    if GamePadButtons ~= nil and type ~= 0 then
+
+      if pairname == "trigger" then
+         local expandedstate = GamePadButtons:GetAttribute("expandedstate")
+         if expandedstate == 4 and type == 2 then return end
+         if expandedstate == 5 and type == 3 then return end
+      end
+
       local state = GamePadButtons:GetAttribute(pairname.."state")
 
       local a = 0
@@ -602,7 +647,7 @@ local SetButtonPairState = [[
          state = a - b + 4
          GamePadButtons:SetAttribute("state-"..pairname, state)
       else
-         --print("Error " .. state .. " " .. a .. " " .. b .. " " .. type)
+        -- print("Error " .. state .. " " .. a .. " " .. b .. " " .. type)
       end
    end
 ]]
@@ -618,6 +663,11 @@ local SetButtonExpanded = [[
    if GamePadButtons ~= nil and type ~= 0 then
       local dclktype = GamePadButtons:GetAttribute("wxhbdclk")
       local state = GamePadButtons:GetAttribute("triggerstate")
+
+      local expandedstate = GamePadButtons:GetAttribute("expandedstate")
+      if expandedstate == 4 and type == 2 then return end
+      if expandedstate == 5 and type == 3 then return end
+
       if dclktype > 0 and state ~= 3 and state ~= 5 then
          GamePadButtons:SetAttribute("state-trigger", 4)
          if button == "LeftButton" then
@@ -835,6 +885,22 @@ function GamePadButtonsMixin:AddTriggerHandler()
       
       local Crosshotbar = self:GetFrameRef('Crosshotbar')
       if Crosshotbar ~= nil then
+
+         local hotbar_expanded = self:GetAttribute("expandedstate")
+
+         if hotbar_expanded >= 3 then
+            hotbar_expanded = 0
+            if (newstate == 6 or newstate == 3 or newstate == 2) then hotbar_expanded = 1 end
+            if (newstate == 7 or newstate == 5 or newstate == 1) then hotbar_expanded = 2 end
+         else
+            if not ((hotbar_expanded == 1 and (newstate == 6 or newstate == 3)) or
+                    (hotbar_expanded == 2 and (newstate == 7 or newstate == 5))) then
+               hotbar_expanded = 0
+               self:SetAttribute("expandedstate", 0)
+            end
+         end
+
+         Crosshotbar:SetAttribute("state-expanded", hotbar_expanded)
          Crosshotbar:SetAttribute("state-trigger", newstate)
       end
    ]])
@@ -897,7 +963,9 @@ function GamePadButtonsMixin:AddPaddleHandler()
 end
 
 function GamePadButtonsMixin:AddExpandedHandler()
+   self:SetAttribute("expandedstate", 0)
    self:SetAttribute("_onstate-expanded", [[
+      self:SetAttribute("expandedstate", newstate)
       local Crosshotbar = self:GetFrameRef('Crosshotbar')
       if Crosshotbar ~= nil then
          Crosshotbar:SetAttribute("state-expanded", newstate)
@@ -933,7 +1001,7 @@ function GamePadButtonsMixin:OnLoad()
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
    self:RegisterEvent("CURSOR_CHANGED")
    self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
-   
+
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
 end
 
@@ -1129,6 +1197,7 @@ function GamePadButtonsMixin:OnEvent(event, ...)
 end
 
 function GamePadButtonsMixin:SetupGamePad()
+   self.EnableSounds = false
    self.MouseLookEnabled = config.GamePad.MouseLook
    self.GamePadLookEnabled = config.GamePad.GamePadLook
    self.GamePadEnabled = config.GamePad.CVSetup
@@ -1140,7 +1209,7 @@ function GamePadButtonsMixin:SetupGamePad()
          SetCVar("enableMouseSpeed", 0)
       end
 
-      SetCVar('GamePadEnable', CrossHotbar_DB.GPEnable)
+      SetCVar('GamePadEnable', config.GamePad.GPEnable)
       SetCVar('GamePadEmulateShift', config.GamePad.GPShift)
       SetCVar('GamePadEmulateCtrl', config.GamePad.GPCtrl)
       SetCVar('GamePadEmulateAlt', config.GamePad.GPAlt)
@@ -1156,6 +1225,7 @@ function GamePadButtonsMixin:SetupGamePad()
       SetCVar('GamePadCameraPitchSpeed', config.GamePad.GPPitchSpeed)
       SetCVar('GamePadOverlapMouseMs', config.GamePad.GPOverlapMouse)
       SetCVar('GamePadSingleActiveID', config.GamePad.GPDeviceID)
+
    end
 
    self.GamePadLeftClick = GetCVar('GamePadCursorLeftClick')
@@ -1172,7 +1242,7 @@ function GamePadButtonsMixin:SetupGamePad()
    if self.GamePadLookEnabled then
       self:SetGamePadMouse(self.GamePadMouseMode)
    end
-
+   self.EnableSounds = true
 end
 
 function GamePadButtonsMixin:ClearConfig()

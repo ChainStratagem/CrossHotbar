@@ -60,8 +60,6 @@ addon.GamePadModifierList = {
 }
 
 addon.Defaults_DB = {
-   HBARType = "LIBA",
-   GPEnable = true,
    Presets = {
       [1] = {
          Mutable = false,
@@ -85,6 +83,7 @@ addon.Defaults_DB = {
             CVSetup = true,
             MouseLook = false,
             GamePadLook = true,
+            GPEnable = 1,
             GPAutoCursor = 0,
             GPAutoSticks = 0,
             GPAutoJump = 0,
@@ -101,9 +100,20 @@ addon.Defaults_DB = {
             GPRightClick = "PADRTRIGGER",
             GPOverlapMouse = 2000
          },
+         Interface = {
+            ActionBarHide = "HIDEALL",
+            VehicleBarHide = "HIDEALL",
+            UnitRaidOrientation = "VERTICAL",
+            UnitPartyOrientation = "VERTICAL",
+            UnitTargetActiveEnable = true,
+            UnitTargetActiveColor = {1.0, 1.0, 1.0},
+            UnitTargetInActiveEnable = true,
+            UnitTargetInActiveColor = {0.2, 1.0, 0.6},
+            UnitTargetPadding = 5
+         },
          PadActions = {
-            FACER = {BIND="PAD2",         ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
-            FACEU = {BIND="PAD4",         ACTION="JUMP",             TRIGACTION="HOTBARBTN2",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVUP",           PPADLTRIGACTION="HOTBARBTN6",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
+            FACER = {BIND="PAD2",         ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
+            FACEU = {BIND="PAD4",         ACTION="JUMP",             TRIGACTION="HOTBARBTN2",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVUP",           PPADLTRIGACTION="HOTBARBTN6",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             FACED = {BIND="PAD1",         ACTION="INTERACTTARGET",   TRIGACTION="HOTBARBTN3",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETHREE",    SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVDOWN",         PPADLTRIGACTION="HOTBARBTN7",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             FACEL = {BIND="PAD3" ,        ACTION="TOGGLEWORLDMAP",   TRIGACTION="HOTBARBTN4",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGEFOUR",     SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVLEFT",         PPADLTRIGACTION="HOTBARBTN8",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             DPADR = {BIND="PADDRIGHT",    ACTION="UNITNAVRIGHT",     TRIGACTION="HOTBARBTN5",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="NONE",         SPADRTRIGACTION="NONE",     PPADLACTION="NONE",                PPADLTRIGACTION="HOTBARBTN9",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
@@ -147,6 +157,7 @@ addon.Defaults_DB = {
             CVSetup = true,
             MouseLook = true,
             GamePadLook = false,
+            GPEnable = 1,
             GPAutoCursor = 0,
             GPAutoSticks = 0,
             GPAutoJump = 0,
@@ -163,9 +174,20 @@ addon.Defaults_DB = {
             GPRightClick = "PADRTRIGGER",
             GPOverlapMouse = 2000
          },
+         Interface = {
+            ActionBarHide = "HIDEALL",
+            VehicleBarHide = "HIDEALL",
+            UnitRaidOrientation = "VERTICAL",
+            UnitPartyOrientation = "VERTICAL",
+            UnitTargetActiveEnable = true,
+            UnitTargetActiveColor = {1.0, 1.0, 1.0},
+            UnitTargetInActiveEnable = true,
+            UnitTargetInActiveColor = {0.2, 1.0, 0.6},
+            UnitTargetPadding = 5
+         },
          PadActions = {
-            FACER = {BIND="1", ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
-            FACEU = {BIND="2", ACTION="JUMP",             TRIGACTION="HOTBARBTN2",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVUP",           PPADLTRIGACTION="HOTBARBTN6",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"}, 
+            FACER = {BIND="1", ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
+            FACEU = {BIND="2", ACTION="JUMP",             TRIGACTION="HOTBARBTN2",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVUP",           PPADLTRIGACTION="HOTBARBTN6",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"}, 
             FACED = {BIND="3", ACTION="INTERACTTARGET",   TRIGACTION="HOTBARBTN3",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETHREE",    SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVDOWN",         PPADLTRIGACTION="HOTBARBTN7",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"}, 
             FACEL = {BIND="4" ,ACTION="TOGGLEWORLDMAP",   TRIGACTION="HOTBARBTN4",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGEFOUR",     SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVLEFT",         PPADLTRIGACTION="HOTBARBTN8",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"}, 
             DPADR = {BIND="5", ACTION="UNITNAVRIGHT",     TRIGACTION="HOTBARBTN5",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="NONE",         SPADRTRIGACTION="NONE",     PPADLACTION="NONE",                PPADLTRIGACTION="HOTBARBTN9",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"}, 
@@ -209,6 +231,7 @@ addon.Defaults_DB = {
             CVSetup = true,
             MouseLook = true,
             GamePadLook = false,
+            GPEnable = 1,
             GPAutoCursor = 0,
             GPAutoSticks = 0,
             GPAutoJump = 0,
@@ -225,9 +248,20 @@ addon.Defaults_DB = {
             GPRightClick = "PADRTRIGGER",
             GPOverlapMouse = 2000
          },
+         Interface = {
+            ActionBarHide = "HIDEALL",
+            VehicleBarHide = "HIDEALL",
+            UnitRaidOrientation = "VERTICAL",
+            UnitPartyOrientation = "VERTICAL",
+            UnitTargetActiveEnable = true,
+            UnitTargetActiveColor = {1.0, 1.0, 1.0},
+            UnitTargetInActiveEnable = true,
+            UnitTargetInActiveColor = {0.2, 1.0, 0.6},
+            UnitTargetPadding = 5
+         },
          PadActions = {
-            FACER = {BIND="1",  ACTION="UNITNAVRIGHT",     TRIGACTION="HOTBARBTN1",          SPADLACTION="TARGETPARTYMEMBER2",     SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",     SPADRTRIGACTION="NONE",         PPADLACTION="NONE",               PPADLTRIGACTION="HOTBARBTN5",          PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
-            FACEU = {BIND="2",  ACTION="UNITNAVUP",        TRIGACTION="HOTBARBTN2",          SPADLACTION="TARGETPARTYMEMBER1",     SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",     SPADRTRIGACTION="NONE",         PPADLACTION="NONE",               PPADLTRIGACTION="HOTBARBTN6",          PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
+            FACER = {BIND="1",  ACTION="UNITNAVRIGHT",     TRIGACTION="HOTBARBTN1",          SPADLACTION="TARGETPARTYMEMBER2",     SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",     SPADRTRIGACTION="NONE",         PPADLACTION="NONE",               PPADLTRIGACTION="HOTBARBTN5",          PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
+            FACEU = {BIND="2",  ACTION="UNITNAVUP",        TRIGACTION="HOTBARBTN2",          SPADLACTION="TARGETPARTYMEMBER1",     SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",     SPADRTRIGACTION="NONE",         PPADLACTION="NONE",               PPADLTRIGACTION="HOTBARBTN6",          PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             FACED = {BIND="3",  ACTION="UNITNAVDOWN",      TRIGACTION="HOTBARBTN3",          SPADLACTION="TARGETPARTYMEMBER3",     SPADLTRIGACTION="NONE",     SPADRACTION="PAGETHREE",   SPADRTRIGACTION="NONE",         PPADLACTION="NONE",               PPADLTRIGACTION="HOTBARBTN7",          PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             FACEL = {BIND="4" , ACTION="UNITNAVLEFT",      TRIGACTION="HOTBARBTN4",          SPADLACTION="TARGETPARTYMEMBER4",     SPADLTRIGACTION="NONE",     SPADRACTION="PAGEFOUR",    SPADRTRIGACTION="NONE",         PPADLACTION="NONE",               PPADLTRIGACTION="HOTBARBTN8",          PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             DPADR = {BIND="5",  ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN9",          SPADLACTION="NONE",                   SPADLTRIGACTION="NONE",     SPADRACTION="NEXTPAGE",    SPADRTRIGACTION="NONE",         PPADLACTION="UNITNAVRIGHT",       PPADLTRIGACTION="NONE",                PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
@@ -271,6 +305,7 @@ addon.Defaults_DB = {
             CVSetup = true,
             MouseLook = false,
             GamePadLook = true,
+            GPEnable = 1,
             GPAutoCursor = 0,
             GPAutoSticks = 0,
             GPAutoJump = 0,
@@ -287,9 +322,20 @@ addon.Defaults_DB = {
             GPRightClick = "PADRTRIGGER",
             GPOverlapMouse = 2000
          },
+         Interface = {
+            ActionBarHide = "HIDEALL",
+            VehicleBarHide = "HIDEALL",
+            UnitRaidOrientation = "VERTICAL",
+            UnitPartyOrientation = "VERTICAL",
+            UnitTargetActiveEnable = true,
+            UnitTargetActiveColor = {1.0, 1.0, 1.0},
+            UnitTargetInActiveEnable = true,
+            UnitTargetInActiveColor = {0.2, 1.0, 0.6},
+            UnitTargetPadding = 5
+         },
          PadActions = {
-            FACER = {BIND="PAD2",         ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="TARGETPARTYMEMBER2",      SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
-            FACEU = {BIND="PAD4",         ACTION="JUMP",             TRIGACTION="HOTBARBTN2",          SPADLACTION="TARGETPARTYMEMBER1",      SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVUP",           PPADLTRIGACTION="HOTBARBTN6",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
+            FACER = {BIND="PAD2",         ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="TARGETPARTYMEMBER2",      SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
+            FACEU = {BIND="PAD4",         ACTION="JUMP",             TRIGACTION="HOTBARBTN2",          SPADLACTION="TARGETPARTYMEMBER1",      SPADLTRIGACTION="NONE",     SPADRACTION="PAGEONE",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVUP",           PPADLTRIGACTION="HOTBARBTN6",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             FACED = {BIND="PAD1",         ACTION="INTERACTTARGET",   TRIGACTION="HOTBARBTN3",          SPADLACTION="TARGETPARTYMEMBER3",      SPADLTRIGACTION="NONE",     SPADRACTION="PAGETHREE",    SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVDOWN",         PPADLTRIGACTION="HOTBARBTN7",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             FACEL = {BIND="PAD3" ,        ACTION="TOGGLEWORLDMAP",   TRIGACTION="HOTBARBTN4",          SPADLACTION="TARGETPARTYMEMBER4",      SPADLTRIGACTION="NONE",     SPADRACTION="PAGEFOUR",     SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVLEFT",         PPADLTRIGACTION="HOTBARBTN8",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
             DPADR = {BIND="PADDRIGHT",    ACTION="UNITNAVRIGHT",     TRIGACTION="HOTBARBTN5",          SPADLACTION="NONE",                    SPADLTRIGACTION="NONE",     SPADRACTION="NEXTPAGE",     SPADRTRIGACTION="NONE",     PPADLACTION="NONE",                PPADLTRIGACTION="HOTBARBTN9",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
@@ -318,10 +364,7 @@ addon.Config = CopyTable(addon.Defaults_DB.Presets[1])
 addon.Config.Mutable = true
 addon.Config.Name = ""
 
-function addon.Config:SetHotKeyText()
-end
-
-function addon.Config:ConfigListAdd(listname, category, valuetable, defaultvalue)
+function addon:ActionListAdd(listname, category, actionlist, defaultvalue)
    if addon[listname] == nil then
       addon[listname] = {{ cat = "", values = {defaultvalue} }}
    end
@@ -337,17 +380,38 @@ function addon.Config:ConfigListAdd(listname, category, valuetable, defaultvalue
       idx = #addon[listname]
    end
    
-   for key in pairs(valuetable) do
-      table.insert(addon[listname][idx].values, key)
+   for _,action in ipairs(actionlist) do
+      table.insert(addon[listname][idx].values, action[1])
    end
-
-   table.sort(addon[listname][idx].values)
+   
    table.sort(addon[listname], function (a, b)
       return(a.cat < b.cat)
    end)
 end
 
-function addon.Config:StorePreset(to, from)
+function addon:ActionListToTable(actionlist)
+   local actiontable = {}
+   for _,action in ipairs(actionlist) do
+      local key,value = unpack(action)
+      actiontable[key] = value
+   end
+   return actiontable
+end
+
+function addon:GetConfigDBValue(name) 
+   if CrossHotbar_DB and name then
+      return CrossHotbar_DB[name] 
+   end
+   return nil
+end
+
+function addon:SetConfigDBValue(name, value)
+   if CrossHotbar_DB and name and value then
+      CrossHotbar_DB[name] = value 
+   end
+end
+
+function addon:StorePreset(to, from)
    if to.Mutable then
       if from.Mutable then
          to.Name = from.Name
@@ -356,22 +420,35 @@ function addon.Config:StorePreset(to, from)
       end
       to.Description = from.Description
       if to.Hotbar == nil then to.Hotbar = {} end
-      for key, value in pairs(from.Hotbar) do
-         to.Hotbar[key] = value 
+      if from.Hotbar then
+         for key, value in pairs(from.Hotbar) do
+            to.Hotbar[key] = value 
+         end
       end
       
       if to.GamePad == nil then to.GamePad = {} end
-      for key, value in pairs(from.GamePad) do
-         to.GamePad[key] = value 
+      if from.GamePad then
+         for key, value in pairs(from.GamePad) do
+            to.GamePad[key] = value 
+         end
+      end
+
+      if to.Interface == nil then to.Interface = {} end
+      if from.Interface then
+         for key, value in pairs(from.Interface) do
+            to.Interface[key] = value 
+         end
       end
       
       if to.PadActions == nil then to.PadActions = {} end
-      for button, attributes in pairs(from.PadActions) do
-         for key, value in pairs(attributes) do
-            if to.PadActions[button] == nil then
-               to.PadActions[button] = {}
+      if from.PadActions then
+         for button, attributes in pairs(from.PadActions) do
+            for key, value in pairs(attributes) do
+               if to.PadActions[button] == nil then
+                  to.PadActions[button] = {}
+               end
+               to.PadActions[button][key] = value 
             end
-            to.PadActions[button][key] = value 
          end
       end
    end
@@ -421,18 +498,17 @@ function addon:ApplyConfig(updated)
 end
 
 function addon:InitConfig()
-   
    if CrossHotbar_DB == nil then
       CrossHotbar_DB = {
          Version = "v1.0.0",
          ActivePreset = 1,
-         HBARType = "LIBA",
-         GPEnable = true,
+         ActiveSet = 1,
          Presets = {}
       }
    end
    
    local preset = CrossHotbar_DB.ActivePreset;
+   
    local hassaves = false
    for k,p in pairs(CrossHotbar_DB.Presets) do
       if p.Mutable then
@@ -456,8 +532,12 @@ function addon:InitConfig()
       end
    end
 
-   addon.Config:StorePreset(addon.Config, CrossHotbar_DB.Presets[1])
-   addon.Config:StorePreset(addon.Config, CrossHotbar_DB.Presets[preset])
+   if CrossHotbar_DB.LastConfig then
+      addon:StorePreset(addon.Config, CrossHotbar_DB.LastConfig)
+   else
+      addon:StorePreset(addon.Config, CrossHotbar_DB.Presets[preset])
+   end
+   
    for i,callback in ipairs(addon.InitializeCallbacks) do
       callback()
    end
@@ -465,8 +545,16 @@ function addon:InitConfig()
    EventRegistry:UnregisterFrameEventAndCallback("ADDON_LOADED", addon)
 end
 
+function addon:StoreConfig()
+   CrossHotbar_DB.LastConfig = CopyTable(addon.Defaults_DB.Presets[1])
+   CrossHotbar_DB.LastConfig.Mutable = true
+   CrossHotbar_DB.LastConfig.Name = ""
+   addon:StorePreset(CrossHotbar_DB.LastConfig, addon.Config)
+end
+
 EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", addon.ApplyConfig, addon)
 EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", addon.ApplyConfig, addon)
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_LOGOUT", addon.StoreConfig, addon)
 EventRegistry:RegisterFrameEventAndCallback("ADDON_LOADED", addon.InitConfig, addon)
 
 addon.UIHider = CreateFrame("Frame", nil, UIParent)

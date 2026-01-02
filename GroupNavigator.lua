@@ -5,16 +5,34 @@ local GamePadButtonList = addon.GamePadButtonList
 local GamePadModifierList = addon.GamePadModifierList
 
 local ActionList = {
-   ["UNITNAVUP"] = true,
-   ["UNITNAVDOWN"] = true,
-   ["UNITNAVLEFT"] = true,
-   ["UNITNAVRIGHT"] = true
+   {"UNITNAVUP", true},
+   {"UNITNAVDOWN", true},
+   {"UNITNAVLEFT", true},
+   {"UNITNAVRIGHT", true}
 }
-config:ConfigListAdd("GamePadActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
-config:ConfigListAdd("GamePadModifierActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
+
+addon:ActionListAdd("GamePadActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
+addon:ActionListAdd("GamePadModifierActions", "CATEGORY_UNIT_NAVIGATION", ActionList, "NONE")
+ActionList = addon:ActionListToTable(ActionList)
+
+local PartyOrientationList = {
+   {"VERTICAL", true},
+   {"HORIZONTAL", true}
+}
+
+addon:ActionListAdd("PartyOrientation", "CATEGORY_UNIT_PARTYORIENTATION", PartyOrientationList)
+PartyOrientationList = addon:ActionListToTable(PartyOrientationList)
+
+local RaidOrientationList = {
+   {"VERTICAL", true},
+   {"HORIZONTAL", true}
+}
+
+addon:ActionListAdd("RaidOrientation", "CATEGORY_UNIT_RAIDORIENTATION", RaidOrientationList)
+RaidOrientationList = addon:ActionListToTable(RaidOrientationList)
 
 local GroupNavigatorMixin = {
-   SoftTargetFrame = CrossHotbarAddon_GroupNavigator_SoftTarget,
+   SoftTargetFrame = nil,
    ActiveBindings = {}
 }
 
@@ -56,29 +74,18 @@ function GroupNavigatorMixin:OnEvent(event, ...)
       if ChatFrame1EditBox then
          ChatFrame1EditBox:SetAltArrowKeyMode(false)
       end
-      self.SoftTargetFrame.selectionHighlight:SetTexture("Interface\\RaidFrame\\Raid-FrameHighlights");
-      self.SoftTargetFrame.selectionHighlight:SetTexCoord(0.00781250, 0.55468750, 0.28906250, 0.55468750 );
-      self.SoftTargetFrame.selectionHighlight:SetVertexColor(1.0, 1.0, 1.0);
-      self.SoftTargetFrame.selectionHighlight:SetAllPoints(self.SoftTargetFrame);
-      self.SoftTargetFrame:Hide()
-      
-      SecureHandlerSetFrameRef(self, "softtarget", self.SoftTargetFrame)
+      self.SoftTargetFrame:Hide()      
       self:updateRoster()
-      
-      self.SoftTargetFrame:Hide()
    elseif event == "PLAYER_TARGET_CHANGED" then
+      local active = false
       if UnitInRaid("player") or UnitInParty("player") then
-         local color = {0.2, 1.0, 0.6}
          if UnitInRaid("target") or UnitInParty("target") then
             if GetUnitName("target") == GetUnitName(self:GetAttribute("unit")) then
-               color = {1.0, 1.0, 1.0}
+               active = true
             end
          end
-         self.SoftTargetFrame.selectionHighlight:SetVertexColor(unpack(color))
-         self.SoftTargetFrame:Show()
-      else
-         self.SoftTargetFrame:Hide()
       end
+      self:SetSoftTargetActive(active)
    end
 end
 
@@ -127,6 +134,17 @@ function GroupNavigatorMixin:ApplyConfig()
       end
    end
    self:Execute([[ self:ClearBindings(); self:RunAttribute("SetActionBindings", "") ]])
+
+   self.SoftTargetFrame.activeHighlight:SetVertexColor(unpack(config.Interface.UnitTargetActiveColor));
+   self.SoftTargetFrame.activeHighlight.isEnabled = config.Interface.UnitTargetActiveEnable
+   self.SoftTargetFrame.inactiveHighlight:SetVertexColor(unpack(config.Interface.UnitTargetInActiveColor));
+   self.SoftTargetFrame.inactiveHighlight.isEnabled = config.Interface.UnitTargetInActiveEnable
+
+   local padding = config.Interface.UnitTargetPadding
+   self.SoftTargetFrame.activeHighlight:SetPoint("TOPLEFT", self.SoftTargetFrame, "TOPLEFT", -1*padding, padding)
+   self.SoftTargetFrame.activeHighlight:SetPoint("BOTTOMRIGHT", self.SoftTargetFrame, "BOTTOMRIGHT", padding, -1*padding)
+   self.SoftTargetFrame.inactiveHighlight:SetPoint("TOPLEFT", self.SoftTargetFrame, "TOPLEFT", -1*padding, padding)
+   self.SoftTargetFrame.inactiveHighlight:SetPoint("BOTTOMRIGHT", self.SoftTargetFrame, "BOTTOMRIGHT", padding, -1*padding)
 end
 
 function GroupNavigatorMixin:updateRoster() 
@@ -134,18 +152,17 @@ function GroupNavigatorMixin:updateRoster()
       local raid_id = UnitInRaid("player")
       if raid_id then
          self:SetAttribute("player_id", "raid"..raid_id)
-         self:SetAttribute("group_change", "true")
+         self:SetAttribute("group_change", true)
          self:AddUnitFrameRefs()
       elseif UnitInParty("player") then
          self:SetAttribute("player_id", "player")
-         self:SetAttribute("group_change", "true")
+         self:SetAttribute("group_change", true)
          self:AddUnitFrameRefs()
       end
    end
 end
 
 function GroupNavigatorMixin:AddUnitFrameRefs()
-
    if not InCombatLockdown() then
       self.units =  {}
       local inparty = true
@@ -179,12 +196,11 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                   end
                end
             end
-         end
-         
+         end         
          if hasUnits == true then
-               self:SetAttribute("max_group", max_i)
-               self:SetAttribute("max_unit", max_j)
-            self:WrapOnClick()
+            self:SetAttribute("max_group", max_i)
+            self:SetAttribute("max_unit", max_j)
+            self.SoftTargetFrame:Show()
          end
       end
       
@@ -215,9 +231,11 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                   end
                end
             end
-            self:SetAttribute("max_group", 8)
-            self:SetAttribute("max_unit", 5)
-            self:WrapOnClick()
+            if hasUnits then
+               self:SetAttribute("max_group", 8)
+               self:SetAttribute("max_unit", 5)
+               self.SoftTargetFrame:Show()
+            end
          else
             for j = 1,5 do
                local frame = _G["PartyFrame"]
@@ -252,26 +270,30 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                   end
                end
             end
-            self:SetAttribute("max_group", 1)
-            self:SetAttribute("max_unit", 5)
-            self:WrapOnClick()
+            if hasUnits then
+               self:SetAttribute("max_group", 1)
+               self:SetAttribute("max_unit", 5)
+               self.SoftTargetFrame:Show()
+            end
          end
       end
+   end
+end
+
+function GroupNavigatorMixin:SetSoftTargetActive(active)
+   if active then
+      self.SoftTargetFrame.activeHighlight:SetShown(self.SoftTargetFrame.activeHighlight.isEnabled)
+      self.SoftTargetFrame.inactiveHighlight:Hide()
+   else
+      self.SoftTargetFrame.activeHighlight:Hide()
+      self.SoftTargetFrame.inactiveHighlight:SetShown(self.SoftTargetFrame.inactiveHighlight.isEnabled)
    end
 end
 
 function GroupNavigatorMixin:UpdateSoftTarget(frameName)
    local frame = self.units[frameName]
    if frame then
-      local width = frame:GetWidth();
-      local height = frame:GetHeight();
-      self.SoftTargetFrame:ClearAllPoints()
-      self.SoftTargetFrame:SetPoint("CENTER", frame, "CENTER")
-      self.SoftTargetFrame:SetWidth(width+5)
-      self.SoftTargetFrame:SetHeight(height+5)
-   else
-      self.SoftTargetFrame:Hide()
-      self.SoftTargetFrame.selectionHighlight:SetVertexColor(0.2, 1.0, 0.6);
+      self.SoftTargetFrame:SetAllPoints(frame)
    end
 end
 
@@ -286,6 +308,7 @@ function GroupNavigatorMixin:WrapOnClick()
 
    local max_group = self:GetAttribute("max_group")
    local max_unit = self:GetAttribute("max_unit")
+   local group_vertical = self:GetAttribute("group_vertical")
 
    local newunit = "player"
    local player_id = self:GetAttribute("player_id")
@@ -367,15 +390,27 @@ function GroupNavigatorMixin:WrapOnClick()
             if unitfound then
                if UnitPlayerOrPetInRaid("target") or
                   UnitPlayerOrPetInParty("target") then
-    
-                  if button == "Button4" then
-                     lastunit = (lastunit + num_units - 1) % num_units
-                  elseif button == "Button5" then
-                     lastunit = (lastunit + 1) % num_units
-                  elseif button == "LeftButton" then
-                     lastgroup = (lastgroup + num_groups - 1) % num_groups
-                  elseif button == "RightButton" then
-                     lastgroup = (lastgroup + 1) % num_groups
+
+                  if group_vertical then
+                     if button == "Button4" then
+                        lastunit = (lastunit + num_units - 1) % num_units
+                     elseif button == "Button5" then
+                        lastunit = (lastunit + 1) % num_units
+                     elseif button == "LeftButton" then
+                        lastgroup = (lastgroup + num_groups - 1) % num_groups
+                     elseif button == "RightButton" then
+                        lastgroup = (lastgroup + 1) % num_groups
+                     end
+                  else
+                     if button == "LeftButton" then
+                        lastunit = (lastunit + num_units - 1) % num_units
+                     elseif button == "RightButton" then
+                        lastunit = (lastunit + 1) % num_units
+                     elseif button == "Button4" then
+                        lastgroup = (lastgroup + num_groups - 1) % num_groups
+                     elseif button == "Button5" then
+                        lastgroup = (lastgroup + 1) % num_groups
+                     end
                   end
                   
                   if lastgroup == 0 then
@@ -423,11 +458,40 @@ function GroupNavigatorMixin:WrapOnClick()
 end
 
 local CreateGroupNavigator = function(parent)
+
+   local SoftTargetFrame = CreateFrame("Frame", ADDON .. "SoftTarget", UIParent)
+   SoftTargetFrame:SetFrameStrata("MEDIUM")
+   SoftTargetFrame:EnableMouse(false)
+   SoftTargetFrame:SetFrameLevel(10)
+   SoftTargetFrame:SetPoint("TOP", UIParent, "LEFT", 0, 0)
+   
+   SoftTargetFrame.activeHighlight = SoftTargetFrame:CreateTexture(nil, "OVERLAY")
+   SoftTargetFrame.activeHighlight:SetTexture("Interface\\RaidFrame\\Raid-FrameHighlights");
+   SoftTargetFrame.activeHighlight:SetTexCoord(0.00781250, 0.55468750, 0.28906250, 0.55468750 );
+   SoftTargetFrame.activeHighlight:SetPoint("TOPLEFT", SoftTargetFrame, "TOPLEFT", -5, 5)
+   SoftTargetFrame.activeHighlight:SetPoint("BOTTOMRIGHT", SoftTargetFrame, "BOTTOMRIGHT", 5, -5)
+   SoftTargetFrame.activeHighlight:SetVertexColor(1.0, 1.0, 1.0);
+   SoftTargetFrame.activeHighlight.isEnabled = true
+   SoftTargetFrame.activeHighlight:Hide()
+   
+   SoftTargetFrame.inactiveHighlight = SoftTargetFrame:CreateTexture(nil, "OVERLAY")
+   SoftTargetFrame.inactiveHighlight:SetTexture("Interface\\RaidFrame\\Raid-FrameHighlights");
+   SoftTargetFrame.inactiveHighlight:SetTexCoord(0.00781250, 0.55468750, 0.28906250, 0.55468750 );
+   SoftTargetFrame.inactiveHighlight:SetPoint("TOPLEFT", SoftTargetFrame, "TOPLEFT", -5, 5)
+   SoftTargetFrame.inactiveHighlight:SetPoint("BOTTOMRIGHT", SoftTargetFrame, "BOTTOMRIGHT", 5, -5)
+   SoftTargetFrame.inactiveHighlight:SetVertexColor(0.2, 1.0, 0.6);
+   SoftTargetFrame.inactiveHighlight.isEnabled = true
+   SoftTargetFrame.inactiveHighlight:Hide()
+   SoftTargetFrame:Hide()
+   
    local GroupNavigator = CreateFrame("Button", ADDON .. "GroupNavigator", parent,
                                       "SecureActionButtonTemplate, SecureHandlerStateTemplate")
 
    Mixin(GroupNavigator, GroupNavigatorMixin)
 
+   GroupNavigator.SoftTargetFrame = SoftTargetFrame
+   addon.SoftTargetFrame = SoftTargetFrame
+   
    GroupNavigator:SetFrameStrata("BACKGROUND")
    GroupNavigator:SetPoint("TOP", parent:GetName(), "LEFT", 0, 0)
    GroupNavigator:Hide()
@@ -440,9 +504,10 @@ local CreateGroupNavigator = function(parent)
    GroupNavigator:SetAttribute("*type4", "target")
    GroupNavigator:SetAttribute("*type5", "target")
    GroupNavigator:SetAttribute("unit", "player")
-   GroupNavigator:SetAttribute("group_change", "true")
+   GroupNavigator:SetAttribute("group_change", true)
    GroupNavigator:SetAttribute("max_group", 1)
    GroupNavigator:SetAttribute("max_unit", 5)
+   GroupNavigator:SetAttribute("group_vertical", true)
 
    GroupNavigator:AddStateHandlers()
 

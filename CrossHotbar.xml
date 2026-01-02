@@ -5,8 +5,7 @@
   <Frame name="WXHBHotbarTemplate" virtual="true" inherits="SecureHandlerStateTemplate" parent="UIParent" frameStrata="MEDIUM" hidden="true" mixin="HotbarMixin">
     <Size x="554" y="35"/>
     <KeyValues>
-      <KeyValue key="BarName" value="MainMenuBar" type="string"/>
-      <KeyValue key="BtnPrefix" value="ActionButton" type="string"/>
+      <KeyValue key="BtnPrefix" value="" type="string"/>
       <KeyValue key="Type" value="LHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.00" type="number"/>
       <KeyValue key="hasHighlights" value="false" type="boolean"/>
@@ -91,15 +90,13 @@
       <Attribute name="triggerstate" type="number" value="4"/>
       <Attribute name="shoulderstate" type="number" value="4"/>
       <Attribute name="paddlestate" type="number" value="4"/>
-      <Attribute name="pageoffset" type="number" value="0"/>
+      <Attribute name="activeset" type="number" value="1"/>
     </Attributes>
   </Frame>
   
   <Frame name="WXHBLHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MainMenuBar" type="string"/>
-      <KeyValue key="BtnPrefix" value="MainMenuBarButton" type="string"/>
       <KeyValue key="Type" value="LHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
       <KeyValue key="hasHighlights" value="true" type="boolean"/>
@@ -115,8 +112,6 @@
   <Frame name="WXHBLHotbar2" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MultiBarLeft" type="string"/>
-      <KeyValue key="BtnPrefix" value="MultiBarLeftButton" type="string"/>
       <KeyValue key="Type" value="LHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.00" type="number"/>
       <KeyValue key="hasHighlights" value="false" type="boolean"/>
@@ -130,8 +125,6 @@
   <Frame name="WXHBLHotbar3" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MultiBar5" type="string"/>
-      <KeyValue key="BtnPrefix" value="MultiBar5Button" type="string"/>
       <KeyValue key="commandNamePrefix" value="LHOTBAR3" type="string"/>
       <KeyValue key="Type" value="LHotbar" type="string"/>
       <KeyValue key="Scaling" value="0.85" type="number"/>
@@ -147,8 +140,6 @@
   <Frame name="WXHBRHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MultiBarBottomLeft" type="string"/>
-      <KeyValue key="BtnPrefix" value="MultiBarBottomLeftButton" type="string"/>
       <KeyValue key="Type" value="RHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
       <KeyValue key="hasHighlights" value="true" type="boolean"/>
@@ -164,8 +155,6 @@
   <Frame name="WXHBRHotbar2" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MultiBarRight" type="string"/>
-      <KeyValue key="BtnPrefix" value="MultiBarRightButton" type="string"/>
       <KeyValue key="Type" value="RHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.00" type="number"/>
       <KeyValue key="hasHighlights" value="false" type="boolean"/>
@@ -179,8 +168,6 @@
   <Frame name="WXHBRHotbar3" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MultiBar6" type="string"/>
-      <KeyValue key="BtnPrefix" value="MultiBar6Button" type="string"/>
       <KeyValue key="Type" value="RHotbar" type="string"/>
       <KeyValue key="Scaling" value="0.85" type="number"/>
       <KeyValue key="hasHighlights" value="false" type="boolean"/>
@@ -195,8 +182,6 @@
   <Frame name="WXHBLRHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MultiBarBottomRight" type="string"/>
-      <KeyValue key="BtnPrefix" value="MultiBarBottomRightButton" type="string"/>
       <KeyValue key="Type" value="LRHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
       <KeyValue key="hasHighlights" value="true" type="boolean"/>
@@ -212,8 +197,6 @@
   <Frame name="WXHBRLHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="MEDIUM" hidden="false">
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
-      <KeyValue key="BarName" value="MultiBar7" type="string"/>
-      <KeyValue key="BtnPrefix" value="MultiBar7Button" type="string"/>
       <KeyValue key="Type" value="RLHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
       <KeyValue key="hasHighlights" value="true" type="boolean"/>

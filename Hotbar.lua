@@ -1,30 +1,27 @@
 local ADDON, addon = ...
 local config = addon.Config
 
-local HBARList = {
-   ["LIBA"] = true,
-   ["BLIZ"] = true,
-}
-config:ConfigListAdd("HotbarHBARTypes", "CATEGORY_HOTBAR_TYPE", HBARList)
-
 local HKEYList = {
-   ["_SHP"] = true,
-   ["_LTR"] = true,
+   {"_SHP", true},
+   {"_LTR", true},
 }
-config:ConfigListAdd("HotbarHKEYTypes", "CATEGORY_HOTBAR_KEY", HKEYList)
+addon:ActionListAdd("HotbarHKEYTypes", "CATEGORY_HOTBAR_KEY", HKEYList)
+HKEYList = addon:ActionListToTable(HKEYList)
 
 local WXHBList = {
-   ["HIDE"] = true,
-   ["FADE"] = true,
-   ["SHOW"] = true
+   {"HIDE", true},
+   {"FADE", true},
+   {"SHOW", true}
 }
-config:ConfigListAdd("HotbarWXHBTypes", "CATEGORY_HOTBAR_WXHB", WXHBList)
+addon:ActionListAdd("HotbarWXHBTypes", "CATEGORY_HOTBAR_WXHB", WXHBList)
+WXHBList = addon:ActionListToTable(WXHBList)
 
 local DDAAList = {
-   ["DADA"] = true,
-   ["DDAA"] = true,
+   {"DADA", true},
+   {"DDAA", true},
 }
-config:ConfigListAdd("HotbarDDAATypes", "CATEGORY_HOTBAR_DDAA", DDAAList)
+addon:ActionListAdd("HotbarDDAATypes", "CATEGORY_HOTBAR_DDAA", DDAAList)
+DDAAList = addon:ActionListToTable(DDAAList)
 
 local ButtonLayout = {
    ["DADA"] = {
@@ -109,20 +106,9 @@ end
 
 function HotbarMixin:OnLoad()
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-   addon:AddInitCallback(GenerateClosure(self.SetupHotbar, self))
-   addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
 end
 
-function HotbarMixin:SetupHotbar()
-
-   -- Workaround for MainMenuBar in Midnight
-   if self.BarName == "MainMenuBar" then
-      if _G[self.BarName] == nil then
-         self.BarName = "MainActionBar"
-         self.BtnPrefix = "ActionBarButton"
-      end
-   end
-   
+function HotbarMixin:SetupHotbar()   
    self.AnchorButtons = {}
    self.Highlights = {}
    self:AddActionBar()
@@ -132,7 +118,6 @@ function HotbarMixin:SetupHotbar()
    self:AddVisibilityHandler()
    self:AddModHandler()
    self:AddExpandHandler()
-   self:AddNextPageHandler()
    
    local pageindex = self:GetAttribute("pageindex")
    local pageprefix = self:GetAttribute("pageprefix")
@@ -225,54 +210,6 @@ function HotbarMixin:AddActionBar()
       self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
       hooksecurefunc(self.Buttons[i], "SetAlpha", GenerateClosure(self.SetAlphaHook, self))
       hooksecurefunc(self.Buttons[i].icon, "SetDesaturated", GenerateClosure(self.HookDesatHook, self))
-   end
-
-   if _G[self.BarName].EndCaps then
-      _G[self.BarName].EndCaps.LeftEndCap:SetShown(false)
-      _G[self.BarName].EndCaps.RightEndCap:SetShown(false)
-   end
-   if _G[self.BarName].BorderArt then
-      _G[self.BarName].BorderArt:SetTexture(nil)
-   end
-   if _G[self.BarName].Background then
-      _G[self.BarName].Background:SetShown(false)
-   end
-   if _G[self.BarName].ActionBarPageNumber then
-      _G[self.BarName].ActionBarPageNumber:SetShown(false)
-      _G[self.BarName].ActionBarPageNumber.Text:SetShown(false)
-   end
-   
-   if _G[self.BarName].system then
-      _G[self.BarName]["isShownExternal"] = nil
-      local c = 42
-      repeat
-         if _G[self.BarName][c]  == nil then
-            _G[self.BarName][c]  = nil
-         end
-         c = c + 1
-      until issecurevariable(_G[self.BarName], "isShownExternal")
-   end
-   if _G[self.BarName].HideBase then
-      _G[self.BarName]:HideBase()
-   else
-      _G[self.BarName]:Hide()
-   end
-   _G[self.BarName]:ClearAllPoints()
-   _G[self.BarName]:SetParent(addon.UIHider)
-   
-   _G[self.BarName]:UnregisterEvent("PLAYER_REGEN_ENABLED")
-   _G[self.BarName]:UnregisterEvent("PLAYER_REGEN_DISABLED")
-   _G[self.BarName]:UnregisterEvent("ACTIONBAR_SHOWGRID")
-   _G[self.BarName]:UnregisterEvent("ACTIONBAR_HIDEGRID")
-   
-   local containers = { _G[self.BarName]:GetChildren() }
-   for i,container in ipairs(containers) do
-      local buttons = { container:GetChildren() }
-      for j,button in ipairs(buttons) do
-         button:Hide()
-         button:UnregisterAllEvents()
-         button:SetAttribute("statehidden", true)
-      end
    end
    
    for i,button in ipairs(self.Buttons) do
@@ -440,24 +377,6 @@ function HotbarMixin:UpdateExpanded(newstate)
       end
    end
    self.BtnLock = true
-end
-
-function HotbarMixin:AddNextPageHandler()
-   self:SetAttribute('_onstate-hotbar-nextpage', [[
-      local activestate = self:GetAttribute("activestate")
-      if activestate < 3 then
-         local pageindex = self:GetAttribute("pageindex")
-         local pageprefix = self:GetAttribute("pageprefix")
-
-         pageindex = (pageindex + newstate)%10
-
-         if pageindex == 0 then
-            pageindex = 10
-         end
-
-         RegisterStateDriver(self, 'page', pageprefix .. pageindex)
-      end
-   ]])
 end
 
 function HotbarMixin:UpdateHotbar()
@@ -667,8 +586,7 @@ function HotbarMixin:ApplyConfig()
    local pageindex = config.Hotbar[string.gsub(self.Type, 'Hotbar', 'PageIndex')]
    self:SetAttribute('pageprefix', pageprefix)
    self:SetAttribute('pageindex', pageindex)
-   RegisterStateDriver(self, 'page', pageprefix .. pageindex)
-   
+
    self:AddModHandler()
 
    if config.Hotbar.WXHBType == "HIDE" then
