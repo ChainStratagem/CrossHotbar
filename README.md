@@ -1,9 +1,9 @@
-## CrossHotbar
+# CrossHotbar
 
-# WoW Cross hotbar actionbar addon
+## WoW Cross hotbar actionbar addon
 * Addon to reconfigure default Actionbars into the WXHB Crosshotbar found in FFXIV.
 
-# Features:
+## Features:
    * Left and right hotbar selection with extended right-left and left-right back hotbars.
    * Double click expands hotbar and maps actions buttons[9-12] onto face buttons.
    * Reconfigurable modifier buttons to override default action settings.
