@@ -39,7 +39,7 @@
 
 ## Crosshotbar-1.0.16-release
 * Changes to support Midnight beta.
-* Removing libActionButton dependencies and using native WOW UI button templates.
+* Removing libActionButton dependencies and using native Blizzard button templates.
 * libActionButton option description has been changed to "Create Hotbars internally".
 
 ## Crosshotbar-1.0.15-release
