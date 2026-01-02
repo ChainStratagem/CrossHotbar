@@ -7,7 +7,7 @@
       * Exisiting saved profiles will not get the new default.
    * Configuration presets have new fields to support the new options.
       * Exisiting saved presets should be resaved to store the new field defaults.
-* Added Interface UI to control to control UI features.
+* Added Interface UI to configure interfacing features.
    * Blizzard ActionBar and VehicleBar Hides.
    * Party and Raid orientation menus for unit frame traversal (left, right, up, down).
    * Unit highlight color settings for active and inactive party/raid frame targets.
