@@ -405,7 +405,7 @@ function ConfigUI:CreateFrame()
       descript:SetWidth(ConfigFrame:GetWidth() - 4 * self.Inset)
       descript:SetJustifyH("LEFT")
       descript:SetText([[
-Addon to reconfigure default Actionbars into the WXHB Crosshotbar found in FFXIV.
+Addon to create Actionbars simlar to the WXHB Crosshotbar found in FFXIV.
 
 Features:
 
