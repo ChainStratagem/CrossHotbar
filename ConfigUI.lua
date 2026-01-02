@@ -171,10 +171,12 @@ local Locale = {
    deviceToolTip = "The DeviceId of the gamepad.",
    leftclickToolTip = "Left click binding for mouse mode.",
    rightclickToolTip = "Right click binding for mouse mode.",
-   actionbarhideToolTip = "Settings to hide Blizzard's ActionBars.",
-   vehiclebarhideToolTip = "Settings to hide Blizzard's VehicleBar.",
-   partyorienToolTip = "Settings to control traversal direction when navigating party unit frames.",
-   raidorienToolTip = "Settings to control traversal direction when navigating raid unit frames.",
+   actionbarhideToolTip = "Hide Blizzard's ActionBars.",
+   vehiclebarhideToolTip = "Hide Blizzard's VehicleBar.",
+   partyorienToolTip = "Traversal direction when navigating party unit frames.",
+   raidorienToolTip = "Traversal direction when navigating raid unit frames.",
+   targetcolorToolTip = "Color for the unit highlight. Active is the highlight around a party or raid unit that is currently targeted. Inactive is the highlight of the last targeted party unit that is no longer targeted.",
+   highlightpaddingToolTip = "Padding for the unit highlight. The padding will increase the size of the hightlight.",
    CATEGORY_HOTBAR_TYPE = "Hotbar types",
    CATEGORY_HOTBAR_KEY = "Hotkey types",
    CATEGORY_HOTBAR_WXHB = "Expanded types",
@@ -1950,6 +1952,7 @@ function ConfigUI:CreateInterfaceSettings(configFrame, anchorFrame)
    targetcolorsubtitle:SetJustifyH("CENTER")
    targetcolorsubtitle:SetJustifyV("TOP")
    targetcolorsubtitle:SetText("Highlight colors")
+   ConfigUI:AddToolTip(targetcolorsubtitle, Locale.targetcolorToolTip, true)
    
    local ActiveTargetColorButtonsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontWhite")
    ActiveTargetColorButtonsubtitle:SetWidth(DropDownWidth/4-self.Inset)
@@ -2054,17 +2057,18 @@ function ConfigUI:CreateInterfaceSettings(configFrame, anchorFrame)
         Highlight size offset
    --]]
    
-   local highlightoffsetsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-   highlightoffsetsubtitle:SetHeight(self.ButtonHeight)
-   highlightoffsetsubtitle:SetWidth(DropDownWidth)
-   highlightoffsetsubtitle:SetPoint("TOP", RaidOrienDropDown, "BOTTOM", 0, -self.ConfigSpacing)
-   highlightoffsetsubtitle:SetNonSpaceWrap(true)
-   highlightoffsetsubtitle:SetJustifyH("CENTER")
-   highlightoffsetsubtitle:SetJustifyV("TOP")
-   highlightoffsetsubtitle:SetText("Highlight padding")
+   local highlightpaddingsubtitle = configFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+   highlightpaddingsubtitle:SetHeight(self.ButtonHeight)
+   highlightpaddingsubtitle:SetWidth(DropDownWidth)
+   highlightpaddingsubtitle:SetPoint("TOP", RaidOrienDropDown, "BOTTOM", 0, -self.ConfigSpacing)
+   highlightpaddingsubtitle:SetNonSpaceWrap(true)
+   highlightpaddingsubtitle:SetJustifyH("CENTER")
+   highlightpaddingsubtitle:SetJustifyV("TOP")
+   highlightpaddingsubtitle:SetText("Highlight padding")
+   ConfigUI:AddToolTip(highlightpaddingsubtitle, Locale.highlightpaddingToolTip, true)
    
    local HighlightPaddingEditbox = CreateFrame("EditBox", nil, configFrame, "InputBoxTemplate")
-   HighlightPaddingEditbox:SetPoint("TOP", highlightoffsetsubtitle, "BOTTOM", 0, 0)
+   HighlightPaddingEditbox:SetPoint("TOP", highlightpaddingsubtitle, "BOTTOM", 0, 0)
    HighlightPaddingEditbox:SetWidth(self.ButtonWidth/2)
    HighlightPaddingEditbox:SetHeight(self.EditBoxHeight)
    HighlightPaddingEditbox:SetMovable(false)

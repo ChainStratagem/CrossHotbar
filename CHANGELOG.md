@@ -14,15 +14,15 @@
    * Unit highlight size padding.
 * Changed action lists for menus to retain order.
 * Added SET identifier text at the bottom of the CrossHotbar.
-   * Conditional paging was changed to apply to only SET1 to mimic the MainActonBar behavior.
+   * Conditional paging was changed to apply to only SET 1 to mimic the MainActonBar behavior.
    * SET 1 contains the pages set in the Hotbar UI with conditionals applied.
-   * SETs [2-6] now have a fixed assignment and not based off the SET 1 assignments.
-   * SETS 2 starts pages [1,2] and ends with SET 6 pages [11,12].
+   * SETs [2-6] now have a fixed assignment and not calculated from SET 1 assignments.
+   * SETs [2-6] starts pages [1,2] and ends with pages [11,12].
 * Updated behavor of LEFTEXPANDED, RIGHTEXPANDED to act as HOLDEXPANDED when the hotbar is active.
 
 ## Crosshotbar-1.0.19-release
 * Change unit soft targeting highlight to unprotected frame and remove set parent call to unit frame.
-   *This fixes an issue with secret values in Midnight PTR.
+   * This fixes an issue with secret values in Midnight PTR.
 
 ## Crosshotbar-1.0.18-release
 * Updated toc for ptr 120000
