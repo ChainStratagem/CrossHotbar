@@ -109,7 +109,7 @@ addon.Defaults_DB = {
             UnitTargetActiveColor = {1.0, 1.0, 1.0},
             UnitTargetInActiveEnable = true,
             UnitTargetInActiveColor = {0.2, 1.0, 0.6},
-            UnitTargetPadding = 5
+            UnitTargetPadding = 3
          },
          PadActions = {
             FACER = {BIND="PAD2",         ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
@@ -183,7 +183,7 @@ addon.Defaults_DB = {
             UnitTargetActiveColor = {1.0, 1.0, 1.0},
             UnitTargetInActiveEnable = true,
             UnitTargetInActiveColor = {0.2, 1.0, 0.6},
-            UnitTargetPadding = 5
+            UnitTargetPadding = 3
          },
          PadActions = {
             FACER = {BIND="1", ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="NONE",          SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
@@ -257,7 +257,7 @@ addon.Defaults_DB = {
             UnitTargetActiveColor = {1.0, 1.0, 1.0},
             UnitTargetInActiveEnable = true,
             UnitTargetInActiveColor = {0.2, 1.0, 0.6},
-            UnitTargetPadding = 5
+            UnitTargetPadding = 3
          },
          PadActions = {
             FACER = {BIND="1",  ACTION="UNITNAVRIGHT",     TRIGACTION="HOTBARBTN1",          SPADLACTION="TARGETPARTYMEMBER2",     SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",     SPADRTRIGACTION="NONE",         PPADLACTION="NONE",               PPADLTRIGACTION="HOTBARBTN5",          PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},
@@ -331,7 +331,7 @@ addon.Defaults_DB = {
             UnitTargetActiveColor = {1.0, 1.0, 1.0},
             UnitTargetInActiveEnable = true,
             UnitTargetInActiveColor = {0.2, 1.0, 0.6},
-            UnitTargetPadding = 5
+            UnitTargetPadding = 3
          },
          PadActions = {
             FACER = {BIND="PAD2",         ACTION="CLEARTARGETING",   TRIGACTION="HOTBARBTN1",          SPADLACTION="TARGETPARTYMEMBER2",      SPADLTRIGACTION="NONE",     SPADRACTION="PAGETWO",      SPADRTRIGACTION="NONE",     PPADLACTION="UNITNAVRIGHT",        PPADLTRIGACTION="HOTBARBTN5",      PPADRACTION="NONE",      PPADRTRIGACTION="NONE"},

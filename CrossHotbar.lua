@@ -179,12 +179,16 @@ end
 
 function CrossHotbarMixin:OnEvent(event, ...)
    if ( event == "PLAYER_ENTERING_WORLD" ) then
+      local isInitialLogin, isReloadingUi = ...
       self:UpdateCrosshotbar()
       
       local activeset = self:GetAttribute("activeset")
-      local configset = addon:GetConfigDBValue("ActiveSet")
-      if configset and configset >= 1 and configset <= 6  then
-         activeset = configset
+      
+      if isInitialLogin or isReloadingUi then 
+         local configset = addon:GetConfigDBValue("ActiveSet")
+         if configset and configset >= 1 and configset <= 6  then
+            activeset = configset
+         end
       end
 
       self:SetAttribute("state-page", activeset)

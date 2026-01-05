@@ -33,7 +33,9 @@ RaidOrientationList = addon:ActionListToTable(RaidOrientationList)
 
 local GroupNavigatorMixin = {
    SoftTargetFrame = nil,
-   ActiveBindings = {}
+   ActiveBindings = {},
+   PartyIsVertical = true,
+   RaidIsVertical = true
 }
 
 function GroupNavigatorMixin:OnLoad()
@@ -145,6 +147,15 @@ function GroupNavigatorMixin:ApplyConfig()
    self.SoftTargetFrame.activeHighlight:SetPoint("BOTTOMRIGHT", self.SoftTargetFrame, "BOTTOMRIGHT", padding, -1*padding)
    self.SoftTargetFrame.inactiveHighlight:SetPoint("TOPLEFT", self.SoftTargetFrame, "TOPLEFT", -1*padding, padding)
    self.SoftTargetFrame.inactiveHighlight:SetPoint("BOTTOMRIGHT", self.SoftTargetFrame, "BOTTOMRIGHT", padding, -1*padding)
+
+   self.PartyIsVertical = (config.Interface.UnitPartyOrientation == "VERTICAL")
+   self.RaidIsVertical = (config.Interface.UnitRaidOrientation == "VERTICAL")
+
+   if UnitInRaid("player") then 
+      self:SetAttribute("group_vertical", self.RaidIsVertical)
+   elseif UnitInParty("player") then
+      self:SetAttribute("group_vertical", self.PartyIsVertical)
+   end
 end
 
 function GroupNavigatorMixin:updateRoster() 
@@ -166,11 +177,12 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
    if not InCombatLockdown() then
       self.units =  {}
       local inparty = true
-      local groupType = CompactRaidGroupTypeEnum.Party;
       if UnitInRaid("player") then 
          inparty = false
-         groupType = CompactRaidGroupTypeEnum.Raid;
-      end 
+         self:SetAttribute("group_vertical", self.RaidIsVertical)
+      else
+         self:SetAttribute("group_vertical", self.PartyIsVertical)
+      end
 
       local hasUnits = false
       

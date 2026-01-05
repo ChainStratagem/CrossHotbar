@@ -1875,7 +1875,7 @@ function ConfigUI:CreateInterfaceSettings(configFrame, anchorFrame)
       return config.Interface.UnitPartyOrientation == type
    end
    
-   local function SetActioBarHideTypeSelected(type)
+   local function SetPartyOrienTypeSelected(type)
       config.Interface.UnitPartyOrientation = type
       ConfigUI:Refresh(true)
    end
@@ -1916,7 +1916,7 @@ function ConfigUI:CreateInterfaceSettings(configFrame, anchorFrame)
       return config.Interface.UnitRaidOrientation == type
    end
    
-   local function SetActioBarHideTypeSelected(type)
+   local function SetRaidOrienTypeSelected(type)
       config.Interface.UnitRaidOrientation = type
       ConfigUI:Refresh(true)
    end
