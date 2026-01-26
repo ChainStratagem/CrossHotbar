@@ -59,18 +59,9 @@ function CrossHotbarMixin:SetupCrosshotbar()
    SecureHandlerSetFrameRef(self, 'Hotbar7', WXHBLRHotbar1)
    SecureHandlerSetFrameRef(self, 'Hotbar8', WXHBRLHotbar1)
 
-   self:SetAttribute('SetHotbarPlacement', [[
-      for i = 1,8 do
-         Hotbar = self:GetFrameRef('Hotbar'..i)
-         if Hotbar then
-            Hotbar:RunAttribute("SetHotbarPlacement")
-         end
-      end                  
-   ]])
    SecureHandlerSetFrameRef(WXHBCrossHotbarMover, 'Crosshotbar', Crosshotbar)
    SecureHandlerWrapScript(WXHBCrossHotbarMover, "OnClick", WXHBCrossHotbarMover, [[
       local Crosshotbar = self:GetFrameRef('Crosshotbar')
-      Crosshotbar:RunAttribute("SetHotbarPlacement")
       self:SetWidth(Crosshotbar:GetWidth())
    ]])
    
@@ -154,7 +145,10 @@ function CrossHotbarMixin:OnLoad()
    addon.CreateGroupNavigator(self)
 
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+   self:RegisterEvent("PLAYER_REGEN_DISABLED")
    self:RegisterEvent("PLAYER_LOGOUT")
+   self:RegisterEvent("ACTIONBAR_SHOWGRID")
+   self:RegisterEvent("ACTIONBAR_HIDEGRID")
    
    addon:AddInitCallback(GenerateClosure(self.SetupCrosshotbar, self))
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
@@ -193,7 +187,16 @@ function CrossHotbarMixin:OnEvent(event, ...)
 
       self:SetAttribute("state-page", activeset)
       self.PageStatusFrame:Show()
-
+   elseif ( event == "PLAYER_REGEN_DISABLED" ) then
+         self:ShowGrid(false)
+   elseif ( event == "ACTIONBAR_SHOWGRID" ) then
+      if not InCombatLockdown() then 
+         self:ShowGrid(true)
+      end
+   elseif ( event == "ACTIONBAR_HIDEGRID" ) then
+      if not InCombatLockdown() then 
+         self:ShowGrid(false)
+      end
    elseif ( event == "PLAYER_LOGOUT" ) then
       local activeset = self:GetAttribute("activeset")
       addon:SetConfigDBValue("ActiveSet", activeset)
@@ -296,19 +299,24 @@ function CrossHotbarMixin:AddPageHandler()
   ]])
 end
 
+function CrossHotbarMixin:ShowGrid(enable)
+   if enable then
+      self:SetFrameStrata("HIGH")
+   else
+      self:SetFrameStrata("MEDIUM")
+   end
+   for k,hotbar in pairs(self.LHotbar) do            
+      hotbar:ShowGrid(enable)
+   end
+   for k,hotbar in pairs(self.RHotbar) do        
+      hotbar:ShowGrid(enable)
+   end
+   for k,hotbar in pairs(self.MHotbar) do        
+      hotbar:ShowGrid(enable)
+   end                                    
+end
+
 function CrossHotbarMixin:UpdateCrosshotbar()
-   local point = "CENTER"
-   local relativeTo = self:GetParent()
-   local relativePoint = "CENTER"
-   local xOfs = 0
-   local yOfs = 0  
-   
-   local w, h = self:GetSize()
-   local s = self:GetScale()
-   
-   self:ClearAllPoints()
-   self:SetPoint("BOTTOMLEFT", relativeTo, relativePoint, xOfs*s-w*0.5, yOfs*s-h*0.5)
-   
    for k,hotbar in pairs(self.LHotbar) do
       hotbar:UpdateHotbar()
    end
@@ -317,7 +325,7 @@ function CrossHotbarMixin:UpdateCrosshotbar()
    end
    for k,hotbar in pairs(self.MHotbar) do
       hotbar:UpdateHotbar()
-   end       
+   end
 end
 
 function CrossHotbarMixin:HideActionBar(actionbar)

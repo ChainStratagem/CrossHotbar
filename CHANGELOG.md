@@ -1,5 +1,11 @@
 # CrossHotbar Changelog
 
+## Crosshotbar-1.0.21-release
+* Added Masque support.
+* Changed Fade and Strata when draggin actions or items.
+* Disabled fade for expanded buttons when double click with visual is used.
+* Fixed issue where dragging collection items could not be dropped when using mouselook.
+
 ## Crosshotbar-1.0.20-release
 * Updated Addon SaveVariables.
    * The session configuration is maintained between logins without saving.

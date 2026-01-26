@@ -6,6 +6,7 @@
 ## SavedVariables: CrossHotbar_DB
 
 #@no-lib-strip@
+Libs\LibStub\LibStub.lua
 #@end-no-lib-strip@
 
 Config.lua

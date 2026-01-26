@@ -1102,8 +1102,10 @@ function GamePadButtonsMixin:OnEvent(event, ...)
       
       function self.MouseOnUpdateFrame:onUpdate(...)
          if addon.GamePadButtons.MouseLookEnabled then
-            if IsMouselooking() ~= addon.GamePadButtons.MouseLookState then
-               addon.GamePadButtons:SetMouseLook(addon.GamePadButtons.MouseLookState)
+            if addon.GamePadButtons.MouseLookState then
+               if IsMouselooking() ~= addon.GamePadButtons.MouseLookState then
+                  addon.GamePadButtons:SetMouseLook(addon.GamePadButtons.MouseLookState)
+               end
             end
          end
       end
