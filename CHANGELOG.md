@@ -4,6 +4,7 @@
 * Added Masque support.
 * Changed Fade and Strata when draggin actions or items.
 * Disabled fade for expanded buttons when double click with visual is used.
+* Fixed issue with target highlight not updating on party/raid roster change.
 * Fixed issue where dragging collection items could not be dropped when using mouselook.
 
 ## Crosshotbar-1.0.20-release

@@ -79,15 +79,7 @@ function GroupNavigatorMixin:OnEvent(event, ...)
       self.SoftTargetFrame:Hide()      
       self:updateRoster()
    elseif event == "PLAYER_TARGET_CHANGED" then
-      local active = false
-      if UnitInRaid("player") or UnitInParty("player") then
-         if UnitInRaid("target") or UnitInParty("target") then
-            if GetUnitName("target") == GetUnitName(self:GetAttribute("unit")) then
-               active = true
-            end
-         end
-      end
-      self:SetSoftTargetActive(active)
+      self:UpdateSoftTargetHighlight()
    end
 end
 
@@ -212,7 +204,8 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
          if hasUnits == true then
             self:SetAttribute("max_group", max_i)
             self:SetAttribute("max_unit", max_j)
-            self.SoftTargetFrame:Show()
+            self:UpdateSoftTarget(self.SoftTargetFrame.unitKey)
+            self:UpdateSoftTargetHighlight()
          end
       end
       
@@ -246,7 +239,8 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
             if hasUnits then
                self:SetAttribute("max_group", 8)
                self:SetAttribute("max_unit", 5)
-               self.SoftTargetFrame:Show()
+               self:UpdateSoftTarget(self.SoftTargetFrame.unitKey)
+               self:UpdateSoftTargetHighlight()
             end
          else
             for j = 1,5 do
@@ -285,28 +279,41 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
             if hasUnits then
                self:SetAttribute("max_group", 1)
                self:SetAttribute("max_unit", 5)
-               self.SoftTargetFrame:Show()
+               self:UpdateSoftTarget(self.SoftTargetFrame.unitKey)
+               self:UpdateSoftTargetHighlight()
             end
          end
       end
    end
 end
 
-function GroupNavigatorMixin:SetSoftTargetActive(active)
-   if active then
-      self.SoftTargetFrame.activeHighlight:SetShown(self.SoftTargetFrame.activeHighlight.isEnabled)
-      self.SoftTargetFrame.inactiveHighlight:Hide()
-   else
-      self.SoftTargetFrame.activeHighlight:Hide()
-      self.SoftTargetFrame.inactiveHighlight:SetShown(self.SoftTargetFrame.inactiveHighlight.isEnabled)
+function GroupNavigatorMixin:UpdateSoftTargetHighlight()
+   if UnitInRaid("player") or UnitInParty("player") then
+      if UnitInRaid("target") or UnitInParty("target") then
+         if GetUnitName("target") == GetUnitName(self:GetAttribute("unit")) then
+            self.SoftTargetFrame.activeHighlight:SetShown(self.SoftTargetFrame.activeHighlight.isEnabled)
+            self.SoftTargetFrame.inactiveHighlight:Hide()
+            return
+         end
+      end
    end
+   self.SoftTargetFrame.activeHighlight:Hide()
+   self.SoftTargetFrame.inactiveHighlight:SetShown(self.SoftTargetFrame.inactiveHighlight.isEnabled)
 end
 
-function GroupNavigatorMixin:UpdateSoftTarget(frameName)
-   local frame = self.units[frameName]
-   if frame then
-      self.SoftTargetFrame:SetAllPoints(frame)
+function GroupNavigatorMixin:UpdateSoftTarget(key)
+   if key then
+      local frame = self.units[key]
+      if frame then
+         self.SoftTargetFrame.unitKey = key
+         self.SoftTargetFrame:SetAllPoints(frame)
+         if self.SoftTargetFrame:IsShown() == false then
+            self.SoftTargetFrame:Show()
+         end
+         return
+      end
    end
+   self.SoftTargetFrame:Hide()
 end
 
 function GroupNavigatorMixin:WrapOnClick()
@@ -494,8 +501,11 @@ local CreateGroupNavigator = function(parent)
    SoftTargetFrame.inactiveHighlight:SetVertexColor(0.2, 1.0, 0.6);
    SoftTargetFrame.inactiveHighlight.isEnabled = true
    SoftTargetFrame.inactiveHighlight:Hide()
+   
+   SoftTargetFrame.unitKey = nil
    SoftTargetFrame:Hide()
    
+
    local GroupNavigator = CreateFrame("Button", ADDON .. "GroupNavigator", parent,
                                       "SecureActionButtonTemplate, SecureHandlerStateTemplate")
 
