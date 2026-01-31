@@ -153,9 +153,9 @@ function CrossHotbarMixin:OnLoad()
    addon:AddInitCallback(GenerateClosure(self.SetupCrosshotbar, self))
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
 
-   self.PageStatusFrame = CreateFrame("Frame")
+   self.PageStatusFrame = CreateFrame("Frame", nil, nil, self, "SecureFrameTemplate")
    self.PageStatusFrame:SetPoint("BOTTOM", self, "BOTTOM", 0 , 0)
-   self.PageStatusFrame.frameText = self.PageStatusFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+   self.PageStatusFrame.frameText = self.PageStatusFrame:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
    self.PageStatusFrame.frameText:SetPoint("TOPLEFT")
    self.PageStatusFrame.frameText:SetFontObject(GameFontNormalSmall)
    self.PageStatusFrame.frameText:SetTextColor(1.0, 1.0, 0.8, 1.0)
@@ -167,7 +167,7 @@ end
 function CrossHotbarMixin:UpdatePageStatus()
    local activeset = self:GetAttribute("activeset")
    if activeset then
-      self.PageStatusFrame.frameText:SetText("Set " .. activeset)
+      self.PageStatusFrame.frameText:SetText("SET " .. activeset)
    end
 end
 
