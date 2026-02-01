@@ -7,7 +7,7 @@
 * Fixed issue with target highlight not updating on party/raid roster change.
 * Fixed issue when dragging collection items could not be dropped when using mouselook.
 * Fixed issue when SET text was shown during movie playback.
-* Fixed issue with incorrect paging on sets greater than 1.
+* Fixed issue with incorrect paging when changing sets.
 
 ## Crosshotbar-1.0.20-release
 * Updated Addon SaveVariables.
