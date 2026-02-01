@@ -287,7 +287,7 @@ function CrossHotbarMixin:AddPageHandler()
             pageprefix = hotbar:GetAttribute("pageprefix")
             RegisterStateDriver(hotbar, 'page', pageprefix .. pageindex)
          else
-            if i < 3 then
+            if i <= 3 then
                RegisterStateDriver(hotbar, 'page', pageprefix .. (pageindex + 1))
             else 
                RegisterStateDriver(hotbar, 'page', pageprefix .. pageindex)
