@@ -24,8 +24,10 @@
       <Attribute name="modifier" type="number" value="1"/>
       <Attribute name="numbindings" type="number" value="0"/>
       <Attribute name="expanded" type="number" value="0"/>
+      <Attribute name="visibility" type="boolean" value="false"/>
       <Attribute name="pageindex" type="number" value="1"/>
       <Attribute name="pageprefix" type="string" value=""/>
+      <Attribute name="wxhbtype" type="string" value="SHOW"/>
     </Attributes>
     <Scripts>
       <OnLoad method="OnLoad" inherit="append"/>

@@ -88,13 +88,45 @@ local ButtonLayout = {
    }
 }
 
+local ThemeManager = {
+   MasqueCallbacks = {}
+}
+
+function ThemeManager:MasqueCallback(masqueGroup, option, value)
+   if masqueGroup and masqueGroup.Group and
+      self.MasqueCallbacks[masqueGroup.Group] then
+      for _,callback in ipairs(self.MasqueCallbacks[masqueGroup.Group]) do
+         callback()
+      end
+   end
+end
+
+function ThemeManager:addButtons(buttons , groupName, callback)
+   local Masque, MSQ_Version = LibStub('Masque', true)
+   if Masque then
+      local masqueGroup = Masque:Group(ADDON, groupName)      
+      if masqueGroup then
+         for i, button in ipairs(buttons) do
+            masqueGroup:AddButton(button, null, "Action")
+         end        
+         
+         if self.MasqueCallbacks[groupName] == nil then
+            self.MasqueCallbacks[groupName] = {}
+         end
+         
+         table.insert(self.MasqueCallbacks[groupName], callback) 
+         masqueGroup:RegisterCallback(self.MasqueCallback, self)
+      end
+   end
+end
+
 HotbarMixin = {
    Padding = ButtonLayout["DADA"].Padding,
    LHotbar = ButtonLayout["DADA"].LHotbar,
    RHotbar = ButtonLayout["DADA"].RHotbar,
    RLHotbar = ButtonLayout["DADA"].RLHotbar,
    LRHotbar = ButtonLayout["DADA"].LRHotbar,
-   MasqueGroup = nil
+   PulseEnabled = false
 }
 
 function HotbarMixin:SetHotbarLayout(layouttype)
@@ -223,7 +255,80 @@ function HotbarMixin:AddPageHandler()
    ]])
 end
 
+function HotbarMixin:UpdateVisibility(isshown, expanded)
+   if isshown then
+      for i, button in ipairs(self.Buttons) do
+         if expanded == 1 then
+            if button:GetID() >= 9 then 
+               button:SetAlpha(1.0)
+               button.cooldown:SetDrawBling(self.PulseEnabled)
+            else
+               button:SetAlpha(self.ExpandedAlpha2)
+               button.icon:SetDesaturated(self.DesatExpanded)
+               button.cooldown:SetDrawBling(false)
+            end
+         else
+            if button:GetID() >= 9 then 
+               button:SetAlpha(self.ExpandedAlpha1)
+               button.cooldown:SetDrawBling(self.ExpandedAlpha1 ~= 0)
+            else
+               button:SetAlpha(1.0)
+               button.icon:SetDesaturated(false)
+               button.cooldown:SetDrawBling(self.PulseEnabled)
+            end
+         end
+      end
+   else
+      for i, button in ipairs(self.Buttons) do
+         button:SetAlpha(0)
+         button.cooldown:SetDrawBling(false)
+      end
+   end
+end
+
 function HotbarMixin:AddVisibilityHandler()
+   --[[
+      Changes for Midnight are removing the spell alert when hidding buttons.
+      To workaround this issue the following function will change the Alpha
+      and MouseEnable to simulate a hide until a better solution is found.
+   --]]
+   self:SetAttribute('SetVisibility', [[
+      local newstate = ...
+      local wxhbtype = self:GetAttribute("wxhbtype")
+      local expanded = self:GetAttribute('expanded')
+      local exphide = wxhbtype ~= "HIDE" or expanded == 1
+
+      self:CallMethod("UpdateVisibility", newstate, expanded)
+
+      if newstate then
+         for i = 1, 12 do
+            local button = self:GetFrameRef('ActionButton'..i)
+            if button:GetID() >= 9 then
+               if exphide then
+                 button:Enable()
+               else
+                 button:Disable()
+               end
+               button:EnableMouse(exphide)
+            else
+               if expanded == 1 then
+                 button:Disable()
+               else
+                 button:Enable()
+               end
+               button:EnableMouse(true)
+            end
+         end
+      else   
+         for i = 1, 12 do
+            local button = self:GetFrameRef('ActionButton'..i)
+            button:EnableMouse(false)
+            button:Disable()
+         end
+      end
+
+      self:SetAttribute('visibility', newstate)
+   ]])
    self:SetAttribute('_onstate-hotbar-visibility', [[
       local actionbar = self:GetFrameRef('ActionBar')
       local shownstate = self:GetAttribute("shownstate")
@@ -232,7 +337,7 @@ function HotbarMixin:AddVisibilityHandler()
       self:SetAttribute("currentstate", newstate)
 
       if newstate == shownstate then
-         RegisterStateDriver(actionbar, "visibility", "[petbattle]hide;show")
+         self:RunAttribute("SetVisibility", true)
          self:RunAttribute("SetHotbarBindings")
       else
          if laststate == shownstate or laststate == 99 then
@@ -240,7 +345,7 @@ function HotbarMixin:AddVisibilityHandler()
                local b = self:GetFrameRef('ActionButton'..i)
                if b then b:ClearBindings() end
             end
-            RegisterStateDriver(actionbar, "visibility", "[petbattle]hide;hide")
+            self:RunAttribute("SetVisibility", false)
          end
       end
    ]])
@@ -254,44 +359,33 @@ function HotbarMixin:AddModHandler()
 end
 
 function HotbarMixin:AddExpandHandler()
-   self:SetAttribute('_onstate-hotbar-expanded', [[
-      local actionbar = self:GetFrameRef('ActionBar')
+   local type = 0
+   if self.Type == "LHotbar" then type = 1 end
+   if self.Type == "RHotbar" then type = 2 end
+
+   self:SetAttribute('_onstate-hotbar-expanded', string.format([[
       local activestate = self:GetAttribute("activestate")
+      local visibility = self:GetAttribute('visibility')
 
       local enable = 0
-      if newstate ~= 0 and (activestate == 1 or activestate == 3) then enable = 1 end 
-      if newstate ~= 0 and (activestate == 2 or activestate == 4) then enable = 1 end
-
+      if newstate ~= 0 and activestate ~= 0 then
+         enable = 1
+      end 
       self:SetAttribute("expanded", enable)
-      self:SetAttribute("expanded-state", newstate)
 
-      if newstate ~= 0 and enable == 0 then
-        self:CallMethod("UpdateExpanded", newstate)
-      end
-   ]])
-end
-
-function HotbarMixin:UpdateExpanded(newstate)
-   if ((newstate == 1 and self.Type == "LHotbar") or
-         (newstate == 2 and self.Type == "RHotbar")) then
-      for i, button in ipairs(self.Buttons) do
-         if  button:GetID() >= 9 then 
-            button:SetAlpha(1.0)
-         else
-            button:SetAlpha(self.ExpandedAlpha2)
-            button.icon:SetDesaturated(self.DesatExpanded)
+      if visibility and newstate == %d then
+         self:CallMethod("UpdateVisibility", visibility, 1)
+         for i = 1, 12 do
+            local button = self:GetFrameRef('ActionButton'..i)
+            if button:GetID() >= 9 then
+               button:Enable()
+            else
+               button:Disable()
+            end
+            button:EnableMouse(true)
          end
       end
-   else
-      for i, button in ipairs(self.Buttons) do
-         if  button:GetID() >= 9 then 
-            button:SetAlpha(self.ExpandedAlpha1)
-         else
-         button:SetAlpha(1.0)
-         button.icon:SetDesaturated(false)
-         end
-      end
-   end
+   ]], type))
 end
 
 function HotbarMixin:UpdateHotbar()
@@ -303,15 +397,13 @@ function HotbarMixin:UpdateHotbar()
       
       local buttons = self.Buttons
       for i, button in ipairs(buttons) do
-         if button ~= nil and button:GetName() ~= nil then
-            if string.find(button:GetName(), self.BtnPrefix) then
-               local width = math.ceil(button:GetWidth()+0.5)
-               width = width + width%2
-               local height = math.ceil(button:GetHeight()+0.5)
-               height = height + height%2
-               if mxw < width then mxw = width end
-               if mxh < height then mxh = height end
-            end
+         if string.find(button:GetName(), self.BtnPrefix) then
+            local width = math.ceil(button:GetWidth()+0.5)
+            width = width + width%2
+            local height = math.ceil(button:GetHeight()+0.5)
+            height = height + height%2
+            if mxw < width then mxw = width end
+            if mxh < height then mxh = height end
          end
       end
       
@@ -335,23 +427,21 @@ function HotbarMixin:UpdateHotbar()
       local idx = 0
       self.AnchorButtons = {}
       for i, button in ipairs(buttons) do
-         if button ~= nil and button:GetName() ~= nil then
-            if string.find(button:GetName(), self.BtnPrefix) then
-               if idx%4 == 0 then
-                  anchorIdx = idx
-                  anchor = button
-                  button:SetScale(self.Scaling*parent_scaling)
-                  button:ClearAllPoints()
-                  button:SetPoint("BOTTOMLEFT", CHBar[(idx+4)/4][1], CHBar[(idx+4)/4][2])
-                  table.insert(self.AnchorButtons, button)
-               else
-                  bIdx = idx-anchorIdx
-                  button:SetScale(self.Scaling*parent_scaling)
-                  button:ClearAllPoints()
-                  button:SetPoint("CENTER", anchor, "CENTER", bar.BtnPos[bIdx][1]*mxw, bar.BtnPos[bIdx][2]*mxh)
-               end
-               idx = idx+1
+         if string.find(button:GetName(), self.BtnPrefix) then
+            if idx%4 == 0 then
+               anchorIdx = idx
+               anchor = button
+               button:SetScale(self.Scaling*parent_scaling)
+               button:ClearAllPoints()
+               button:SetPoint("BOTTOMLEFT", self, CHBar[(idx+4)/4][1], CHBar[(idx+4)/4][2])
+               table.insert(self.AnchorButtons, button)
+            else
+               bIdx = idx-anchorIdx
+               button:SetScale(self.Scaling*parent_scaling)
+               button:ClearAllPoints()
+               button:SetPoint("CENTER", anchor, "CENTER", bar.BtnPos[bIdx][1]*mxw, bar.BtnPos[bIdx][2]*mxh)
             end
+            idx = idx+1
          end
       end
       
@@ -389,108 +479,76 @@ function HotbarMixin:getGroupAnchors()
    end
 end
 
-function HotbarMixin:UpdateVisibility()
-   self:UpdateGridLayout()
-   self:UpdateHotbar()
-end
-
 function HotbarMixin:UpdateHotkeys()   
-   local currentstate = self:GetAttribute("currentstate")
-   local activestate = self:GetAttribute("activestate")
-   local expanded = self:GetAttribute("expanded")
-   local modifier = self:GetAttribute("modifier")
+   local visibility = self:GetAttribute('visibility')
+   if visibility then 
+      local currentstate = self:GetAttribute("currentstate")
+      local activestate = self:GetAttribute("activestate")
+      local expanded = self:GetAttribute("expanded")
+      local modifier = self:GetAttribute("modifier")
       
-   local highlights = {}
-   highlights[1] = false
-   highlights[2] = false
-   highlights[3] = false
-   for i, button in ipairs(self.Buttons) do
-      if currentstate ~= 0 and
-         currentstate == activestate then
-         local nbindings = button:GetAttribute('numbindings')
-         if expanded ~= 0 then modifier = nbindings end
-         local key = button:GetAttribute('over_hotkey' .. modifier)
-         if key and key ~= "" then
-            button.HotKey:SetText(key)
-            button:SetAlpha(1.0)
-            button.icon:SetDesaturated(false)
-            if i < 5 then
-               highlights[1] = true 
-            elseif i < 9 then
-               highlights[2] = true
-            elseif i < 13 then
-               highlights[3] = true
-            end
-         else
-            button.HotKey:SetText(RANGE_INDICATOR)            
-            if  button:GetID() >= 9 then 
-               button:SetAlpha(self.ExpandedAlpha1)
-            else
-               if expanded ~= 0 then
-                  button:SetAlpha(self.ExpandedAlpha2)
-                  button.icon:SetDesaturated(self.DesatExpanded)
-               else
-                  button:SetAlpha(1.0)
-                  button.icon:SetDesaturated(false)
+      local highlights = {}
+      highlights[1] = false
+      highlights[2] = false
+      highlights[3] = false
+      
+      for i, button in ipairs(self.Buttons) do
+         if currentstate ~= 0 and
+            currentstate == activestate then
+            local nbindings = button:GetAttribute('numbindings')
+            if expanded ~= 0 then modifier = nbindings end
+            local key = button:GetAttribute('over_hotkey' .. modifier)
+            if key and key ~= "" then
+               button.HotKey:SetText(key)
+               if i < 5 then
+                  highlights[1] = true 
+               elseif i < 9 then
+                  highlights[2] = true
+               elseif i < 13 then
+                  highlights[3] = true
                end
+            else
+               button.HotKey:SetText(RANGE_INDICATOR)     
             end
-         end
-      else
-         button.HotKey:SetText(RANGE_INDICATOR)            
-         if button:GetID() >= 9 then 
-            button:SetAlpha(self.ExpandedAlpha1)
          else
-            button:SetAlpha(1.0)
-            button.icon:SetDesaturated(false)
+            button.HotKey:SetText(RANGE_INDICATOR)  
          end
+         button.HotKey:Show()
       end
-      button.HotKey:Show()
-      if self.MasqueGroup then
-         self.MasqueGroup:ReSkin(button)
-      end
-   end
-   for i,highlight in ipairs(self.Highlights) do
-      if highlights[i] then
-         highlight:SetAlpha(1.0)
-      else
-         highlight:SetAlpha(0.0)
+      for i,highlight in ipairs(self.Highlights) do
+         if highlights[i] then
+            highlight:SetAlpha(1.0)
+         else
+            highlight:SetAlpha(0.0)
+         end
       end
    end
 end
 
 function HotbarMixin:ShowGrid(enable)
-   if enable then
-      self.ExpandedAlpha1 = 1.0
-      self.ExpandedAlpha2 = 0.5
-      self:UpdateHotkeys()
-   else
-      if config.Hotbar.WXHBType == "HIDE" then
-         self.ExpandedAlpha1 = 0.0
-      end
-
-      if config.Hotbar.WXHBType == "FADE" then
-         self.ExpandedAlpha1 = 0.5
-      end
-
-      if config.Hotbar.WXHBType == "SHOW" then
+   local currentstate = self:GetAttribute("currentstate")
+   local visibility = self:GetAttribute('visibility')
+   if visibility then 
+      if enable then
          self.ExpandedAlpha1 = 1.0
-         self.ExpandedAlpha2 = 0.5
-      end
-      self:UpdateHotkeys()
-   end
-end
-
-function HotbarMixin:SetupMasque()
-   local Masque, MSQ_Version = LibStub('Masque', true)
-   if Masque then
-      self.MasqueGroup = Masque:Group(ADDON, self.Type)      
-      if self.MasqueGroup then
-         local buttons = self.Buttons
-         for i, button in ipairs(buttons) do
-            if button ~= nil and button:GetName() ~= nil then
-               self.MasqueGroup:AddButton(button, null, "Action")
-            end
+         self:SetAttribute("wxhbtype", "SHOW")
+         self:SetAttribute("state-hotbar-visibility", currentstate)
+         self:UpdateHotkeys()
+      else
+         if config.Hotbar.WXHBType == "HIDE" then
+            self.ExpandedAlpha1 = 0.0
          end
+
+         if config.Hotbar.WXHBType == "FADE" then
+            self.ExpandedAlpha1 = 0.5
+         end
+
+         if config.Hotbar.WXHBType == "SHOW" then
+            self.ExpandedAlpha1 = 1.0
+         end
+         self:SetAttribute("wxhbtype", config.Hotbar.WXHBType)
+         self:SetAttribute("state-hotbar-visibility", currentstate)
+         self:UpdateHotkeys()
       end
    end
 end
@@ -500,22 +558,42 @@ function HotbarMixin:OnEvent(event, ...)
       local isInitialLogin, isReloadingUi = ...
       self:UpdateHotbar()
       if isInitialLogin or isReloadingUi then
-         self:SetupMasque()
+         --[[
+            Cooldown pulse/bling is not hidden with SetAlpha
+            The following callbacks attempt to detect and handle
+            changes to button pulse enablement in a Masque group.
+         --]]
+         local function handleCooldownPulse()
+            self.PulseEnabled = false
+            local buttons = self.Buttons
+            for i, button in ipairs(buttons) do
+               if button.cooldown ~= nil then
+                  if button.cooldown:GetDrawBling() then
+                     self.PulseEnabled = true
+                     break
+                  end
+               end
+            end
+            local visibility = self:GetAttribute("visibility")
+            self:UpdateVisibility(visibility, 0)
+         end
+         ThemeManager:addButtons(self.Buttons, self.Type, handleCooldownPulse)
+         handleCooldownPulse()
       end
    end
 end
 
 function HotbarMixin:ApplyConfig()
-   self.ExpandedAlpha1 = 0.5 
-   self.DesatExpanded2 = 0.5
-
    local pageprefix = config.Hotbar[string.gsub(self.Type, 'Hotbar', 'PagePrefix')]
    local pageindex = config.Hotbar[string.gsub(self.Type, 'Hotbar', 'PageIndex')]
+   local currentstate = self:GetAttribute("currentstate")
+   
    self:SetAttribute('pageprefix', pageprefix)
    self:SetAttribute('pageindex', pageindex)
 
    self:AddModHandler()
 
+   self.ExpandedAlpha1 = 0.5 
    if config.Hotbar.WXHBType == "HIDE" then
       self.ExpandedAlpha1 = 0.0
    end
@@ -526,9 +604,10 @@ function HotbarMixin:ApplyConfig()
 
    if config.Hotbar.WXHBType == "SHOW" then
       self.ExpandedAlpha1 = 1.0
-      self.ExpandedAlpha2 = 0.5
    end
    
    self:SetHotbarLayout(config.Hotbar.DDAAType)
+   self:SetAttribute("wxhbtype", config.Hotbar.WXHBType)
+   self:SetAttribute("state-hotbar-visibility", currentstate)
    self:UpdateHotkeys()
 end

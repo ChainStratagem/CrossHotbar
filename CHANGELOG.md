@@ -1,5 +1,10 @@
 # CrossHotbar Changelog
 
+## Crosshotbar-1.0.22-release
+* Fixed issue were spell alerts were removed when activiting hotbars.
+* Fixed issue were cooldown pulse was visible for invisible buttons.
+   * Primarly seen when using Masque skins with pulse enabled.
+
 ## Crosshotbar-1.0.21-release
 * Added Masque support.
 * Changed Fade and Strata when dragging actions or items.

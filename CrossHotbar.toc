@@ -1,6 +1,6 @@
 ## Interface: 120001, 120000, 110207
 ## Title: CrossHotbar
-## Version: 1.0.21
+## Version: 1.0.22
 ## Notes: Implements a WXHB Crosshotbar as an actionbar.
 ## Author: ChainStratagem (phodoe) - https://github.com/ChainStratagem/CrossHotbar
 ## SavedVariables: CrossHotbar_DB
