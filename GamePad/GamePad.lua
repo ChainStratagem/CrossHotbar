@@ -12,7 +12,7 @@ local DCLKList = {
 addon:ActionListAdd("HotbarDCLKTypes", "CATEGORY_HOTBAR_DCLK", DCLKList)
 DCLKList = addon:ActionListToTable(DCLKList)
 
-local GamePadMixin = {
+addon.GamePadMixin = {
    -- GamePadActionsMixin
    Actions = nil,
    Modifiers = nil,
@@ -46,6 +46,8 @@ local GamePadMixin = {
    GamePadAutoDisableJump = 0,
    GamePadAutoEnable = 0
 }
+
+local GamePadMixin = addon.GamePadMixin
 
 function GamePadMixin:OnLoad()
    self:SetAttribute("modname", "")
@@ -376,8 +378,6 @@ function GamePadMixin:ApplyConfig()
    ]])
 
 end
-
-addon.GamePadMixin = GamePadMixin
 
 local CreateGamePad = function()
    local parent = addon.parentFrame

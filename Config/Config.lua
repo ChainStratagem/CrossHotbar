@@ -497,6 +497,10 @@ function addon:ApplyConfig(updated)
    end
 end
 
+function addon:LoadConfig(isInitialLogin, isReloadingUi)
+   addon:ApplyConfig(isInitialLogin or isReloadingUi)
+end
+
 function addon:InitConfig(addonName)
    if addonName == ADDON then      
       EventRegistry:UnregisterFrameEventAndCallback("ADDON_LOADED", ADDON)
@@ -555,8 +559,8 @@ function addon:StoreConfig()
    addon:StorePreset(CrossHotbar_DB.LastConfig, addon.Config)
 end
 
-EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", addon.ApplyConfig, ADDON)
-EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", addon.ApplyConfig, ADDON)
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", addon.LoadConfig, ADDON)
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", addon.LoadConfig, ADDON)
 EventRegistry:RegisterFrameEventAndCallback("PLAYER_LOGOUT", addon.StoreConfig, ADDON)
 EventRegistry:RegisterFrameEventAndCallback("ADDON_LOADED", addon.InitConfig, ADDON)
 

@@ -1,15 +1,6 @@
 local ADDON, addon = ...
 local config = addon.Config
 
-local GamePadButtonsMixin = {
-   LeftTriggerButton = nil,
-   RightTriggerButton = nil,
-   LeftShoulderButton = nil,
-   RightShoulderButton = nil,
-   LeftPaddleButton = nil,
-   RightPaddleButton = nil
-}
-
 local SetButtonPairState = [[
    local button, down, pairname  = ...
 
@@ -119,6 +110,17 @@ local SetButtonExpanded = [[
       end
    end
 ]]
+
+addon.GamePadButtonsMixin = {
+   LeftTriggerButton = nil,
+   RightTriggerButton = nil,
+   LeftShoulderButton = nil,
+   RightShoulderButton = nil,
+   LeftPaddleButton = nil,
+   RightPaddleButton = nil
+}
+
+local GamePadButtonsMixin = addon.GamePadButtonsMixin
 
 function GamePadButtonsMixin:CreatePairButton(ButtonName)
    local Button = CreateFrame("Button", ADDON .. ButtonName .. "ButtonFrame",
@@ -391,5 +393,3 @@ function GamePadButtonsMixin:AddStateHandlers()
    self:AddPaddleHandler()
    self:AddExpandedHandler()
 end
-
-addon.GamePadButtonsMixin = GamePadButtonsMixin

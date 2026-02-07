@@ -1,7 +1,7 @@
 local ADDON, addon = ...
 local config = addon.Config
 
-local GamePadLookMixin = {
+addon.GamePadLookMixin = {
    MouseLookEnabled = true,
    GamePadLookEnabled = true,
    GamePadLookHold = false,   
@@ -15,6 +15,8 @@ local GamePadLookMixin = {
    SpellTargetingStarted = false,   
    SpellTargetingUpdate = false
 }
+
+local GamePadLookMixin = addon.GamePadLookMixin
 
 function GamePadLookMixin:SetMouseLook(enable)
    self.MouseLookState = enable
@@ -199,4 +201,3 @@ function GamePadLookMixin:OnSpellTarget()
    end
 end
 
-addon.GamePadLookMixin = GamePadLookMixin

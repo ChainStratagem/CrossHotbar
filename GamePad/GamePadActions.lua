@@ -395,12 +395,14 @@ addon:ActionListAdd("GamePadActions", "CATEGORY_PAGING", PageModifierActions, "N
 addon:ActionListAdd("GamePadModifierActions", "CATEGORY_PAGING", PageModifierActions, "NONE")
 addon:ActionListAdd("GamePadModifiers", "CATEGORY_PAGING", PageModifierActions, "NONE")
 
-local GamePadActionsMixin = {
+addon.GamePadActionsMixin = {
    Actions = nil,
    Modifiers = nil,
    ModifierActions = nil,
    EnableSounds = false
 }
+
+local GamePadActionsMixin = addon.GamePadActionsMixin
 
 function GamePadActionsMixin:GPPlaySound(soundid)
    if self.EnableSounds then
@@ -437,4 +439,3 @@ for key, value in pairs(addon:ActionListToTable(TargetModifierActions)) do GameP
 for key, value in pairs(addon:ActionListToTable(CameraModifierActions)) do GamePadActionsMixin.ModifierActions[key] = value  end
 for key, value in pairs(addon:ActionListToTable(PageModifierActions)) do GamePadActionsMixin.ModifierActions[key] = value  end
 
-addon.GamePadActionsMixin = GamePadActionsMixin
