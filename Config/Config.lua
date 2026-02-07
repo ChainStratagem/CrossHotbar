@@ -497,52 +497,55 @@ function addon:ApplyConfig(updated)
    end
 end
 
-function addon:InitConfig()
-   if CrossHotbar_DB == nil then
-      CrossHotbar_DB = {
-         Version = "v1.0.0",
-         ActivePreset = 1,
-         ActiveSet = 1,
-         Presets = {}
-      }
-   end
-   
-   local preset = CrossHotbar_DB.ActivePreset;
-   
-   local hassaves = false
-   for k,p in pairs(CrossHotbar_DB.Presets) do
-      if p.Mutable then
-         hassaves = true
+function addon:InitConfig(addonName)
+   if addonName == ADDON then      
+      EventRegistry:UnregisterFrameEventAndCallback("ADDON_LOADED", ADDON)
+      
+      if CrossHotbar_DB == nil then
+         CrossHotbar_DB = {
+            Version = "v1.0.0",
+            ActivePreset = 1,
+            ActiveSet = 1,
+            Presets = {}
+         }
       end
-   end
-   
-   for k,default in pairs(addon.Defaults_DB) do
-      if CrossHotbar_DB[k] == nil then
-         if type(default) == "table" then
-            CrossHotbar_DB[k] = CopyTable(default)
-         else
-            CrossHotbar_DB[k] = default
+      
+      local preset = CrossHotbar_DB.ActivePreset;
+      
+      local hassaves = false
+      for k,p in pairs(CrossHotbar_DB.Presets) do
+         if p.Mutable then
+            hassaves = true
          end
       end
-   end
-   
-   for k,default in pairs(addon.Defaults_DB.Presets) do
-      if not default.Mutable or not hassaves then
-         CrossHotbar_DB.Presets[k] = CopyTable(default)
+      
+      for k,default in pairs(addon.Defaults_DB) do
+         if CrossHotbar_DB[k] == nil then
+            if type(default) == "table" then
+               CrossHotbar_DB[k] = CopyTable(default)
+            else
+               CrossHotbar_DB[k] = default
+            end
+         end
+      end
+      
+      for k,default in pairs(addon.Defaults_DB.Presets) do
+         if not default.Mutable or not hassaves then
+            CrossHotbar_DB.Presets[k] = CopyTable(default)
+         end
+      end
+
+      if CrossHotbar_DB.LastConfig then
+         addon:StorePreset(addon.Config, CrossHotbar_DB.LastConfig)
+      else
+         addon:StorePreset(addon.Config, CrossHotbar_DB.Presets[preset])
+      end
+
+      addon.parentFrame = _G["Crosshotbar"]
+      for i,callback in ipairs(addon.InitializeCallbacks) do
+         callback()
       end
    end
-
-   if CrossHotbar_DB.LastConfig then
-      addon:StorePreset(addon.Config, CrossHotbar_DB.LastConfig)
-   else
-      addon:StorePreset(addon.Config, CrossHotbar_DB.Presets[preset])
-   end
-   
-   for i,callback in ipairs(addon.InitializeCallbacks) do
-      callback()
-   end
-   
-   EventRegistry:UnregisterFrameEventAndCallback("ADDON_LOADED", addon)
 end
 
 function addon:StoreConfig()
@@ -552,10 +555,10 @@ function addon:StoreConfig()
    addon:StorePreset(CrossHotbar_DB.LastConfig, addon.Config)
 end
 
-EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", addon.ApplyConfig, addon)
-EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", addon.ApplyConfig, addon)
-EventRegistry:RegisterFrameEventAndCallback("PLAYER_LOGOUT", addon.StoreConfig, addon)
-EventRegistry:RegisterFrameEventAndCallback("ADDON_LOADED", addon.InitConfig, addon)
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_ENTERING_WORLD", addon.ApplyConfig, ADDON)
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", addon.ApplyConfig, ADDON)
+EventRegistry:RegisterFrameEventAndCallback("PLAYER_LOGOUT", addon.StoreConfig, ADDON)
+EventRegistry:RegisterFrameEventAndCallback("ADDON_LOADED", addon.InitConfig, ADDON)
 
 addon.UIHider = CreateFrame("Frame", nil, UIParent)
 addon.UIHider:SetAllPoints(UIParent)

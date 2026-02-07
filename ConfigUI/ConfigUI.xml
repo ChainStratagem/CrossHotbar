@@ -1,0 +1,8 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.blizzard.com/wow/ui/ ..\FrameXML\UI.xsd">
+  <Script file="ConfigUI.lua"/>
+  <Script file="PresetUI.lua"/>
+  <Script file="ActionUI.lua"/>
+  <Script file="HotbarUI.lua"/>
+  <Script file="InterfaceUI.lua"/>
+  <Script file="GamePadUI.lua"/>
+</Ui>

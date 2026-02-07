@@ -140,9 +140,8 @@ function CrossHotbarMixin:OnLoad()
    self:AddPaddleHandler()
    self:AddExpandHandler()
    self:AddPageHandler()
+   
    addon.Crosshotbar = self
-   addon.CreateGamePadButtons(self)
-   addon.CreateGroupNavigator(self)
 
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
    self:RegisterEvent("PLAYER_REGEN_DISABLED")

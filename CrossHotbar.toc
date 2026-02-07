@@ -9,8 +9,8 @@
 Libs\LibStub\LibStub.lua
 #@end-no-lib-strip@
 
-Config.lua
-GamePadButtons.lua
-GroupNavigator.lua
-CrossHotbar.xml
-ConfigUI.lua
+Config/Config.xml
+ConfigUI/ConfigUI.xml
+GamePad/GamePad.xml
+CrossHotbar/CrossHotbar.xml
+GroupNavigator/GroupNavigator.xml

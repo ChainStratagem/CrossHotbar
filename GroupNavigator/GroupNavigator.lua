@@ -476,8 +476,8 @@ function GroupNavigatorMixin:WrapOnClick()
    ]])
 end
 
-local CreateGroupNavigator = function(parent)
-
+local CreateGroupNavigator = function()
+   local parent = addon.parentFrame
    local SoftTargetFrame = CreateFrame("Frame", ADDON .. "SoftTarget", UIParent)
    SoftTargetFrame:SetFrameStrata("MEDIUM")
    SoftTargetFrame:EnableMouse(false)
@@ -503,8 +503,7 @@ local CreateGroupNavigator = function(parent)
    SoftTargetFrame.inactiveHighlight:Hide()
    
    SoftTargetFrame.unitKey = nil
-   SoftTargetFrame:Hide()
-   
+   SoftTargetFrame:Hide()   
 
    local GroupNavigator = CreateFrame("Button", ADDON .. "GroupNavigator", parent,
                                       "SecureActionButtonTemplate, SecureHandlerStateTemplate")
@@ -539,4 +538,4 @@ local CreateGroupNavigator = function(parent)
    addon.GroupNavigator = GroupNavigator
 end
 
-addon.CreateGroupNavigator = CreateGroupNavigator
+addon:AddInitCallback(CreateGroupNavigator)
