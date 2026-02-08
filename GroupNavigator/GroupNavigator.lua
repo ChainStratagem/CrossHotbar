@@ -476,7 +476,7 @@ function GroupNavigatorMixin:WrapOnClick()
    ]])
 end
 
-local CreateGroupNavigator = function()
+local InitGroupNavigator = function()
    local parent = addon.parentFrame
    local SoftTargetFrame = CreateFrame("Frame", ADDON .. "SoftTarget", UIParent)
    SoftTargetFrame:SetFrameStrata("MEDIUM")
@@ -538,4 +538,4 @@ local CreateGroupNavigator = function()
    addon.GroupNavigator = GroupNavigator
 end
 
-addon:AddInitCallback(CreateGroupNavigator)
+addon:AddInitCallback(InitGroupNavigator)

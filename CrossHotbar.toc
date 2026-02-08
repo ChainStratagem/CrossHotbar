@@ -10,7 +10,7 @@ Libs\LibStub\LibStub.lua
 #@end-no-lib-strip@
 
 Config/Config.xml
-GamePad/GamePad.xml
 CrossHotbar/CrossHotbar.xml
 GroupNavigator/GroupNavigator.xml
+GamePad/GamePad.xml
 ConfigUI/ConfigUI.xml

@@ -129,15 +129,11 @@ function GamePadButtonsMixin:CreatePairButton(ButtonName)
    Button:SetPoint("TOP", self, "LEFT", 0, 0)
    Button:RegisterForClicks("AnyDown", "AnyUp")
    Button:Hide()
-   Button:RegisterEvent("PLAYER_ENTERING_WORLD")
-   local function OnEvent(self, event, ...)
-      if event == 'PLAYER_ENTERING_WORLD' then
-         SecureHandlerSetFrameRef(self, 'GamePad', addon.GamePad)
-         SecureHandlerSetFrameRef(self, 'Crosshotbar', addon.Crosshotbar)
-         SecureHandlerSetFrameRef(self, 'GroupNavigator', addon.GroupNavigator)
-      end
-   end
-   Button:HookScript("OnEvent", OnEvent)
+   
+   SecureHandlerSetFrameRef(Button, 'GamePad', addon.GamePad)
+   SecureHandlerSetFrameRef(Button, 'Crosshotbar', addon.Crosshotbar)
+   SecureHandlerSetFrameRef(Button, 'GroupNavigator', addon.GroupNavigator)
+   
    SecureHandlerSetFrameRef(self, ButtonName, Button)
    return Button
 end
@@ -197,15 +193,11 @@ function GamePadButtonsMixin:CreateModifierButton(Name)
    self[Name.."Button"]:SetPoint("TOP", self, "LEFT", 0, 0)
    self[Name.."Button"]:RegisterForClicks("AnyDown", "AnyUp")
    self[Name.."Button"]:Hide()
-   self[Name.."Button"]:RegisterEvent("PLAYER_ENTERING_WORLD")
-   local function OnEvent(self, event, ...)
-      if event == 'PLAYER_ENTERING_WORLD' then
-         SecureHandlerSetFrameRef(self, 'GamePad', addon.GamePad)
-         SecureHandlerSetFrameRef(self, 'Crosshotbar', addon.Crosshotbar)
-         SecureHandlerSetFrameRef(self, 'GroupNavigator', addon.GroupNavigator)
-      end
-   end
-   self[Name.."Button"]:HookScript("OnEvent", OnEvent)
+   
+   SecureHandlerSetFrameRef(self[Name.."Button"], 'GamePad', addon.GamePad)
+   SecureHandlerSetFrameRef(self[Name.."Button"], 'Crosshotbar', addon.Crosshotbar)
+   SecureHandlerSetFrameRef(self[Name.."Button"], 'GroupNavigator', addon.GroupNavigator)
+   
    self[Name.."Button"]:SetAttribute("*type1", "macro")
    self[Name.."Button"]:SetAttribute("macrotext1", "")
    self[Name.."Button"]:SetAttribute("modstate", 0)

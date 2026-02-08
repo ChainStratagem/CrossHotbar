@@ -25,11 +25,12 @@ addon.GamePadMixin = {
    GamePadMouseMode = false,
    GamePadCursorEnabled = false,
    MouseLookState = false,
+   MouseStatusFrame = nil,
    GamePadLeftClickCache = "PADLTRIGGER",
    GamePadRightClickCache = "PADRTRIGGER",
    SpellTargetConfirmButton = "PAD1",
    SpellTargetCancelButton = "PAD3",
-   SpellTargetingStarted = false,   
+   SpellTargetingStarted = false,
    SpellTargetingUpdate = false,
    -- GamePadButtonsMixin
    LeftTriggerButton = nil,
@@ -54,8 +55,21 @@ function GamePadMixin:OnLoad()
    self:SetAttribute("modtype", "")
    self:SetAttribute("wxhbdclk", 0)
 
-   self:AddStateHandlers()
+   self:RegisterEvent("PLAYER_ENTERING_WORLD")
+   self:RegisterEvent("CURSOR_CHANGED")
+   self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
+
+   self:SetupGamePad()
    
+   addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
+end
+
+function GamePadMixin:SetupGamePad()
+   SecureHandlerSetFrameRef(self, 'GamePad', addon.GamePad)
+   SecureHandlerSetFrameRef(self, 'Crosshotbar', addon.Crosshotbar)
+   SecureHandlerSetFrameRef(self, 'GroupNavigator', addon.GroupNavigator)
+
+   self:AddStateHandlers()
    self:CreateLeftTriggerButton()
    self:CreateRightTriggerButton()
    self:CreateLeftShoulderButton()
@@ -68,13 +82,11 @@ function GamePadMixin:OnLoad()
       SecureHandlerSetFrameRef(self, "ModifierButton"..i, self[button.."Button"])
    end
    self:SetAttribute("NumModifierButtons", #GamePadButtonList)
-
-   self:RegisterEvent("ADDON_LOADED")
-   self:RegisterEvent("PLAYER_ENTERING_WORLD")
-   self:RegisterEvent("CURSOR_CHANGED")
-   self:RegisterEvent("CURRENT_SPELL_CAST_CHANGED")
-
-   addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
+   
+   self:CreateLookStatusFrame()
+   self:CreateLookUpdateHooks()
+   self:AddMovieLookHandlers()
+   self:AddMovieButtonHandlers()
 end
 
 function GamePadMixin:OnEvent(event, ...)
@@ -88,137 +100,16 @@ function GamePadMixin:OnEvent(event, ...)
    elseif event == 'CURSOR_CHANGED' then
    elseif event == 'CURRENT_SPELL_CAST_CHANGED' then
       self:OnSpellTarget()
-   elseif event == 'ADDON_LOADED' then
-      SecureHandlerSetFrameRef(self, 'GamePad', addon.GamePad)
-      SecureHandlerSetFrameRef(self, 'Crosshotbar', addon.Crosshotbar)
-      SecureHandlerSetFrameRef(self, 'GroupNavigator', addon.GroupNavigator)
-      
-      self.MouseStatusFrame = CreateFrame("Frame")
-      self.MouseStatusFrame:SetPoint("CENTER", Crosshotbar, "TOP", 0 , 4)
-      self.MouseStatusFrame.backgtex = self.MouseStatusFrame:CreateTexture(nil,"BACKGROUND")
-      self.MouseStatusFrame.backgtex:SetAtlas("CircleMaskScalable", true)
-      self.MouseStatusFrame.backgtex:SetVertexColor(0,0,0,1)
-      self.MouseStatusFrame.backgtex:SetPoint("CENTER")
-      self.MouseStatusFrame.backgtex:SetSize(32, 32)
-      self.MouseStatusFrame.backgtex:Show()
-      self.MouseStatusFrame.mousetex = self.MouseStatusFrame:CreateTexture()
-      self.MouseStatusFrame.mousetex:SetAtlas("ClickCast-Icon-Mouse", true)
-      self.MouseStatusFrame.mousetex:SetPoint("CENTER")
-      self.MouseStatusFrame.mousetex:SetSize(32, 32)
-      self.MouseStatusFrame.mousetex:Hide()
-      self.MouseStatusFrame.pointtex = self.MouseStatusFrame:CreateTexture()
-      self.MouseStatusFrame.pointtex:SetAtlas("Cursor_cast_32", true)
-      self.MouseStatusFrame.pointtex:SetPoint("CENTER", 2, -2)
-      self.MouseStatusFrame.pointtex:SetSize(24, 24)
-      self.MouseStatusFrame.pointtex:SetAlpha(0.9)
-      self.MouseStatusFrame.pointtex:Hide()
-      self.MouseStatusFrame:SetSize(32, 32)
-      self.MouseStatusFrame:Hide()
-      SecureHandlerSetFrameRef(self, "MouseStatusFrame", self.MouseStatusFrame)
-
-      self.MouseLookState = IsMouselooking();
-      
-      self.MouseOnUpdateFrame = CreateFrame("Frame", ADDON .. "OnUpdateFrame")
-      
-      function self.MouseOnUpdateFrame:onUpdate(...)
-         if addon.GamePad.MouseLookEnabled then
-            if addon.GamePad.MouseLookState then
-               if IsMouselooking() ~= addon.GamePad.MouseLookState then
-                  addon.GamePad:SetMouseLook(addon.GamePad.MouseLookState)
-               end
-            end
-         end
-      end
-
-      self.MouseOnUpdateFrame:SetScript("OnUpdate", self.MouseOnUpdateFrame.onUpdate)
-      self.MouseOnUpdateFrame:Hide()
-      
-      local mouselookhandlerstate = false
-      local gamepadlookhandlerstate = false
-      local mousehandlerstart = function(self)
-         if addon.GamePad.MouseLookEnabled then
-            if IsMouselooking() then
-               addon.GamePad:SetMouseLook(false)
-               mouselookhandlerstate = true
-            end
-         end
-         if addon.GamePad.GamePadLookEnabled then
-            addon.GamePad:SetGamePadMouse(true)
-            gamepadlookhandlerstate = true
-         end
-      end
-      local mousehandlerstop = function(self)
-         if addon.GamePad.MouseLookEnabled then
-            if mouselookhandlerstate then
-               addon.GamePad:SetMouseLook(true)
-               mouselookhandlerstate = false
-            end
-         end
-         if addon.GamePad.GamePadLookEnabled then
-            if gamepadlookhandlerstate then
-               addon.GamePad:SetGamePadMouse(false)
-               gamepadlookhandlerstate = false
-            end
-         end
-      end
-
-      local cinemarichandler = function(self, button)
-         CinematicFrameCloseDialogResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', 'KEY_ABBR'), NO))
-         CinematicFrameCloseDialogConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', 'KEY_ABBR'), YES))
-         if self.closeDialog then
-            if self.closeDialog:IsShown() then
-               if button == config.PadActions.FACER.BIND then CinematicFrameCloseDialogResumeButton:Click() end
-               if button == config.PadActions.FACED.BIND then CinematicFrameCloseDialogConfirmButton:Click() end
-            else
-               self.closeDialog:Show()
-            end
-         end
-      end
-      
-      if addon.GamePad.MouseLookEnabled or
-         addon.GamePad.GamePadLookEnabled then
-         CinematicFrameCloseDialog:HookScript("OnShow", mousehandlerstart)
-         CinematicFrameCloseDialog:HookScript("OnHide", mousehandlerstop)
-      end
-      
-      if addon.GamePad.GamePadEnabled then
-         CinematicFrame:HookScript('OnGamePadButtonDown', cinemarichandler)
-         CinematicFrame:HookScript('OnKeyDown', cinemarichandler)
-      end
-      
-      local moviehandler = function(self, button)
-         MovieFrame.CloseDialog.ResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', '_ABBR'), NO))
-         MovieFrame.CloseDialog.ConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', '_ABBR'), YES))
-         if self.CloseDialog then
-            if self.CloseDialog:IsShown() then
-               if button == config.PadActions.FACER.BIND then self.CloseDialog.ResumeButton:Click() end
-               if button == config.PadActions.FACED.BIND then self.CloseDialog.ConfirmButton:Click() end
-            else
-               self.CloseDialog:Show()
-            end
-         end
-      end
-      
-      if addon.GamePad.MouseLookEnabled or
-         addon.GamePad.GamePadLookEnabled then
-         MovieFrame.CloseDialog:HookScript("OnShow", mousehandlerstart)
-         MovieFrame.CloseDialog:HookScript("OnHide", mousehandlerstop)
-      end
-      
-      if addon.GamePad.GamePadEnabled then
-         MovieFrame:HookScript('OnGamePadButtonDown', moviehandler)
-         MovieFrame:HookScript('OnKeyDown', moviehandler)
-      end
-
-      if addon.GamePad.GamePadEnabled then
-         hooksecurefunc('SetGamePadCursorControl',  GenerateClosure(self.SetGamePadCursorControl, self))
-      end
-      
-      self:UnregisterEvent("ADDON_LOADED")
    end
 end
 
-function GamePadMixin:SetupGamePad()
+function GamePadMixin:ApplyConfig()
+   self:ConfigGamePad()
+   self:ClearActions()
+   self:ConfigActions()
+end
+
+function GamePadMixin:ConfigGamePad()
    self.EnableSounds = false
    self.MouseLookEnabled = config.GamePad.MouseLook
    self.GamePadLookEnabled = config.GamePad.GamePadLook
@@ -267,7 +158,7 @@ function GamePadMixin:SetupGamePad()
    self.EnableSounds = true
 end
 
-function GamePadMixin:ClearConfig()
+function GamePadMixin:ClearActions()
    for button, attributes in pairs(config.PadActions) do
       self:SetAttribute(button, "")
    end
@@ -299,9 +190,7 @@ function GamePadMixin:ClearConfig()
    end
 end
 
-function GamePadMixin:ApplyConfig()
-   self:SetupGamePad()
-   self:ClearConfig()
+function GamePadMixin:ConfigActions()
    for button, attributes in pairs(config.PadActions) do
       if button == "FACED" then
          self.SpellTargetConfirmButton = attributes.BIND
@@ -379,17 +268,60 @@ function GamePadMixin:ApplyConfig()
 
 end
 
-local CreateGamePad = function()
+function GamePadMixin:AddMovieButtonHandlers()
+   local cinematichandler = function(frame, button)
+      if not InCombatLockdown() then 
+         CinematicFrameCloseDialogResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', 'KEY_ABBR'), NO))
+         CinematicFrameCloseDialogConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', 'KEY_ABBR'), YES))
+         if frame.closeDialog then
+            if frame.closeDialog:IsShown() then
+               if button == config.PadActions.FACER.BIND then CinematicFrameCloseDialogResumeButton:Click() end
+               if button == config.PadActions.FACED.BIND then CinematicFrameCloseDialogConfirmButton:Click() end
+            else
+               frame.closeDialog:Show()
+            end
+         end
+      end
+   end
+   
+   if addon.GamePad.GamePadEnabled then
+      CinematicFrame:HookScript('OnGamePadButtonDown', cinematichandler)
+      CinematicFrame:HookScript('OnKeyDown', cinematichandler)
+   end
+   
+   local moviehandler = function(frame, button)
+      if not InCombatLockdown() then 
+         MovieFrame.CloseDialog.ResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', '_ABBR'), NO))
+         MovieFrame.CloseDialog.ConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', '_ABBR'), YES))
+         if frame.CloseDialog then
+            if frame.CloseDialog:IsShown() then
+               if button == config.PadActions.FACER.BIND then frame.CloseDialog.ResumeButton:Click() end
+               if button == config.PadActions.FACED.BIND then frame.CloseDialog.ConfirmButton:Click() end
+            else
+               frame.CloseDialog:Show()
+            end
+         end
+      end
+   end
+   
+   if addon.GamePad.GamePadEnabled then
+      MovieFrame:HookScript('OnGamePadButtonDown', moviehandler)
+      MovieFrame:HookScript('OnKeyDown', moviehandler)
+   end
+end
+
+local InitGamePad = function()
    local parent = addon.parentFrame
    local GamePad = CreateFrame("Frame", ADDON .. "GamePadFrame",
                                       parent, "SecureHandlerStateTemplate" )
    Mixin(GamePad, addon.GamePadMixin, addon.GamePadButtonsMixin, addon.GamePadLookMixin, addon.GamePadActionsMixin)
+   addon.GamePad = GamePad
+   
    GamePad:SetFrameStrata("BACKGROUND")
    GamePad:SetPoint("TOP", parent:GetName(), "LEFT", 0, 0)
    GamePad:HookScript("OnEvent", GamePad.OnEvent)
    GamePad:Hide()
    GamePad:OnLoad()
-   addon.GamePad = GamePad
 end
 
-addon:AddInitCallback(CreateGamePad)
+addon:AddInitCallback(InitGamePad)

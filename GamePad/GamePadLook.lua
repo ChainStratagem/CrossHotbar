@@ -8,6 +8,7 @@ addon.GamePadLookMixin = {
    GamePadMouseMode = false,
    GamePadCursorEnabled = false,
    MouseLookState = false,
+   MouseStatusFrame = nil,
    GamePadLeftClickCache = "PADLTRIGGER",
    GamePadRightClickCache = "PADRTRIGGER",
    SpellTargetConfirmButton = "PAD1",
@@ -201,3 +202,84 @@ function GamePadLookMixin:OnSpellTarget()
    end
 end
 
+function GamePadLookMixin:CreateLookStatusFrame()
+   self.MouseStatusFrame = CreateFrame("Frame")
+   self.MouseStatusFrame:SetPoint("CENTER", Crosshotbar, "TOP", 0 , 4)
+   self.MouseStatusFrame.backgtex = self.MouseStatusFrame:CreateTexture(nil,"BACKGROUND")
+   self.MouseStatusFrame.backgtex:SetAtlas("CircleMaskScalable", true)
+   self.MouseStatusFrame.backgtex:SetVertexColor(0,0,0,1)
+   self.MouseStatusFrame.backgtex:SetPoint("CENTER")
+   self.MouseStatusFrame.backgtex:SetSize(32, 32)
+   self.MouseStatusFrame.backgtex:Show()
+   self.MouseStatusFrame.mousetex = self.MouseStatusFrame:CreateTexture()
+   self.MouseStatusFrame.mousetex:SetAtlas("ClickCast-Icon-Mouse", true)
+   self.MouseStatusFrame.mousetex:SetPoint("CENTER")
+   self.MouseStatusFrame.mousetex:SetSize(32, 32)
+   self.MouseStatusFrame.mousetex:Hide()
+   self.MouseStatusFrame.pointtex = self.MouseStatusFrame:CreateTexture()
+   self.MouseStatusFrame.pointtex:SetAtlas("Cursor_cast_32", true)
+   self.MouseStatusFrame.pointtex:SetPoint("CENTER", 2, -2)
+   self.MouseStatusFrame.pointtex:SetSize(24, 24)
+   self.MouseStatusFrame.pointtex:SetAlpha(0.9)
+   self.MouseStatusFrame.pointtex:Hide()
+   self.MouseStatusFrame:SetSize(32, 32)
+   self.MouseStatusFrame:Hide()
+   SecureHandlerSetFrameRef(self, "MouseStatusFrame", self.MouseStatusFrame)
+end
+
+function GamePadLookMixin:CreateLookUpdateHooks()
+   self.MouseLookState = IsMouselooking();
+   self.MouseOnUpdateFrame = CreateFrame("Frame", ADDON .. "OnUpdateFrame")
+   
+   function self.MouseOnUpdateFrame:onUpdate(...)
+      if addon.GamePad.MouseLookEnabled then
+         if addon.GamePad.MouseLookState then
+            if IsMouselooking() ~= addon.GamePad.MouseLookState then
+               addon.GamePad:SetMouseLook(addon.GamePad.MouseLookState)
+            end
+         end
+      end
+   end
+
+   self.MouseOnUpdateFrame:SetScript("OnUpdate", self.MouseOnUpdateFrame.onUpdate)
+   self.MouseOnUpdateFrame:Hide()
+
+   if addon.GamePad.GamePadEnabled then
+      hooksecurefunc('SetGamePadCursorControl',  GenerateClosure(self.SetGamePadCursorControl, self))
+   end
+end
+
+function GamePadLookMixin:AddMovieLookHandlers()
+   local mouselookhandlerstate = false
+   local gamepadlookhandlerstate = false
+
+   local createmousehandler = function(start)
+      return function(frame)
+         if addon.GamePad.MouseLookEnabled then
+            if IsMouselooking() then
+               addon.GamePad:SetMouseLook(not start)
+               mouselookhandlerstate = start
+            end
+         end
+         if addon.GamePad.GamePadLookEnabled then
+            addon.GamePad:SetGamePadMouse(start)
+            gamepadlookhandlerstate = start
+         end
+      end
+   end
+   
+   local mousehandlerstart = createmousehandler(true)
+   local mousehandlerstop = createmousehandler(false)
+
+   if addon.GamePad.MouseLookEnabled or
+      addon.GamePad.GamePadLookEnabled then
+      CinematicFrameCloseDialog:HookScript("OnShow", mousehandlerstart)
+      CinematicFrameCloseDialog:HookScript("OnHide", mousehandlerstop)
+   end
+
+   if addon.GamePad.MouseLookEnabled or
+      addon.GamePad.GamePadLookEnabled then
+      MovieFrame.CloseDialog:HookScript("OnShow", mousehandlerstart)
+      MovieFrame.CloseDialog:HookScript("OnHide", mousehandlerstop)
+   end
+end
