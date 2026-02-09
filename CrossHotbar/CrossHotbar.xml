@@ -111,36 +111,26 @@
     </Layers>
   </Button>
 
-  <Frame name="WXHBDialog" inherits="DialogBorderDarkTemplate" enableMouse="true" parent="UIParent" hidden="true" frameStrata="DIALOG" frameLevel="100"  movable="true">
+  <Frame name="WXHBDialog" inherits="DefaultPanelTemplate" enableMouse="true" parent="UIParent" hidden="true" frameStrata="DIALOG" movable="true">
     <Size x="320" y="150"/>
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="lastValue" value="0" type="number"/>
     </KeyValues>
-    <Layers>
-      <Layer level="ARTWORK">
-	<FontString parentKey="Title" text="Crosshotbar Settings" font="GameFontNormal" justifyH="CENTER">
-	  <Size x="150" y="16"/>
-	  <Anchors>
-	    <Anchor point="TOP" x="0" y="-10"/>
-	  </Anchors>
-	</FontString>
-      </Layer>
-    </Layers>
     <Frames>
-      <Frame parentKey="Border" inherits="DialogBorderTemplate"/>      
+      <Button parentKey="CloseButton" inherits="UIPanelCloseButtonDefaultAnchors"/>  
       <Frame parentKey="DragArea" inherits="TitleDragAreaTemplate">
 	<Anchors>
 	  <Anchor point="TOPLEFT" relativeTo="WXHBDialog"/>
 	  <Anchor point="BOTTOMRIGHT" relativeTo="WXHBDialog"/>
 	</Anchors>
       </Frame>      
-      <Frame parentKey="ScaleSliderFrame" inherits="ResizeLayoutFrame">
+      <Frame parentKey="LayoutFrame" inherits="ResizeLayoutFrame">
 	<Anchors>
 	  <Anchor point="CENTER" x="0" y="0"/>
 	</Anchors>        
         <Frames>
-      	  <Slider parentKey="ScaleSlider" inherits="UISliderTemplate" obeyStepOnDrag="true">
+      	  <Slider parentKey="ScaleSlider" inherits="UISliderTemplateWithLabels" obeyStepOnDrag="true">
             <Size x="200" y="20"/>
 	    <Anchors>
 	      <Anchor point="CENTER" x="0" y="0"/>
@@ -180,16 +170,24 @@
             <Scripts>
               <OnClick>
                 SlashCmdList["CROSSHOTBAR"]()
-                WXHBCrossHotbarDrag_Texture:Hide()
-                Crosshotbar:ShowGrid(false)
                 WXHBDialog:Hide()
-                WXHBCrossHotbarMover.enabled = false
               </OnClick>
             </Scripts>
           </Button>
         </Frames>
       </Frame>
     </Frames>
+    <Scripts>
+      <OnLoad>
+        tinsert(UISpecialFrames, self:GetName())
+        self.TitleContainer.TitleText:SetText("Crosshotbar Settings")
+      </OnLoad>
+      <OnHide>
+        WXHBCrossHotbarDrag_Texture:Hide()
+        Crosshotbar:ShowGrid(false)
+        WXHBCrossHotbarMover.enabled = false
+      </OnHide>
+    </Scripts>
   </Frame>
         
   <Frame name="Crosshotbar" inherits="WXHBCrosshotbarTemplate" parent="WXHBCrossHotbarMover" frameStrata="PARENT" hidden="false">
