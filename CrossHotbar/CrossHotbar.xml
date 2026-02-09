@@ -137,7 +137,7 @@
 	    </Anchors>            
             <Layers>
               <Layer level="ARTWORK">
-	        <FontString parentKey="Title" text="Crosshotbar Scale" font="GameFontNormal" justifyH="CENTER">
+	        <FontString parentKey="Title" text="Scale" font="GameFontNormal" justifyH="CENTER">
 	          <Size x="150" y="0"/>
 	          <Anchors>
 	            <Anchor point="BOTTOM" relativePoint="TOP"  x="0" y="5"/>
