@@ -148,7 +148,7 @@
             <Scripts>
               <OnLoad>
                 self:SetValueStep(10)
-                self:SetMinMaxValues(60, 140)
+                self:SetMinMaxValues(50, 150)
               </OnLoad>
               <OnShow>
                 local scale = Crosshotbar:GetScale()

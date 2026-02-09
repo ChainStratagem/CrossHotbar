@@ -325,7 +325,7 @@ function CrossHotbarMixin:ScaleCrosshotbar(scale)
          WXHBCrossHotbarDrag_Texture:SetWidth(self:GetWidth()*scale)
          WXHBCrossHotbarDrag_Texture:SetHeight(self:GetHeight()*scale)
       else
-         if scale < 0.6 or scale > 1.4 then
+         if scale < 0.5 or scale > 1.5 then
             scale = 1.0
          end
          self:SetScale(scale)
