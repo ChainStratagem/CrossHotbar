@@ -7,12 +7,11 @@
 * Initial refactor to breakout larger files into smaller files.
 * Added OnClick function to mover.
    * Enables move activation.
-   * Unhides hidden buttons and raise strata level.
+   * Unhides hidden buttons and raises strata.
    * Shows settings panel.
-* Added settings panel.
-   * Slider changing the Crosshotbar's scale.
+* Added settings panel to mover.
+   * Slider to change the Crosshotbar's scale.
    * Button to open the options panel.
-
 
 ## Crosshotbar-1.0.21-release
 * Added Masque support.
