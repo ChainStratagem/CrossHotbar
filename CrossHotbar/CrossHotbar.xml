@@ -120,29 +120,29 @@
     <Frames>
       <Button parentKey="CloseButton" inherits="UIPanelCloseButtonDefaultAnchors"/>  
       <Frame parentKey="DragArea" inherits="TitleDragAreaTemplate">
-	<Anchors>
-	  <Anchor point="TOPLEFT" relativeTo="WXHBDialog"/>
-	  <Anchor point="BOTTOMRIGHT" relativeTo="WXHBDialog"/>
-	</Anchors>
+        <Anchors>
+          <Anchor point="TOPLEFT" relativeTo="WXHBDialog"/>
+          <Anchor point="BOTTOMRIGHT" relativeTo="WXHBDialog"/>
+        </Anchors>
       </Frame>      
       <Frame parentKey="LayoutFrame" inherits="ResizeLayoutFrame">
-	<Anchors>
-	  <Anchor point="CENTER" x="0" y="0"/>
-	</Anchors>        
+        <Anchors>
+          <Anchor point="CENTER" x="0" y="0"/>
+        </Anchors>        
         <Frames>
-      	  <Slider parentKey="ScaleSlider" inherits="UISliderTemplateWithLabels" obeyStepOnDrag="true">
+          <Slider parentKey="ScaleSlider" inherits="UISliderTemplateWithLabels" obeyStepOnDrag="true">
             <Size x="200" y="20"/>
-	    <Anchors>
-	      <Anchor point="CENTER" x="0" y="0"/>
-	    </Anchors>            
+            <Anchors>
+              <Anchor point="CENTER" x="0" y="0"/>
+            </Anchors>            
             <Layers>
               <Layer level="ARTWORK">
-	        <FontString parentKey="Title" text="Scale" font="GameFontNormal" justifyH="CENTER">
-	          <Size x="150" y="0"/>
-	          <Anchors>
-	            <Anchor point="BOTTOM" relativePoint="TOP"  x="0" y="5"/>
-	          </Anchors>
-	        </FontString>
+                <FontString parentKey="Title" text="Scale" font="GameFontNormal" justifyH="CENTER">
+                  <Size x="150" y="0"/>
+                  <Anchors>
+                    <Anchor point="BOTTOM" relativePoint="TOP"  x="0" y="5"/>
+                  </Anchors>
+                </FontString>
               </Layer>
             </Layers>
             <Scripts>
@@ -161,12 +161,12 @@
                 end
               </OnValueChanged>
             </Scripts>
-	  </Slider>          
-      	  <Button parentKey="Options" inherits="UIPanelButtonTemplate" text="Options">
+          </Slider>          
+          <Button parentKey="Options" inherits="UIPanelButtonTemplate" text="Options">
             <Size x="200" y="20"/>
-	    <Anchors>
-	      <Anchor point="TOP" relativeKey="$parent.ScaleSlider" relativePoint="BOTTOM"  x="0" y="-25"/>
-	    </Anchors>
+            <Anchors>
+              <Anchor point="TOP" relativeKey="$parent.ScaleSlider" relativePoint="BOTTOM"  x="0" y="-25"/>
+            </Anchors>
             <Scripts>
               <OnClick>
                 SlashCmdList["CROSSHOTBAR"]()
