@@ -41,8 +41,7 @@ VehicleHideList = addon:ActionListToTable(VehicleHideList)
 CrossHotbarMixin = {
 }
 
-function CrossHotbarMixin:SetupCrosshotbar()
-
+function CrossHotbarMixin:SetupCrosshotbar()   
    self:HideActionBars(config.Interface.ActionBarHide)
    self:HideVehicleElements(config.Interface.VehicleBarHide)
    
@@ -58,20 +57,6 @@ function CrossHotbarMixin:SetupCrosshotbar()
    SecureHandlerSetFrameRef(self, 'Hotbar6', WXHBRHotbar3)
    SecureHandlerSetFrameRef(self, 'Hotbar7', WXHBLRHotbar1)
    SecureHandlerSetFrameRef(self, 'Hotbar8', WXHBRLHotbar1)
-
-   SecureHandlerSetFrameRef(WXHBCrossHotbarMover, 'Crosshotbar', Crosshotbar)
-   SecureHandlerWrapScript(WXHBCrossHotbarMover, "OnClick", WXHBCrossHotbarMover, [[
-      local Crosshotbar = self:GetFrameRef('Crosshotbar')
-      self:SetWidth(Crosshotbar:GetWidth())
-   ]])
-   
-   SecureHandlerWrapScript(WXHBCrossHotbarMover, "OnEnter", WXHBCrossHotbarMover, [[
-      self:SetFrameLevel(10)
-   ]])
-   SecureHandlerWrapScript(WXHBCrossHotbarMover, "OnLeave", WXHBCrossHotbarMover, [[
-      self:SetFrameLevel(0)
-      self:SetWidth(16)
-   ]])
 
    for k,hotbar in pairs(self.LHotbar) do
       hotbar:SetupHotbar()
@@ -134,7 +119,6 @@ function CrossHotbarMixin:ApplyConfig()
 end
 
 function CrossHotbarMixin:OnLoad()
-   self:SetScale(0.90)
    self:AddTriggerHandler()
    self:AddShoulderHandler()
    self:AddPaddleHandler()
@@ -151,16 +135,15 @@ function CrossHotbarMixin:OnLoad()
    
    addon:AddInitCallback(GenerateClosure(self.SetupCrosshotbar, self))
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
-
-   self.PageStatusFrame = CreateFrame("Frame", nil, nil, self, "SecureFrameTemplate")
-   self.PageStatusFrame:SetPoint("BOTTOM", self, "BOTTOM", 0 , 0)
-   self.PageStatusFrame.frameText = self.PageStatusFrame:CreateFontString(nil, "BACKGROUND", "GameFontNormalSmall")
+   self.PageStatusFrame = CreateFrame("Frame", nil, self:GetParent(), self, "SecureFrameTemplate")
+   self.PageStatusFrame:SetPoint("TOP", self, "BOTTOM", 0 , 0)
+   self.PageStatusFrame.frameText = self.PageStatusFrame:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
    self.PageStatusFrame.frameText:SetPoint("TOPLEFT")
-   self.PageStatusFrame.frameText:SetFontObject(GameFontNormalSmall)
+   self.PageStatusFrame.frameText:SetFontObject(GameFontNormal)
    self.PageStatusFrame.frameText:SetTextColor(1.0, 1.0, 0.8, 1.0)
    self:UpdatePageStatus()
    self.PageStatusFrame:SetSize(self.PageStatusFrame.frameText:GetWidth(), self.PageStatusFrame.frameText:GetHeight())
-   self.PageStatusFrame:Hide()
+   self.PageStatusFrame:Hide()   
 end
 
 function CrossHotbarMixin:UpdatePageStatus()
@@ -177,13 +160,14 @@ function CrossHotbarMixin:OnEvent(event, ...)
       
       local activeset = self:GetAttribute("activeset")
       
-      if isInitialLogin or isReloadingUi then 
+      if isInitialLogin or isReloadingUi then    
          local configset = addon:GetConfigDBValue("ActiveSet")
          if configset and configset >= 1 and configset <= 6  then
             activeset = configset
          end
-      end
-
+         self:ScaleCrosshotbar()
+      end     
+      
       self:SetAttribute("state-page", activeset)
       self.PageStatusFrame:Show()
    elseif ( event == "PLAYER_REGEN_DISABLED" ) then
@@ -298,21 +282,23 @@ function CrossHotbarMixin:AddPageHandler()
   ]])
 end
 
-function CrossHotbarMixin:ShowGrid(enable)
-   if enable then
-      self:SetFrameStrata("HIGH")
-   else
-      self:SetFrameStrata("MEDIUM")
-   end
-   for k,hotbar in pairs(self.LHotbar) do            
-      hotbar:ShowGrid(enable)
-   end
-   for k,hotbar in pairs(self.RHotbar) do        
-      hotbar:ShowGrid(enable)
-   end
-   for k,hotbar in pairs(self.MHotbar) do        
-      hotbar:ShowGrid(enable)
-   end                                    
+function CrossHotbarMixin:ShowGrid(enable)   
+   if not InCombatLockdown() then 
+      if enable then
+         self:SetFrameStrata("HIGH")
+      else
+         self:SetFrameStrata("MEDIUM")
+      end
+      for k,hotbar in pairs(self.LHotbar) do            
+         hotbar:ShowGrid(enable)
+      end
+      for k,hotbar in pairs(self.RHotbar) do        
+         hotbar:ShowGrid(enable)
+      end
+      for k,hotbar in pairs(self.MHotbar) do        
+         hotbar:ShowGrid(enable)
+      end
+   end                           
 end
 
 function CrossHotbarMixin:UpdateCrosshotbar()
@@ -324,6 +310,30 @@ function CrossHotbarMixin:UpdateCrosshotbar()
    end
    for k,hotbar in pairs(self.MHotbar) do
       hotbar:UpdateHotbar()
+   end
+end
+
+function CrossHotbarMixin:ScaleCrosshotbar(scale)
+   if not InCombatLockdown() then 
+      if scale == nil then
+         scale = addon:GetConfigDBValue("CrosshotbarScale", scale)
+         if scale == nil then
+            scale = 1.0
+         end
+         self:SetScale(scale)
+         WXHBCrossHotbarMover_Texture:SetHeight(self:GetHeight()*0.6*scale)
+         WXHBCrossHotbarDrag_Texture:SetWidth(self:GetWidth()*scale)
+         WXHBCrossHotbarDrag_Texture:SetHeight(self:GetHeight()*scale)
+      else
+         if scale < 0.6 or scale > 1.4 then
+            scale = 1.0
+         end
+         self:SetScale(scale)
+         WXHBCrossHotbarMover_Texture:SetHeight(self:GetHeight()*0.6*scale)
+         WXHBCrossHotbarDrag_Texture:SetWidth(self:GetWidth()*scale)
+         WXHBCrossHotbarDrag_Texture:SetHeight(self:GetHeight()*scale)
+         addon:SetConfigDBValue("CrosshotbarScale", scale)
+      end
    end
 end
 

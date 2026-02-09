@@ -389,7 +389,6 @@ function HotbarMixin:AddExpandHandler()
 end
 
 function HotbarMixin:UpdateHotbar()
-   local parent_scaling = self:GetParent():GetScale()
    local bar = self[self.Type]
    if bar then
       local mxw = 0
@@ -410,7 +409,7 @@ function HotbarMixin:UpdateHotbar()
       local mxw = mxw+self.Padding
       local mxh = mxh+self.Padding
       
-      self:SetSize(mxw*parent_scaling*12-4, mxh*parent_scaling)
+      self:SetSize(mxw*12-4, mxh)
       
       local CHBar = {{0, 0}, {0, 0}, { 0, 0}}
       
@@ -418,7 +417,7 @@ function HotbarMixin:UpdateHotbar()
          CHBar[i][1] = (bar.GrpPos[i][1]*mxw + bar.BtnOff[i][1]*self.Padding + bar.GrpOff[i][1] + 
                         (1.0 - self.Scaling)*bar.SclOff[i][1]*mxw)/self.Scaling
          CHBar[i][2] = (bar.GrpPos[i][2]*mxh + bar.BtnOff[i][2]*self.Padding + bar.GrpOff[i][2] +
-                        (1.0 - self.Scaling)*bar.SclOff[i][2]*mxh+mxh)/self.Scaling
+                        (1.0 - self.Scaling)*bar.SclOff[i][2]*mxh)/self.Scaling
       end
       
       local anchor = nil
@@ -431,13 +430,13 @@ function HotbarMixin:UpdateHotbar()
             if idx%4 == 0 then
                anchorIdx = idx
                anchor = button
-               button:SetScale(self.Scaling*parent_scaling)
+               button:SetScale(self.Scaling)
                button:ClearAllPoints()
                button:SetPoint("BOTTOMLEFT", self, CHBar[(idx+4)/4][1], CHBar[(idx+4)/4][2])
                table.insert(self.AnchorButtons, button)
             else
                bIdx = idx-anchorIdx
-               button:SetScale(self.Scaling*parent_scaling)
+               button:SetScale(self.Scaling)
                button:ClearAllPoints()
                button:SetPoint("CENTER", anchor, "CENTER", bar.BtnPos[bIdx][1]*mxw, bar.BtnPos[bIdx][2]*mxh)
             end

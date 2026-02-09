@@ -139,7 +139,7 @@ Settings:
    end)
 
    self.category, self.layout = Settings.RegisterCanvasLayoutCategory(self.ConfigFrame,
-                                                                  self.ConfigFrame.name)
+                                                                      self.ConfigFrame.name)
    Settings.RegisterAddOnCategory(self.category)
    
    SLASH_CROSSHOTBAR1, SLASH_CROSSHOTBAR2 = '/chb', '/wxhb'
@@ -147,7 +147,7 @@ Settings:
       if msg == "clear layout" then
          self:ClearLayout()
       else
-         Settings.OpenToCategory(category:GetID())
+         Settings.OpenToCategory(self.category:GetID())
       end
    end
    SlashCmdList["CROSSHOTBAR"] = slashcmd

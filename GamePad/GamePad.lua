@@ -270,16 +270,14 @@ end
 
 function GamePadMixin:AddMovieButtonHandlers()
    local cinematichandler = function(frame, button)
-      if not InCombatLockdown() then 
-         CinematicFrameCloseDialogResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', 'KEY_ABBR'), NO))
-         CinematicFrameCloseDialogConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', 'KEY_ABBR'), YES))
-         if frame.closeDialog then
-            if frame.closeDialog:IsShown() then
-               if button == config.PadActions.FACER.BIND then CinematicFrameCloseDialogResumeButton:Click() end
-               if button == config.PadActions.FACED.BIND then CinematicFrameCloseDialogConfirmButton:Click() end
-            else
-               frame.closeDialog:Show()
-            end
+      CinematicFrameCloseDialogResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', 'KEY_ABBR'), NO))
+      CinematicFrameCloseDialogConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', 'KEY_ABBR'), YES))
+      if frame.closeDialog then
+         if frame.closeDialog:IsShown() then
+            if button == config.PadActions.FACER.BIND then CinematicFrameCloseDialogResumeButton:Click() end
+            if button == config.PadActions.FACED.BIND then CinematicFrameCloseDialogConfirmButton:Click() end
+         else
+            frame.closeDialog:Show()
          end
       end
    end
@@ -290,16 +288,14 @@ function GamePadMixin:AddMovieButtonHandlers()
    end
    
    local moviehandler = function(frame, button)
-      if not InCombatLockdown() then 
-         MovieFrame.CloseDialog.ResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', '_ABBR'), NO))
-         MovieFrame.CloseDialog.ConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', '_ABBR'), YES))
-         if frame.CloseDialog then
-            if frame.CloseDialog:IsShown() then
-               if button == config.PadActions.FACER.BIND then frame.CloseDialog.ResumeButton:Click() end
-               if button == config.PadActions.FACED.BIND then frame.CloseDialog.ConfirmButton:Click() end
-            else
-               frame.CloseDialog:Show()
-            end
+      MovieFrame.CloseDialog.ResumeButton:SetText(('%s %s'):format(GetBindingText('PAD2', '_ABBR'), NO))
+      MovieFrame.CloseDialog.ConfirmButton:SetText(('%s %s'):format(GetBindingText('PAD1', '_ABBR'), YES))
+      if frame.CloseDialog then
+         if frame.CloseDialog:IsShown() then
+            if button == config.PadActions.FACER.BIND then frame.CloseDialog.ResumeButton:Click() end
+            if button == config.PadActions.FACED.BIND then frame.CloseDialog.ConfirmButton:Click() end
+         else
+            frame.CloseDialog:Show()
          end
       end
    end

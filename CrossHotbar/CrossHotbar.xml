@@ -36,7 +36,7 @@
   </Frame>
   
   <Frame name="WXHBCrosshotbarTemplate" virtual="true" inherits="SecureHandlerStateTemplate" parent="UIParent" frameStrata="PARENT" hidden="true" mixin="CrossHotbarMixin">
-    <Size x="554" y="120"/>
+    <Size x="610" y="100"/>
     <Scripts>
       <OnLoad method="OnLoad" inherit="append"/>
       <OnEvent method="OnEvent" inherit="append"/>
@@ -44,25 +44,53 @@
   </Frame>
   
   <Button name="WXHBCrossHotbarMover" inherits="SecureActionButtonTemplate" parent="UIParent" frameStrata="MEDIUM" hidden="false" enableMouse="true" movable="true">
-    <Size x="16" y="112"/>
+    <Size x="16" y="100"/>
     <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
+    <KeyValues>
+      <KeyValue key="enabled" value="false" type="boolean"/>
+    </KeyValues>
     <Scripts>
       <OnLoad>
-        self:RegisterForDrag("LeftButton");
+        self:RegisterForDrag("LeftButton")
       </OnLoad>
-      <OnDragStart>self:StartMoving();</OnDragStart>
-      <OnDragStop>self:StopMovingOrSizing();</OnDragStop>
+      <OnDragStart>        
+        if not InCombatLockdown() then 
+           self:StartMoving()
+        end
+      </OnDragStart>
+      <OnDragStop>
+        if not InCombatLockdown() then 
+           self:StopMovingOrSizing()
+        end
+        if self.enabled ==false then
+           WXHBCrossHotbarDrag_Texture:Hide()
+           Crosshotbar:ShowGrid(false)
+           WXHBDialog:Hide()
+           self.enabled = false
+        end
+      </OnDragStop>
+      <OnClick>
+        if self.enabled == true then
+           WXHBCrossHotbarDrag_Texture:Hide()
+           Crosshotbar:ShowGrid(false)
+           WXHBDialog:Hide()
+           self.enabled = false
+        else
+           self.enabled = true
+        end
+      </OnClick>
       <OnMouseDown>
-        WXHBCrossHotbarDrag_Texture:SetWidth(Crosshotbar:GetWidth());
-        WXHBCrossHotbarDrag_Texture:Show();
+        if self.enabled == false then
+           WXHBCrossHotbarDrag_Texture:Show()
+           Crosshotbar:ShowGrid(true)
+           WXHBDialog:Show()
+        end
       </OnMouseDown>
       <OnEnter>
-        WXHBCrossHotbarMover_Texture:SetWidth(8);
+        WXHBCrossHotbarMover_Texture:SetWidth(8)
       </OnEnter>
       <OnLeave>
-        WXHBCrossHotbarMover_Texture:SetWidth(2);
-        WXHBCrossHotbarDrag_Texture:SetWidth(2);
-        WXHBCrossHotbarDrag_Texture:Hide();
+        WXHBCrossHotbarMover_Texture:SetWidth(2)
       </OnLeave>
     </Scripts>
     <Layers>
@@ -82,9 +110,90 @@
       </Layer>
     </Layers>
   </Button>
-  
+
+  <Frame name="WXHBDialog" inherits="DialogBorderDarkTemplate" enableMouse="true" parent="UIParent" hidden="true" frameStrata="DIALOG" frameLevel="100"  movable="true">
+    <Size x="320" y="150"/>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
+    <KeyValues>
+      <KeyValue key="lastValue" value="0" type="number"/>
+    </KeyValues>
+    <Layers>
+      <Layer level="ARTWORK">
+	<FontString parentKey="Title" text="Crosshotbar Settings" font="GameFontNormal" justifyH="CENTER">
+	  <Size x="150" y="16"/>
+	  <Anchors>
+	    <Anchor point="TOP" x="0" y="-10"/>
+	  </Anchors>
+	</FontString>
+      </Layer>
+    </Layers>
+    <Frames>
+      <Frame parentKey="Border" inherits="DialogBorderTemplate"/>      
+      <Frame parentKey="DragArea" inherits="TitleDragAreaTemplate">
+	<Anchors>
+	  <Anchor point="TOPLEFT" relativeTo="WXHBDialog"/>
+	  <Anchor point="BOTTOMRIGHT" relativeTo="WXHBDialog"/>
+	</Anchors>
+      </Frame>      
+      <Frame parentKey="ScaleSliderFrame" inherits="ResizeLayoutFrame">
+	<Anchors>
+	  <Anchor point="CENTER" x="0" y="0"/>
+	</Anchors>        
+        <Frames>
+      	  <Slider parentKey="ScaleSlider" inherits="UISliderTemplate" obeyStepOnDrag="true">
+            <Size x="200" y="20"/>
+	    <Anchors>
+	      <Anchor point="CENTER" x="0" y="0"/>
+	    </Anchors>            
+            <Layers>
+              <Layer level="ARTWORK">
+	        <FontString parentKey="Title" text="Crosshotbar Scale" font="GameFontNormal" justifyH="CENTER">
+	          <Size x="150" y="0"/>
+	          <Anchors>
+	            <Anchor point="BOTTOM" relativePoint="TOP"  x="0" y="5"/>
+	          </Anchors>
+	        </FontString>
+              </Layer>
+            </Layers>
+            <Scripts>
+              <OnLoad>
+                self:SetValueStep(10)
+                self:SetMinMaxValues(60, 140)
+              </OnLoad>
+              <OnShow>
+                local scale = Crosshotbar:GetScale()
+                self:SetValue(scale*100)
+              </OnShow>
+              <OnValueChanged>
+                if value ~= lastValue then
+                   lastValue = value
+                   Crosshotbar:ScaleCrosshotbar(value/100)
+                end
+              </OnValueChanged>
+            </Scripts>
+	  </Slider>          
+      	  <Button parentKey="Options" inherits="UIPanelButtonTemplate" text="Options">
+            <Size x="200" y="20"/>
+	    <Anchors>
+	      <Anchor point="TOP" relativeKey="$parent.ScaleSlider" relativePoint="BOTTOM"  x="0" y="-25"/>
+	    </Anchors>
+            <Scripts>
+              <OnClick>
+                SlashCmdList["CROSSHOTBAR"]()
+                WXHBCrossHotbarDrag_Texture:Hide()
+                Crosshotbar:ShowGrid(false)
+                WXHBDialog:Hide()
+                WXHBCrossHotbarMover.enabled = false
+              </OnClick>
+            </Scripts>
+          </Button>
+        </Frames>
+      </Frame>
+    </Frames>
+  </Frame>
+        
   <Frame name="Crosshotbar" inherits="WXHBCrosshotbarTemplate" parent="WXHBCrossHotbarMover" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <Attributes>
       <Attribute name="expanded" type="number" value="0"/>
       <Attribute name="triggerstate" type="number" value="4"/>
@@ -95,7 +204,7 @@
   </Frame>
   
   <Frame name="WXHBLHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="Type" value="LHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
@@ -110,7 +219,7 @@
   </Frame>
   
   <Frame name="WXHBLHotbar2" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="Type" value="LHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.00" type="number"/>
@@ -123,7 +232,7 @@
   </Frame>
   
   <Frame name="WXHBLHotbar3" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="commandNamePrefix" value="LHOTBAR3" type="string"/>
       <KeyValue key="Type" value="LHotbar" type="string"/>
@@ -138,7 +247,7 @@
   </Frame>
   
   <Frame name="WXHBRHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="Type" value="RHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
@@ -153,7 +262,7 @@
   </Frame>
   
   <Frame name="WXHBRHotbar2" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="Type" value="RHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.00" type="number"/>
@@ -166,7 +275,7 @@
   </Frame>
   
   <Frame name="WXHBRHotbar3" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="Type" value="RHotbar" type="string"/>
       <KeyValue key="Scaling" value="0.85" type="number"/>
@@ -180,7 +289,7 @@
   </Frame>
   
   <Frame name="WXHBLRHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="Type" value="LRHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
@@ -195,7 +304,7 @@
   </Frame>
   
   <Frame name="WXHBRLHotbar1" inherits="WXHBHotbarTemplate" parent="Crosshotbar" frameStrata="PARENT" hidden="false">
-    <Anchors><Anchor point="BOTTOM" relativePoint="BOTTOM" x="0" y="0" /></Anchors>
+    <Anchors><Anchor point="CENTER" relativePoint="CENTER" x="0" y="0" /></Anchors>
     <KeyValues>
       <KeyValue key="Type" value="RLHotbar" type="string"/>
       <KeyValue key="Scaling" value="1.15" type="number"/>
