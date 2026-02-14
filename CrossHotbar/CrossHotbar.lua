@@ -276,6 +276,7 @@ function CrossHotbarMixin:AddPageHandler()
                RegisterStateDriver(hotbar, 'page', pageprefix .. pageindex)
             end
          end
+         hotbar:CallMethod("UpdateHotkeys")
       end
 
       self:CallMethod("UpdatePageStatus")

@@ -139,6 +139,8 @@ end
 
 function HotbarMixin:OnLoad()
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+   self:RegisterEvent("UPDATE_BINDINGS")
+   self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED")
 end
 
 function HotbarMixin:SetupHotbar()   
@@ -161,18 +163,6 @@ end
 function HotbarMixin:AddActionBar()
    self.Buttons = {}
    self.BtnPrefix = self:GetName() .. "Button"
-
-   local customExitButton = {
-      func = function(button)
-         VehicleExit()
-      end,
-      texture = "Interface\\Vehicles\\UI-Vehicles-Button-Exit-Up",
-      tooltip = LEAVE_VEHICLE,
-   }
-   
-   local ActBTnConfig = {
-      showGrid = true
-   }
    
    for i = 1,12 do
       self.Buttons[i] = CreateFrame("CheckButton", self.BtnPrefix .. i, self, "ActionBarButtonTemplate")
@@ -182,6 +172,11 @@ function HotbarMixin:AddActionBar()
       self.Buttons[i]:SetAttribute("checkmouseovercast", true)
       -- Set attribute to tell Consoleport not to manage hotkey text.
       self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
+      --[[ Unable to unregister events using bar level workaround.
+      -- Unregister events to prevent hotkey text changes.
+         self.Buttons[i]:UnregisterEvent("UPDATE_BINDINGS")
+         self.Buttons[i]:UnregisterEvent("GAME_PAD_ACTIVE_CHANGED")
+      --]]
    end
    
    for i,button in ipairs(self.Buttons) do
@@ -499,6 +494,10 @@ function HotbarMixin:UpdateHotkeys()
             local key = button:GetAttribute('over_hotkey' .. modifier)
             if key and key ~= "" then
                button.HotKey:SetText(key)
+               button.HotKey:SetSize(button:GetWidth(), 16);
+               button.HotKey:SetPoint("TOPRIGHT", button, "TOPRIGHT",
+                                      button.hotkeyTextGamepadX or 0,
+                                      button.hotkeyTextGamepadY or 0);
                if i < 5 then
                   highlights[1] = true 
                elseif i < 9 then
@@ -507,10 +506,18 @@ function HotbarMixin:UpdateHotkeys()
                   highlights[3] = true
                end
             else
-               button.HotKey:SetText(RANGE_INDICATOR)     
+               button.HotKey:SetText(RANGE_INDICATOR)
+               button.HotKey:SetSize(button:GetWidth()-8, 10);
+               button.HotKey:SetPoint("TOPRIGHT", button, "TOPRIGHT",
+                                      button.hotkeyTextKeyboardX or 0,
+                                      button.hotkeyTextKeyboardY or 0);
             end
          else
-            button.HotKey:SetText(RANGE_INDICATOR)  
+            button.HotKey:SetText(RANGE_INDICATOR)
+               button.HotKey:SetSize(button:GetWidth()-8, 10);
+               button.HotKey:SetPoint("TOPRIGHT", button, "TOPRIGHT",
+                                      button.hotkeyTextKeyboardX or 0,
+                                      button.hotkeyTextKeyboardY or 0);
          end
          button.HotKey:Show()
       end
@@ -579,6 +586,9 @@ function HotbarMixin:OnEvent(event, ...)
          ThemeManager:addButtons(self.Buttons, self.Type, handleCooldownPulse)
          handleCooldownPulse()
       end
+   elseif (event == "UPDATE_BINDINGS" or
+           event == "GAME_PAD_ACTIVE_CHANGED") then
+      self:UpdateHotkeys()
    end
 end
 
