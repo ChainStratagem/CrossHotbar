@@ -1,5 +1,14 @@
 # CrossHotbar Changelog
 
+## Crosshotbar-1.0.23-release
+* Added Action binding support for addon ExtraQuestButton.
+   * Requires addon ExtraQuestButton.
+   * Allows Crosshotbar to use quest items easly.
+   * A new action binding named "EXTRAQUESTBUTTON1" is available.
+   * The binding will first call EXTRACTIONBUTTON1 if visable and EXTRAQUESTBUTTON if not.
+* Fix issue where ending a drag action would rehide buttons even when mover is activated.
+   * SHOWGRID events are not processed when mover is active.
+
 ## Crosshotbar-1.0.22-release
 * Fixed issue were spell alerts were removed when activiting hotbars.
 * Fixed issue were certain events changed hotkey text.

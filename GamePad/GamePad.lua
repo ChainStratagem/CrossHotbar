@@ -92,11 +92,10 @@ end
 function GamePadMixin:OnEvent(event, ...)
    -- print(event)
    if event == 'PLAYER_ENTERING_WORLD' then
-      --[[
-      local isInitialLogin, isReloadingUi = ...
+      local isInitialLogin, isReloadingUi = ...         
       if isInitialLogin or isReloadingUi then
+         self:GamePadActionsInit()
       end
-      --]]
    elseif event == 'CURSOR_CHANGED' then
    elseif event == 'CURRENT_SPELL_CAST_CHANGED' then
       self:OnSpellTarget()

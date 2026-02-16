@@ -39,6 +39,22 @@ local ModifierActions = {
          self:SetAttribute("macrotext1", "/click ExtraActionButton1")
       end
    ]]},
+   {"EXTRAQUESTBUTTON1", [[ local down = ...
+      if down then
+         if HasExtraActionBar() then
+            self:SetAttribute("macrotext1", "/click ExtraActionButton1")
+         else
+            local GamePad = self:GetFrameRef('GamePad')
+            local ExtraQuestButton = GamePad:GetFrameRef('ExtraQuestButton')
+            if ExtraQuestButton ~= nil and ExtraQuestButton:IsShown() then
+               local item = ExtraQuestButton:GetAttribute("item")
+               if item ~= "" then
+                  self:SetAttribute("macrotext1", "/use " .. item)
+               end
+            end
+         end
+      end
+   ]]},
    {"TOGGLESHEATH", [[local down = ...
       if down then
         local GamePad = self:GetFrameRef('GamePad')
@@ -403,6 +419,13 @@ addon.GamePadActionsMixin = {
 }
 
 local GamePadActionsMixin = addon.GamePadActionsMixin
+
+function GamePadActionsMixin:GamePadActionsInit()
+   -- Add binding support for ExtraQuestButton.
+   if _G["ExtraQuestButton"] then      
+      SecureHandlerSetFrameRef(self, 'ExtraQuestButton', _G["ExtraQuestButton"])
+   end
+end
 
 function GamePadActionsMixin:GPPlaySound(soundid)
    if self.EnableSounds then

@@ -42,6 +42,7 @@ local Locale = {
    CATEGORY_HOTBAR_EXPANDED_TOOLTIP = "Actions to expand the hotbar by a button press.",
    CATEGORY_ACTIONS = "Actions",
    CATEGORY_ACTIONS_TOOLTIP = "Button actions for basic commands.",
+   CATEGORY_ACTIONS_EXTRAQUESTBUTTON1_TOOLTIP = "Button for addon ExtraQuestButton. Calls EXTRAACTIONBUTTON1 if visable or EXTRAQUESTBUTTON if not.",
    CATEGORY_MACRO = "Macro",
    CATEGORY_MACRO_TOOLTIP = "Will call the named marco if it exists. Exampe: MACRO CH_MACRO_1 will call the user macro named CH_MACRO_1.",
    CATEGORY_TARGETING = "Targeting",

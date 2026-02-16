@@ -173,11 +173,13 @@ function CrossHotbarMixin:OnEvent(event, ...)
    elseif ( event == "PLAYER_REGEN_DISABLED" ) then
          self:ShowGrid(false)
    elseif ( event == "ACTIONBAR_SHOWGRID" ) then
-      if not InCombatLockdown() then 
+      if not InCombatLockdown() and
+         not WXHBCrossHotbarMover.enabled then 
          self:ShowGrid(true)
       end
    elseif ( event == "ACTIONBAR_HIDEGRID" ) then
-      if not InCombatLockdown() then 
+      if not InCombatLockdown() and
+         not WXHBCrossHotbarMover.enabled then 
          self:ShowGrid(false)
       end
    elseif ( event == "PLAYER_LOGOUT" ) then
