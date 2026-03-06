@@ -8,6 +8,10 @@
    * The binding will first call EXTRACTIONBUTTON1 if visable and EXTRAQUESTBUTTON if not.
 * Fix issue where ending a drag action would rehide buttons even when mover is activated.
    * SHOWGRID events are not processed when mover is active.
+* Removing Crosshotbar from UISpecialFrames.
+   * Auto closing the "edit mode" was inconsitant.
+* Fixed logic with HOLDEXPAND.
+   * Disabled expanding when on the backbar.
 
 ## Crosshotbar-1.0.22-release
 * Fixed issue were spell alerts were removed when activiting hotbars.

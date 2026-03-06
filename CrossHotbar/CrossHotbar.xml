@@ -36,7 +36,7 @@
   </Frame>
   
   <Frame name="WXHBCrosshotbarTemplate" virtual="true" inherits="SecureHandlerStateTemplate" parent="UIParent" frameStrata="PARENT" hidden="true" mixin="CrossHotbarMixin">
-    <Size x="610" y="100"/>
+    <Size x="610" y="105"/>
     <Scripts>
       <OnLoad method="OnLoad" inherit="append"/>
       <OnEvent method="OnEvent" inherit="append"/>
@@ -179,7 +179,6 @@
     </Frames>
     <Scripts>
       <OnLoad>
-        tinsert(UISpecialFrames, self:GetName())
         self.TitleContainer.TitleText:SetText("Crosshotbar Settings")
       </OnLoad>
       <OnHide>

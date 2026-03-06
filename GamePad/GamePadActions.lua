@@ -77,7 +77,7 @@ local ExpandedModifierActions = {
          if down == true then expanded = 3 end
          local triggerstate = GamePad:GetAttribute("triggerstate")
          local expandedstate = GamePad:GetAttribute("expandedstate")
-         if expandedstate == 0 or expandedstate == 3 then
+         if (expandedstate == 0 and triggerstate == 4) or expandedstate == 3 then
             if triggerstate == 4 then
                GamePad:SetAttribute("state-expanded", expanded)
             else
@@ -439,7 +439,7 @@ end
 
 function GamePadActionsMixin:ZoomIn(down)
    if down then
-      MoveViewInStart(1.0, 0, true);
+      MoveViewInStart(1.0, 0, true)
    else
       CameraZoomIn(1.0)
    end
@@ -447,7 +447,7 @@ end
 
 function GamePadActionsMixin:ZoomOut(down)
    if down then
-      MoveViewOutStart(1.0, 0, true);
+      MoveViewOutStart(1.0, 0, true)
    else
       CameraZoomOut(1.0)
    end
