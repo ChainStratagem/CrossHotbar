@@ -165,11 +165,12 @@ function HotbarMixin:AddActionBar()
    self.BtnPrefix = self:GetName() .. "Button"
    
    for i = 1,12 do
-      self.Buttons[i] = CreateFrame("CheckButton", self.BtnPrefix .. i, self, "ActionBarButtonTemplate")
+      self.Buttons[i] = CreateFrame("CheckButton", self.BtnPrefix .. i, self, "ActionBarButtonTemplate, SecureActionButtonTemplate")
       
       self.Buttons[i]:SetID(i)
       self.Buttons[i]:SetAttributeNoHandler("actions", i)
       self.Buttons[i]:SetAttribute("checkmouseovercast", true)
+      self.Buttons[i]:SetAttribute("useOnKeyDown", true)
       -- Set attribute to tell Consoleport not to manage hotkey text.
       self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
       --[[ Unable to unregister events using bar level workaround.

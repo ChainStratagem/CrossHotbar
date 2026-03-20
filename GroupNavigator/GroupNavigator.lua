@@ -517,6 +517,7 @@ local InitGroupNavigator = function()
    GroupNavigator:SetPoint("TOP", parent:GetName(), "LEFT", 0, 0)
    GroupNavigator:Hide()
 
+   GroupNavigator:SetAttribute("useOnKeyDown", true)
    GroupNavigator:SetAttribute("player_unit", "1")
    GroupNavigator:SetAttribute("player_group", "1")
    GroupNavigator:SetAttribute("*type1", "target")

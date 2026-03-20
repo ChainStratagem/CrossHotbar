@@ -1,5 +1,12 @@
 # CrossHotbar Changelog
 
+
+## Crosshotbar-1.0.24-release
+* Fixed issue where actions were only issued on release presses.
+   * Changed default behavior to activate on initial button press.
+   * Issue appears to have been introduced with changes to support Midnight.
+   * May add UI options to select behavior in future releases.
+
 ## Crosshotbar-1.0.23-release
 * Added Action binding support for addon ExtraQuestButton.
    * Requires addon ExtraQuestButton.
