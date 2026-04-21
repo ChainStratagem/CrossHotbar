@@ -1,5 +1,10 @@
 # CrossHotbar Changelog
 
+## Crosshotbar-1.0.25-release
+* Updated TOC for 12.0.5.
+* Fixed issue with group navigation when reloading in a dungeon while in combat.   
+* Tooltip corrections.
+   * Used "extra actions" instead of "expanded actions".
 
 ## Crosshotbar-1.0.24-release
 * Fixed issue where actions were only issued on release presses.

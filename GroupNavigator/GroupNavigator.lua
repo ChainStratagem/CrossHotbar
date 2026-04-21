@@ -48,6 +48,8 @@ function GroupNavigatorMixin:OnLoad()
    self:RegisterEvent("UNIT_NAME_UPDATE")
    self:RegisterEvent("PLAYER_ROLES_ASSIGNED")
    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+   self:RegisterEvent("PLAYER_REGEN_ENABLED")
+   self:RegisterEvent("PLAYER_REGEN_DISABLED")
    self:RegisterEvent("PLAYER_TARGET_CHANGED")
    self:WrapOnClick()
    
@@ -77,6 +79,10 @@ function GroupNavigatorMixin:OnEvent(event, ...)
          ChatFrame1EditBox:SetAltArrowKeyMode(false)
       end
       self.SoftTargetFrame:Hide()      
+      self:updateRoster()
+   elseif event == "PLAYER_REGEN_ENABLED" then
+      self:updateRoster()
+   elseif event == "PLAYER_REGEN_DISABLED" then
       self:updateRoster()
    elseif event == "PLAYER_TARGET_CHANGED" then
       self:UpdateSoftTargetHighlight()

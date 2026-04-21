@@ -10,7 +10,7 @@ local Locale = {
    ppadlTabToolTip = "Actions and hotbar assignments when under the LEFTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    ppadrTabToolTip = "Actions and hotbar assignments when under the RIGHTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    hotkeyTypeToolTip = "Button icons used in the gui and hotkeys can be set to shapes or letters.",
-   expandedTypeToolTip = "Sets the visual appearance of the extra action buttons.",
+   expandedTypeToolTip = "Sets the visual appearance of the expanded action buttons.",
    dclkTypeToolTip = "Sets the hotbar double click behavior. Double click is registered upon two quick releases presses",
    dadaTypeToolTip = "The Cross hotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
    pageIndexToolTip = "The default page displayed by the hotbar for SET 1.",
@@ -79,13 +79,13 @@ local Locale = {
       ["_LTR"] = "Use letters for button icons",
    },
    wxhbtypestr = {
-      ["HIDE"] = "Hide extra actions when not active",
-      ["FADE"] = "Fade extra actions when not active",
-      ["SHOW"] = "Show extra actions when not active"
+      ["HIDE"] = "Hide expanded actions when not active",
+      ["FADE"] = "Fade expanded actions when not active",
+      ["SHOW"] = "Show expanded actions when not active"
    },
    dclktypestr = {
-      ["ENABLE"] = "Enable extra actions",
-      ["VISUAL"] = "Enable extra actions with visual",
+      ["ENABLE"] = "Enable expanded actions",
+      ["VISUAL"] = "Enable expanded actions with visual",
       ["DISABLE"] = "Disable double click"
    },
    actionbarhidetypestr = {
