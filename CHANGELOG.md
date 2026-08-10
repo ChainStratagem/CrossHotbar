@@ -1,5 +1,9 @@
 # CrossHotbar Changelog
 
+## Crosshotbar-1.0.26-release
+* Updated TOC for 12.1 and 12.0.7.
+* Added EQOL Unit Frame support for navigation.
+
 ## Crosshotbar-1.0.25-release
 * Updated TOC for 12.0.5.
 * Fixed issue with group navigation when reloading in a dungeon while in combat.   

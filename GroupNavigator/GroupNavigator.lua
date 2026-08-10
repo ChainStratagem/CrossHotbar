@@ -267,7 +267,8 @@ function GroupNavigatorMixin:AddUnitFrameRefs()
                   "CompactPartyFrameMember",
                   "CellPartyFrameHeaderUnitButton",
                   "Grid2LayoutHeader1UnitButton",
-                  "ElvUF_PartyGroup1UnitButton"
+                  "ElvUF_PartyGroup1UnitButton",
+                  "EQOLUFPartyHeaderUnitButton"
                }
             
                for _,prefix in ipairs(framePrefixes) do
