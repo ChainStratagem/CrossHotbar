@@ -1,7 +1,7 @@
 local ADDON, addon = ...
 
 local Locale = {
-   bindingToolTip = "Button bindings used to assign buttons to actions. The bindings can be either controller or keyboards bindings. The bindings are for the Cross hotbar only, the controller needs to be configured seperately.",
+   bindingToolTip = "Button bindings used to assign buttons to actions. The bindings can be either controller or keyboards bindings. The bindings are for the Crosshotbar only, the controller needs to be configured seperately.",
    actionToolTip = "Actions assigned when hobars are not active. Available actions are dependant on the button type. Some buttons can be assigned to modifiers such as LEFTHOTBAR or LEFTSHOULDER which can remap other buttons.",
    hotbaractionToolTip = "Hotbar buttons or actions assigned with a hotbar is active. The hotbar buttons are index relative to the active hotbar.",
    defaultTabToolTip = "Default actions for controller buttons and hotbar button assignments.",
@@ -12,7 +12,7 @@ local Locale = {
    hotkeyTypeToolTip = "Button icons used in the gui and hotkeys can be set to shapes or letters.",
    expandedTypeToolTip = "Sets the visual appearance of the expanded action buttons.",
    dclkTypeToolTip = "Sets the hotbar double click behavior. Double click is registered upon two quick releases presses",
-   dadaTypeToolTip = "The Cross hotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
+   dadaTypeToolTip = "The Crosshotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
    pageIndexToolTip = "The default page displayed by the hotbar for SET 1.",
    pageIndexBackbarToolTip = "The default page displayed by the back hotbars. Unaffected by the active SET.",
    pagePrefixToolTip = "The prefix macro conditional to control the hotbar paging under the specified conditionals. The default ActionPage should not be included in this string.",

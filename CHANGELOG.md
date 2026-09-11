@@ -1,12 +1,18 @@
 # CrossHotbar Changelog
 
+## Crosshotbar-1.0.27-release
+* Improvements to moving abilities on the bar.
+   * Fixed issue with drag & drop of actions.
+      * Holding shift and left clicking on a button no longer activates the button.
+   * Added feature to move to next/prev action SET when left/right clicking on SET text.
+
 ## Crosshotbar-1.0.26-release
 * Updated TOC for 12.1 and 12.0.7.
 * Added EQOL Unit Frame support for navigation.
 
 ## Crosshotbar-1.0.25-release
 * Updated TOC for 12.0.5.
-* Fixed issue with group navigation when reloading in a dungeon while in combat.   
+* Fixed issue with group navigation when reloading in a dungeon while in combat.
 * Tooltip corrections.
    * Used "extra actions" instead of "expanded actions".
 

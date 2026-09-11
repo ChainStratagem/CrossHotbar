@@ -220,8 +220,6 @@ function GamePadButtonsMixin:CreateModifierButton(Name)
    ]])
    SecureHandlerWrapScript(self[Name.."Button"], "OnClick", self[Name.."Button"], [[
       if self:GetAttribute("ACTIVE")  then
-         local action = self:GetAttribute("ACTIVE")
-         --print(action)
          self:RunAttribute("ACTIVE", down)
       end
    ]])
