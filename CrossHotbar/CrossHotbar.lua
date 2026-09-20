@@ -38,6 +38,37 @@ local VehicleHideList = {
 addon:ActionListAdd("VehicleBarHides", "CATEGORY_VEHICLEBAR_HIDES", VehicleHideList)
 VehicleHideList = addon:ActionListToTable(VehicleHideList)
 
+
+local PageNames = {
+   ["1"] = "SET 1",
+   ["2"] = "SET 2",
+   ["3"] = "SET 3",
+   ["4"] = "SET 4",
+   ["5"] = "SET 5",
+   ["6"] = "SET 6"
+}
+
+--[[
+local PageNames = {
+   ["1"] = " Main ",
+   ["2"] = "[2:1]",
+   ["3"] = "[4:3]",
+   ["4"] = "[6:5]",
+   ["5"] = "[8:7]",
+   ["6"] = "[10:9]"
+}
+
+local PageNames = {
+   ["1"] = "  SET 1   [Main]",
+   ["2"] = "  SET 2   [2:1] ",
+   ["3"] = "  SET 3   [4:3] ",
+   ["4"] = "  SET 4   [6:5] ",
+   ["5"] = "  SET 5   [8:7] ",
+   ["6"] = "  SET 6   [10:9]"
+}
+--]]
+
+
 CrossHotbarMixin = {
 }
 
@@ -135,12 +166,28 @@ function CrossHotbarMixin:OnLoad()
    
    addon:AddInitCallback(GenerateClosure(self.SetupCrosshotbar, self))
    addon:AddApplyCallback(GenerateClosure(self.ApplyConfig, self))
-   self.PageStatusFrame = CreateFrame("Frame", nil, self:GetParent(), self, "SecureFrameTemplate")
+   self.PageStatusFrame = CreateFrame("Button", nil, self:GetParent(), "SecureHandlerClickTemplate")
    self.PageStatusFrame:SetPoint("TOP", self, "BOTTOM", 0 , 0)
    self.PageStatusFrame.frameText = self.PageStatusFrame:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
    self.PageStatusFrame.frameText:SetPoint("TOPLEFT")
    self.PageStatusFrame.frameText:SetFontObject(GameFontNormal)
    self.PageStatusFrame.frameText:SetTextColor(1.0, 1.0, 0.8, 1.0)
+
+   self.PageStatusFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+   SecureHandlerSetFrameRef(self.PageStatusFrame, 'Crosshotbar', addon.Crosshotbar)
+   SecureHandlerWrapScript(self.PageStatusFrame, "OnClick", self.PageStatusFrame, [[
+     local Crosshotbar = self:GetFrameRef('Crosshotbar')
+     if button == "LeftButton" then
+        local newset = abs(Crosshotbar:GetAttribute("activeset") + 1)%6
+        if newset == 0 then newset = 6 end
+        Crosshotbar:SetAttribute("state-page", newset)
+     elseif button == "RightButton" then
+        local newset = abs(Crosshotbar:GetAttribute("activeset") + 5)%6
+        if newset == 0 then newset = 6 end
+        Crosshotbar:SetAttribute("state-page", newset)
+     end
+   ]])
+   
    self:UpdatePageStatus()
    self.PageStatusFrame:SetSize(self.PageStatusFrame.frameText:GetWidth(), self.PageStatusFrame.frameText:GetHeight())
    self.PageStatusFrame:Hide()   
@@ -149,7 +196,8 @@ end
 function CrossHotbarMixin:UpdatePageStatus()
    local activeset = self:GetAttribute("activeset")
    if activeset then
-      self.PageStatusFrame.frameText:SetText("SET " .. activeset)
+      local key = tostring(activeset)
+      self.PageStatusFrame.frameText:SetText(PageNames[key])
    end
 end
 
@@ -324,6 +372,7 @@ function CrossHotbarMixin:ScaleCrosshotbar(scale)
             scale = 1.0
          end
          self:SetScale(scale)
+         self.PageStatusFrame:SetScale(scale)
          WXHBCrossHotbarMover_Texture:SetHeight(self:GetHeight()*0.6*scale)
          WXHBCrossHotbarDrag_Texture:SetWidth(self:GetWidth()*scale)
          WXHBCrossHotbarDrag_Texture:SetHeight(self:GetHeight()*scale)
@@ -332,6 +381,7 @@ function CrossHotbarMixin:ScaleCrosshotbar(scale)
             scale = 1.0
          end
          self:SetScale(scale)
+         self.PageStatusFrame:SetScale(scale)
          WXHBCrossHotbarMover_Texture:SetHeight(self:GetHeight()*0.6*scale)
          WXHBCrossHotbarDrag_Texture:SetWidth(self:GetWidth()*scale)
          WXHBCrossHotbarDrag_Texture:SetHeight(self:GetHeight()*scale)

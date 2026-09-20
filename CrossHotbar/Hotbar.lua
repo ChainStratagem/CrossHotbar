@@ -173,11 +173,21 @@ function HotbarMixin:AddActionBar()
       self.Buttons[i]:SetAttribute("useOnKeyDown", true)
       -- Set attribute to tell Consoleport not to manage hotkey text.
       self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
+      
       --[[ Unable to unregister events using bar level workaround.
       -- Unregister events to prevent hotkey text changes.
          self.Buttons[i]:UnregisterEvent("UPDATE_BINDINGS")
          self.Buttons[i]:UnregisterEvent("GAME_PAD_ACTIVE_CHANGED")
       --]]
+
+      -- Toggle "useOnKeyDown" to suppress button during drag and drop.
+      SecureHandlerWrapScript(self.Buttons[i], "PreClick", self.Buttons[i], [[
+         if down and IsShiftKeyDown() and self:IsUnderMouse(false) then
+            self:SetAttribute("type", nil)
+         elseif self:GetAttribute("type") == nil then
+            self:SetAttribute("type", "action")
+         end
+      ]])
    end
    
    for i,button in ipairs(self.Buttons) do
