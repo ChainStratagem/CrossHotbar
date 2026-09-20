@@ -68,7 +68,7 @@ local SetButtonExpanded = [[
       if expandedstate == 4 and type == 2 then return end
       if expandedstate == 5 and type == 3 then return end
 
-      if dclktype > 0 and state ~= 3 and state ~= 5 then
+      if dclktype > 0 and state == 4 then
          GamePad:SetAttribute("state-trigger", 4)
          if button == "LeftButton" then
             GamePad:SetAttribute("state-expanded", 1)
@@ -82,31 +82,6 @@ local SetButtonExpanded = [[
                Crosshotbar:RunAttribute("update-expanded")
             end
          end
-      else
-         local a = 0
-         if state == 6 or state == 3 then a = 2 end
-         if state == 7 or state == 5 then a = 3 end
-         local b = a - state + 4
-
-         if a == 0 then
-            a = b
-            b = 0
-         end
-
-         local found = true
-         if  a == type then
-            a = 0
-         elseif b == type then
-            b = 0
-         else
-            found = false
-         end
-
-         local newstate = 4
-         if found then
-            newstate = a - b + 4
-         end
-         GamePad:SetAttribute("state-trigger", newstate)
       end
    end
 ]]
@@ -124,7 +99,7 @@ local GamePadButtonsMixin = addon.GamePadButtonsMixin
 
 function GamePadButtonsMixin:CreatePairButton(ButtonName)
    local Button = CreateFrame("Button", ADDON .. ButtonName .. "ButtonFrame",
-                                         self, "SecureActionButtonTemplate" )
+                              self, "SecureActionButtonTemplate, SecureHandlerAttributeTemplate" )
    Button:SetFrameStrata("BACKGROUND")
    Button:SetPoint("TOP", self, "LEFT", 0, 0)
    Button:RegisterForClicks("AnyDown", "AnyUp")
@@ -143,20 +118,64 @@ function GamePadButtonsMixin:CreateLeftTriggerButton()
    self.LeftTriggerButton = self:CreatePairButton("LeftTrigger")
    self.LeftTriggerButton:SetAttribute("SetButtonPairState", SetButtonPairState)
    self.LeftTriggerButton:SetAttribute("SetButtonExpanded", SetButtonExpanded)
-   SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")]])
-   SecureHandlerWrapScript(self.LeftTriggerButton, "OnDoubleClick", self.LeftTriggerButton,
-                           [[self:RunAttribute("SetButtonExpanded", "LeftButton")]])
+   
+   self.LeftTriggerButton:SetAttribute("dclick-ready", 0)
+   self.LeftTriggerButton:SetAttribute("dclick-ncount", 0)
+   RegisterAttributeDriver(self.LeftTriggerButton, "dclick-ready", 1)
+   self.LeftTriggerButton:SetAttributeNoHandler("_onattributechanged", [[
+        local ncount = self:GetAttribute("dclick-ncount")
+        if name == "dclick-ready" and value == 1 and ncount ~= 0 then
+           ncount = ncount - 1
+           self:SetAttribute("dclick-ncount", ncount)
+           self:SetAttribute("dclick-ready", 0)
+        end
+    ]])
+   
+   SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton, [[
+        local var = self:GetAttribute("dclick-ready");
+        if down then
+        local ready = self:GetAttribute("dclick-ready")
+           if ready == 1 then
+              self:SetAttribute("dclick-ready", 0);
+              self:SetAttribute("dclick-ncount", 2);
+           else
+              self:RunAttribute("SetButtonExpanded", "LeftButton")
+           end
+        end
+        self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")
+   ]])
 end
 
 function GamePadButtonsMixin:CreateRightTriggerButton()
    self.RightTriggerButton = self:CreatePairButton("RightTrigger")
    self.RightTriggerButton:SetAttribute("SetButtonPairState", SetButtonPairState)
    self.RightTriggerButton:SetAttribute("SetButtonExpanded", SetButtonExpanded)
-   SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")]])
-   SecureHandlerWrapScript(self.RightTriggerButton, "OnDoubleClick", self.RightTriggerButton,
-                           [[self:RunAttribute("SetButtonExpanded", "RightButton")]])
+   
+   self.RightTriggerButton:SetAttribute("dclick-ready", 0)
+   self.RightTriggerButton:SetAttribute("dclick-ncount", 0)
+   RegisterAttributeDriver(self.RightTriggerButton, "dclick-ready", 1)
+   self.RightTriggerButton:SetAttributeNoHandler("_onattributechanged", [[
+        local ncount = self:GetAttribute("dclick-ncount")
+        if name == "dclick-ready" and value == 1 and ncount ~= 0 then
+           ncount = ncount - 1
+           self:SetAttribute("dclick-ncount", ncount)
+           self:SetAttribute("dclick-ready", 0)
+        end
+    ]])
+   
+   SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton, [[
+        local var = self:GetAttribute("dclick-ready");
+        if down then
+           local ready = self:GetAttribute("dclick-ready")
+           if ready == 1 then
+              self:SetAttribute("dclick-ready", 0);
+              self:SetAttribute("dclick-ncount", 2);
+           else
+              self:RunAttribute("SetButtonExpanded", "RightButton")
+           end
+        end
+        self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")
+   ]])
 end
 
 function GamePadButtonsMixin:CreateLeftShoulderButton()

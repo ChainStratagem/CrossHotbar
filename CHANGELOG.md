@@ -1,6 +1,9 @@
 # CrossHotbar Changelog
 
 ## Crosshotbar-1.0.27-release
+* Improvements to double click hotbar expand.
+   * Replaced Blizzard OnDoubleClick with attribute driver.
+      * Triple click no longer required.
 * Improvements to moving abilities on the bar.
    * Fixed issue with drag & drop of actions.
       * Holding shift and left clicking on a button no longer activates the button.
