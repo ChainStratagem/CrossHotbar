@@ -11,7 +11,7 @@ local Locale = {
    ppadrTabToolTip = "Actions and hotbar assignments when under the RIGHTPADDLE modifier. An unassigned button will recieve the DEFAULT actions. Modifiers are exclusive and only modify the DEFAULT tab.",
    hotkeyTypeToolTip = "Button icons used in the gui and hotkeys can be set to shapes or letters.",
    expandedTypeToolTip = "Sets the visual appearance of the expanded action buttons.",
-   dclkTypeToolTip = "Sets the hotbar double click behavior. Double click is registered upon two quick releases presses",
+   dclkTypeToolTip = "Sets the hotbar expand double click behavior. Double click can be registered for two quick down presses or two quick release releases.",
    dadaTypeToolTip = "The Crosshotbar can have two layouts. One with each bar on a given side or another that interleaves the hotbars.",
    pageIndexToolTip = "The default page displayed by the hotbar for SET 1.",
    pageIndexBackbarToolTip = "The default page displayed by the back hotbars. Unaffected by the active SET.",
@@ -84,9 +84,9 @@ local Locale = {
       ["SHOW"] = "Show expanded actions when not active"
    },
    dclktypestr = {
-      ["ENABLE"] = "Enable expanded actions",
-      ["VISUAL"] = "Enable expanded actions with visual",
-      ["DISABLE"] = "Disable double click"
+      ["ENABLE"] = "Enable on press",
+      ["VISUAL"] = "Enable on release",
+      ["DISABLE"] = "Disable"
    },
    actionbarhidetypestr = {
       ["HIDEALL"] = "Hide all ActionBars",

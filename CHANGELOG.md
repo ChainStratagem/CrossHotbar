@@ -2,8 +2,13 @@
 
 ## Crosshotbar-1.0.27-release
 * Improvements to double click hotbar expand.
-   * Replaced Blizzard OnDoubleClick with attribute driver.
-      * Triple click no longer required.
+   * Added Expand on down presses with attribute driver.
+      * Triple clicking the trigger no longer required.
+      * Options changed to "Enable on press" and "Enable on release".
+         * "Enable on press" for new behavior.
+         * "Enable on release" for old behavior.
+      * Defaults changed to "Enable on press".
+         * Exisiting saves must be modified manually.
 * Improvements to moving abilities on the bar.
    * Fixed issue with drag & drop of actions.
       * Holding shift and left clicking on a button no longer activates the button.

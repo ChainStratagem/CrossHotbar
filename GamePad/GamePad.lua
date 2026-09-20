@@ -258,6 +258,8 @@ function GamePadMixin:ConfigActions()
 
    if DCLKList[config.Hotbar.DCLKType] ~= nil  then
       self:SetAttribute("wxhbdclk", DCLKList[config.Hotbar.DCLKType])
+      self:SetLeftTriggerButtonHandler(DCLKList[config.Hotbar.DCLKType])
+      self:SetRightTriggerButtonHandler(DCLKList[config.Hotbar.DCLKType])
    end
    
    self:Execute([[
