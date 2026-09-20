@@ -124,7 +124,7 @@ function GamePadButtonsMixin:CreateLeftTriggerButton()
    RegisterAttributeDriver(self.LeftTriggerButton, "dclick-ready", 1)
    self.LeftTriggerButton:SetAttributeNoHandler("_onattributechanged", [[
         local ncount = self:GetAttribute("dclick-ncount")
-        if name == "dclick-ready" and value == 1 and ncount ~= 0 then
+        if name == "dclick-ready" and value == 1 and ncount > 0 then
            ncount = ncount - 1
            self:SetAttribute("dclick-ncount", ncount)
            self:SetAttribute("dclick-ready", 0)
@@ -155,7 +155,7 @@ function GamePadButtonsMixin:CreateRightTriggerButton()
    RegisterAttributeDriver(self.RightTriggerButton, "dclick-ready", 1)
    self.RightTriggerButton:SetAttributeNoHandler("_onattributechanged", [[
         local ncount = self:GetAttribute("dclick-ncount")
-        if name == "dclick-ready" and value == 1 and ncount ~= 0 then
+        if name == "dclick-ready" and value == 1 and ncount > 0 then
            ncount = ncount - 1
            self:SetAttribute("dclick-ncount", ncount)
            self:SetAttribute("dclick-ready", 0)
