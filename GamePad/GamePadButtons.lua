@@ -132,12 +132,11 @@ function GamePadButtonsMixin:CreateLeftTriggerButton()
     ]])
    
    SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton, [[
-        local var = self:GetAttribute("dclick-ready");
         if down then
-        local ready = self:GetAttribute("dclick-ready")
+           local ready = self:GetAttribute("dclick-ready")
            if ready == 1 then
               self:SetAttribute("dclick-ready", 0);
-              self:SetAttribute("dclick-ncount", 2);
+              self:SetAttribute("dclick-ncount", 1);
            else
               self:RunAttribute("SetButtonExpanded", "LeftButton")
            end
@@ -164,12 +163,11 @@ function GamePadButtonsMixin:CreateRightTriggerButton()
     ]])
    
    SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton, [[
-        local var = self:GetAttribute("dclick-ready");
         if down then
            local ready = self:GetAttribute("dclick-ready")
            if ready == 1 then
               self:SetAttribute("dclick-ready", 0);
-              self:SetAttribute("dclick-ncount", 2);
+              self:SetAttribute("dclick-ncount", 1);
            else
               self:RunAttribute("SetButtonExpanded", "RightButton")
            end
