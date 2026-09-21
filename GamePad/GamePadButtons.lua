@@ -12,13 +12,13 @@ local SetButtonPairState = [[
 
    if GamePad ~= nil and type ~= 0 then
 
+      local state = GamePad:GetAttribute(pairname.."state")
+
       if pairname == "trigger" then
          local expandedstate = GamePad:GetAttribute("expandedstate")
          if expandedstate == 4 and type == 2 then return end
          if expandedstate == 5 and type == 3 then return end
       end
-
-      local state = GamePad:GetAttribute(pairname.."state")
 
       local a = 0
       if state == 6 or state == 3 then a = 2 end
@@ -44,7 +44,19 @@ local SetButtonPairState = [[
       end
 
       if found then
+
+         if pairname == "trigger" then
+            GamePad:SetAttribute("lasttriggerstate", state)
+         end
+
          state = a - b + 4
+
+         if pairname == "trigger" and down then
+            local downstate = GamePad:GetAttribute("triggerdownstate")
+            GamePad:SetAttribute("lasttriggerdownstate", downstate)
+            GamePad:SetAttribute("triggerdownstate", state)
+         end
+
          GamePad:SetAttribute("state-"..pairname, state)
       else
         -- print("Error " .. state .. " " .. a .. " " .. b .. " " .. type)
@@ -62,52 +74,66 @@ local SetButtonExpanded = [[
    local GamePad = self:GetFrameRef('GamePad')
    if GamePad ~= nil and type ~= 0 then
       local dclktype = GamePad:GetAttribute("wxhbdclk")
-      local laststate = GamePad:GetAttribute("lasttriggerstate")
       local state = GamePad:GetAttribute("triggerstate")
 
       local expandedstate = GamePad:GetAttribute("expandedstate")
       if expandedstate == 4 and type == 2 then return end
       if expandedstate == 5 and type == 3 then return end
 
-      if (dclktype == 1 and state == 4) or (dclktype == 2  and state ~= 3 and state ~= 5) then
-         GamePad:SetAttribute("state-trigger", 4)
-         if button == "LeftButton" and laststate == 6 then
-            GamePad:SetAttribute("state-expanded", 1)
+      if dclktype == 1 then
+         local laststate = GamePad:GetAttribute("lasttriggerstate")
+
+         if state == 4 then
+            if button == "LeftButton" and laststate == 6 then
+               GamePad:SetAttribute("state-expanded", 1)
+            end
+            if button == "RightButton" and laststate == 7 then
+               GamePad:SetAttribute("state-expanded", 2)
+            end
          end
-         if button == "RightButton" and laststate == 7 then
-            GamePad:SetAttribute("state-expanded", 2)
-         end
-         if dclktype == 2 then
+
+      elseif dclktype == 2 then
+         local lastdownstate = GamePad:GetAttribute("lasttriggerdownstate")
+
+         if state == 6 or state == 7 then
+            GamePad:SetAttribute("state-trigger", 4)
+            if button == "LeftButton" and lastdownstate == 6 then
+               GamePad:SetAttribute("state-expanded", 1)
+            end
+            if button == "RightButton" and lastdownstate == 7 then
+               GamePad:SetAttribute("state-expanded", 2)
+            end
+
             local Crosshotbar = self:GetFrameRef('Crosshotbar')
             if Crosshotbar ~= nil then
                Crosshotbar:RunAttribute("update-expanded")
             end
-         end
-      elseif dclktype == 2 then
-         local a = 0
-         if state == 6 or state == 3 then a = 2 end
-         if state == 7 or state == 5 then a = 3 end
-         local b = a - state + 4
-
-         if a == 0 then
-            a = b
-            b = 0
-         end
-
-         local found = true
-         if  a == type then
-            a = 0
-         elseif b == type then
-            b = 0
          else
-            found = false
-         end
+            local a = 0
+            if state == 6 or state == 3 then a = 2 end
+            if state == 7 or state == 5 then a = 3 end
+            local b = a - state + 4
 
-         local newstate = 4
-         if found then
-            newstate = a - b + 4
+            if a == 0 then
+               a = b
+               b = 0
+            end
+
+            local found = true
+            if  a == type then
+               a = 0
+            elseif b == type then
+               b = 0
+            else
+               found = false
+            end
+
+            local newstate = 4
+            if found then
+               newstate = a - b + 4
+            end
+            GamePad:SetAttribute("state-trigger", newstate)
          end
-         GamePad:SetAttribute("state-trigger", newstate)
       end
    end
 ]]
@@ -355,10 +381,7 @@ end
 
 function GamePadButtonsMixin:AddTriggerHandler()
    self:SetAttribute("triggerstate", 4)
-   self:SetAttribute("lasttriggerstate", 4)
    self:SetAttribute("_onstate-trigger", [[
-      local laststate = self:GetAttribute("triggerstate")
-      self:SetAttribute("lasttriggerstate", laststate)
       self:SetAttribute("triggerstate", newstate)
 
       self:RunAttribute("UpdateModifierName", "trigger")
