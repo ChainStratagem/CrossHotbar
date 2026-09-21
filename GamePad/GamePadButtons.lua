@@ -62,6 +62,7 @@ local SetButtonExpanded = [[
    local GamePad = self:GetFrameRef('GamePad')
    if GamePad ~= nil and type ~= 0 then
       local dclktype = GamePad:GetAttribute("wxhbdclk")
+      local laststate = GamePad:GetAttribute("lasttriggerstate")
       local state = GamePad:GetAttribute("triggerstate")
 
       local expandedstate = GamePad:GetAttribute("expandedstate")
@@ -70,10 +71,10 @@ local SetButtonExpanded = [[
 
       if (dclktype == 1 and state == 4) or (dclktype == 2  and state ~= 3 and state ~= 5) then
          GamePad:SetAttribute("state-trigger", 4)
-         if button == "LeftButton" then
+         if button == "LeftButton" and laststate == 6 then
             GamePad:SetAttribute("state-expanded", 1)
          end
-         if button == "RightButton" then
+         if button == "RightButton" and laststate == 7 then
             GamePad:SetAttribute("state-expanded", 2)
          end
          if dclktype == 2 then
@@ -354,7 +355,10 @@ end
 
 function GamePadButtonsMixin:AddTriggerHandler()
    self:SetAttribute("triggerstate", 4)
+   self:SetAttribute("lasttriggerstate", 4)
    self:SetAttribute("_onstate-trigger", [[
+      local laststate = self:GetAttribute("triggerstate")
+      self:SetAttribute("lasttriggerstate", laststate)
       self:SetAttribute("triggerstate", newstate)
 
       self:RunAttribute("UpdateModifierName", "trigger")
