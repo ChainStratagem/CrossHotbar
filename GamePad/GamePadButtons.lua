@@ -153,11 +153,22 @@ function GamePadButtonsMixin:AddEventHandler(frame)
    frame:SetAttribute("event-ready", 0)
    frame:SetAttribute("event-ncount", 0)
    RegisterAttributeDriver(frame, "event-ready", 1)
+   frame:Execute([[ ncount = 0; lastready = 1 ]])
    frame:SetAttributeNoHandler("_onattributechanged", [[
-        local ncount = self:GetAttribute("event-ncount")
-        if name == "event-ready" and value == 1 and ncount > 0 then
-           ncount = ncount - 1
-           self:SetAttribute("event-ncount", ncount)
+        if name == "event-ready" then
+           if value ~= lastready and ncount > 0 then
+              lastready = 0
+              ncount = ncount - 1
+              if ncount > 0 then
+                 self:SetAttribute("event-ready", 0)
+              end
+           else
+              lastready = value
+           end
+        end
+        if name == "event-ncount" and value > 0 then
+           ncount = value
+           lastready = 0
            self:SetAttribute("event-ready", 0)
         end
     ]])
@@ -206,20 +217,16 @@ function GamePadButtonsMixin:SetLeftTriggerButtonHandler(type)
    elseif type == 1 then
       self:AddEventHandler(self.LeftTriggerButton)
       SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton, [[
-      local ready = self:GetAttribute("event-ready")
+         local ready = self:GetAttribute("event-ready")
          if down then
-            if ready == 1 then
-               self:SetAttribute("event-ready", 0);
-               self:SetAttribute("event-ncount", 1);
-            else
+            if ready == 0 then
                self:RunAttribute("SetButtonExpanded", "LeftButton")
             end
-         else
-            if ready == 0 then
-              self:SetAttribute("event-ncount", 1);
-            end
-        end
-        self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")
+         end
+         self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")
+         if down and ready == 1  then
+            self:SetAttribute("event-ncount", 2)
+         end
    ]])
    elseif type == 2 then
       SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton,
@@ -250,18 +257,14 @@ function GamePadButtonsMixin:SetRightTriggerButtonHandler(type)
       SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton, [[
       local ready = self:GetAttribute("event-ready")
          if down then
-            if ready == 1 then
-               self:SetAttribute("event-ready", 0);
-               self:SetAttribute("event-ncount", 1);
-            else
-               self:RunAttribute("SetButtonExpanded", "RightButton")
-            end
-         else
             if ready == 0 then
-              self:SetAttribute("event-ncount", 1);
+               self:RunAttribute("SetButtonExpanded", "RightButton")
             end
         end
         self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")
+        if down and ready == 1 then
+           self:SetAttribute("event-ncount", 2)
+        end
    ]])
    elseif type == 2 then
       SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton,
