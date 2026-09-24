@@ -1,63 +1,57 @@
 local ADDON, addon = ...
 local config = addon.Config
 
-local SetButtonPairState = [[
-   local button, down, pairname  = ...
+local CalculatePairState = [[
+   local down, state, button = ...
 
    local type = 0
    if button == "LeftButton" then type = 2 end
    if button == "RightButton" then type = 3 end
+
+   local a = 0
+   if state == 6 or state == 3 then a = 2 end
+   if state == 7 or state == 5 then a = 3 end
+
+   local b = a - state + 4
+
+    if a == 0 then
+       a = b
+       b = 0
+    end
+
+    local found = true
+
+    if down and a == 0 then
+       a = type
+    elseif down and b == 0 then
+       b = type
+    elseif not down and a == type then
+       a = 0
+    elseif not down and b == type then
+       b = 0
+    else
+       found = false
+    end
+
+    if found then
+       state = a - b + 4
+    end
+
+    return found, state
+]]
+
+local SetButtonPairState = [[
+   local button, down, pairname  = ...
 
    local GamePad = self:GetFrameRef('GamePad')
 
    if GamePad ~= nil and type ~= 0 then
 
       local state = GamePad:GetAttribute(pairname.."state")
-
-      if pairname == "trigger" then
-         local expandedstate = GamePad:GetAttribute("expandedstate")
-         if expandedstate == 4 and type == 2 then return end
-         if expandedstate == 5 and type == 3 then return end
-      end
-
-      local a = 0
-      if state == 6 or state == 3 then a = 2 end
-      if state == 7 or state == 5 then a = 3 end
-      local b = a - state + 4
-
-      if a == 0 then
-         a = b
-         b = 0
-      end
-
-      local found = true
-      if down and a == 0 then
-         a = type
-      elseif down and b == 0 then
-         b = type
-      elseif not down and a == type then
-         a = 0
-      elseif not down and b == type then
-         b = 0
-      else
-         found = false
-      end
+      local found, newstate = self:RunAttribute('CalculatePairState', down, state, button);
 
       if found then
-
-         if pairname == "trigger" then
-            GamePad:SetAttribute("lasttriggerstate", state)
-         end
-
-         state = a - b + 4
-
-         if pairname == "trigger" and down then
-            local downstate = GamePad:GetAttribute("triggerdownstate")
-            GamePad:SetAttribute("lasttriggerdownstate", downstate)
-            GamePad:SetAttribute("triggerdownstate", state)
-         end
-
-         GamePad:SetAttribute("state-"..pairname, state)
+         GamePad:SetAttribute("state-"..pairname, newstate)
       else
         -- print("Error " .. state .. " " .. a .. " " .. b .. " " .. type)
       end
@@ -66,41 +60,28 @@ local SetButtonPairState = [[
 
 local SetButtonExpanded = [[
    local button = ...
-
-   local type = 0
-   if button == "LeftButton" then type = 2 end
-   if button == "RightButton" then type = 3 end
-
    local GamePad = self:GetFrameRef('GamePad')
-   if GamePad ~= nil and type ~= 0 then
-      local dclktype = GamePad:GetAttribute("wxhbdclk")
+
+   if GamePad ~= nil then
+      local dblclick = GamePad:GetAttribute("wxhbdclk")
       local state = GamePad:GetAttribute("triggerstate")
 
-      local expandedstate = GamePad:GetAttribute("expandedstate")
-      if expandedstate == 4 and type == 2 then return end
-      if expandedstate == 5 and type == 3 then return end
-
-      if dclktype == 1 then
-         local laststate = GamePad:GetAttribute("lasttriggerstate")
-
+      if dblclick == 1 then
          if state == 4 then
-            if button == "LeftButton" and laststate == 6 then
+            if button == "LeftButton" then
                GamePad:SetAttribute("state-expanded", 1)
             end
-            if button == "RightButton" and laststate == 7 then
+            if button == "RightButton" then
                GamePad:SetAttribute("state-expanded", 2)
             end
          end
-
-      elseif dclktype == 2 then
-         local lastdownstate = GamePad:GetAttribute("lasttriggerdownstate")
-
+      elseif dblclick == 2 then
          if state == 6 or state == 7 then
             GamePad:SetAttribute("state-trigger", 4)
-            if button == "LeftButton" and lastdownstate == 6 then
+            if button == "LeftButton" then
                GamePad:SetAttribute("state-expanded", 1)
             end
-            if button == "RightButton" and lastdownstate == 7 then
+            if button == "RightButton" then
                GamePad:SetAttribute("state-expanded", 2)
             end
 
@@ -109,30 +90,12 @@ local SetButtonExpanded = [[
                Crosshotbar:RunAttribute("update-expanded")
             end
          else
-            local a = 0
-            if state == 6 or state == 3 then a = 2 end
-            if state == 7 or state == 5 then a = 3 end
-            local b = a - state + 4
-
-            if a == 0 then
-               a = b
-               b = 0
-            end
-
-            local found = true
-            if  a == type then
-               a = 0
-            elseif b == type then
-               b = 0
-            else
-               found = false
-            end
-
-            local newstate = 4
+            local found, newstate = self:RunAttribute('CalculatePairState', false, state, button);
             if found then
-               newstate = a - b + 4
+               GamePad:SetAttribute("state-trigger", newstate)
+            else
+               GamePad:SetAttribute("state-trigger", 4)
             end
-            GamePad:SetAttribute("state-trigger", newstate)
          end
       end
    end
@@ -153,23 +116,24 @@ function GamePadButtonsMixin:AddEventHandler(frame)
    frame:SetAttribute("event-ready", 0)
    frame:SetAttribute("event-ncount", 0)
    RegisterAttributeDriver(frame, "event-ready", 1)
-   frame:Execute([[ ncount = 0; lastready = 1 ]])
+   frame:Execute([[ ncount = 0 ]])
    frame:SetAttributeNoHandler("_onattributechanged", [[
         if name == "event-ready" then
-           if value ~= lastready and ncount > 0 then
-              lastready = 0
+           if value == 1 and ncount > 0 then
               ncount = ncount - 1
               if ncount > 0 then
                  self:SetAttribute("event-ready", 0)
               end
-           else
-              lastready = value
            end
         end
-        if name == "event-ncount" and value > 0 then
-           ncount = value
-           lastready = 0
-           self:SetAttribute("event-ready", 0)
+        if name == "event-ncount" then
+           if value > 0 then
+              ncount = value
+              self:SetAttribute("event-ready", 0)
+           else
+              ncount = 0
+              self:SetAttribute("event-ready", 1)
+           end
         end
     ]])
 end
@@ -188,6 +152,7 @@ function GamePadButtonsMixin:CreatePairButton(ButtonName)
    Button:SetPoint("TOP", self, "LEFT", 0, 0)
    Button:RegisterForClicks("AnyDown", "AnyUp")
    Button:SetAttribute("useOnKeyDown", true)
+   Button:SetAttribute("CalculatePairState", CalculatePairState);
    Button:Hide()
    
    SecureHandlerSetFrameRef(Button, 'GamePad', addon.GamePad)
@@ -202,76 +167,60 @@ function GamePadButtonsMixin:CreateLeftTriggerButton()
    self.LeftTriggerButton = self:CreatePairButton("LeftTrigger")
    self.LeftTriggerButton:SetAttribute("SetButtonPairState", SetButtonPairState)
    self.LeftTriggerButton:SetAttribute("SetButtonExpanded", SetButtonExpanded)
-   SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")]])
-end
+   self:AddEventHandler(self.LeftTriggerButton)
+   SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton, [[
+      local GamePad = self:GetFrameRef('GamePad')
+      if GamePad ~= nil then
+         local expandedstate = GamePad:GetAttribute("expandedstate")
+         local dblclick = GamePad:GetAttribute("wxhbdclk")
 
-function GamePadButtonsMixin:SetLeftTriggerButtonHandler(type)
-   self:RemoveEventHandler(self.LeftTriggerButton)
-   SecureHandlerUnwrapScript(self.LeftTriggerButton, "OnClick")
-   SecureHandlerUnwrapScript(self.LeftTriggerButton, "OnDoubleClick")
-   
-   if type == 0 then
-      SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton,
-                              [[self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")]])
-   elseif type == 1 then
-      self:AddEventHandler(self.LeftTriggerButton)
-      SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton, [[
-         local ready = self:GetAttribute("event-ready")
-         if down then
+         if (down and dblclick == 1)  or (not down and dblclick == 2) then
+            if expandedstate ~= 4 then
+               GamePad:RunAttribute("SetActionButton", "LeftTrigger")
+            end
+        
+            local ready = self:GetAttribute("event-ready")
             if ready == 0 then
                self:RunAttribute("SetButtonExpanded", "LeftButton")
+            else 
+               self:SetAttribute("event-ncount", 2)
             end
          end
-         self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")
-         if down and ready == 1  then
-            self:SetAttribute("event-ncount", 2)
+
+         if expandedstate ~= 4 then
+            self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")
          end
-   ]])
-   elseif type == 2 then
-      SecureHandlerWrapScript(self.LeftTriggerButton, "OnClick", self.LeftTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "LeftButton", down, "trigger")]])
-      SecureHandlerWrapScript(self.LeftTriggerButton, "OnDoubleClick", self.LeftTriggerButton,
-                              [[self:RunAttribute("SetButtonExpanded", "LeftButton")]])
-   end
+     end
+  ]])
 end
 
 function GamePadButtonsMixin:CreateRightTriggerButton()
    self.RightTriggerButton = self:CreatePairButton("RightTrigger")
    self.RightTriggerButton:SetAttribute("SetButtonPairState", SetButtonPairState)
    self.RightTriggerButton:SetAttribute("SetButtonExpanded", SetButtonExpanded)
-   SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")]])
-end
-
-function GamePadButtonsMixin:SetRightTriggerButtonHandler(type)
-   self:RemoveEventHandler(self.RightTriggerButton)
-   SecureHandlerUnwrapScript(self.RightTriggerButton, "OnClick")
-   SecureHandlerUnwrapScript(self.RightTriggerButton, "OnDoubleClick")
-   
-   if type == 0 then
-      SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton,
-                              [[self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")]])
-   elseif type == 1 then
-      self:AddEventHandler(self.RightTriggerButton)
-      SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton, [[
-      local ready = self:GetAttribute("event-ready")
-         if down then
+   self:AddEventHandler(self.RightTriggerButton)
+   SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton, [[
+      local GamePad = self:GetFrameRef('GamePad')
+      if GamePad ~= nil then
+         local expandedstate = GamePad:GetAttribute("expandedstate")
+         local dblclick = GamePad:GetAttribute("wxhbdclk")
+         if (down and dblclick == 1) or (not down and dblclick == 2) then
+            if expandedstate ~= 5 then
+               GamePad:RunAttribute("SetActionButton", "RightTrigger")
+            end
+            local ready = self:GetAttribute("event-ready")
             if ready == 0 then
                self:RunAttribute("SetButtonExpanded", "RightButton")
+            else
+               self:SetAttribute("event-ncount", 2)
             end
-        end
-        self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")
-        if down and ready == 1 then
-           self:SetAttribute("event-ncount", 2)
-        end
+          end
+
+         if expandedstate ~= 5 then
+            self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")
+         end
+       end
    ]])
-   elseif type == 2 then
-      SecureHandlerWrapScript(self.RightTriggerButton, "OnClick", self.RightTriggerButton,
-                           [[self:RunAttribute("SetButtonPairState", "RightButton", down, "trigger")]])
-      SecureHandlerWrapScript(self.RightTriggerButton, "OnDoubleClick", self.RightTriggerButton,
-                              [[self:RunAttribute("SetButtonExpanded", "RightButton")]])
-   end
 end
 
 function GamePadButtonsMixin:CreateLeftShoulderButton()

@@ -68,7 +68,7 @@ function GamePadMixin:SetupGamePad()
    SecureHandlerSetFrameRef(self, 'GamePad', addon.GamePad)
    SecureHandlerSetFrameRef(self, 'Crosshotbar', addon.Crosshotbar)
    SecureHandlerSetFrameRef(self, 'GroupNavigator', addon.GroupNavigator)
-
+   
    self:AddStateHandlers()
    self:CreateLeftTriggerButton()
    self:CreateRightTriggerButton()
@@ -87,6 +87,30 @@ function GamePadMixin:SetupGamePad()
    self:CreateLookUpdateHooks()
    self:AddMovieLookHandlers()
    self:AddMovieButtonHandlers()
+
+   SecureHandlerSetFrameRef(self, 'LeftTriggerButton', self.LeftTriggerButton)
+   SecureHandlerSetFrameRef(self, 'RightTriggerButton', self.RightTriggerButton)
+
+   self:Execute([[ LastButtonDown = "" ]])
+   self:SetAttribute("SetActionButton", [[
+      local name = ...
+      if LastButtonDown == 'LeftTrigger' and name ~= 'LeftTrigger' then
+         local button = self:GetFrameRef('LeftTriggerButton')
+         local ready = button:GetAttribute("event-ready")
+         if ready == 0 then
+            button:SetAttribute("event-ncount", 0)
+         end
+      elseif LastButtonDown == 'RightTrigger' and name ~= 'RightTrigger' then
+         local button = self:GetFrameRef('RightTriggerButton')
+         local ready = button:GetAttribute("event-ready")
+         if ready == 0 then
+            button:SetAttribute("event-ncount", 0)
+         end
+      end
+      LastButtonDown = name
+   ]])
+   
+   addon.Crosshotbar:AddClickNotifier(addon.GamePad)
 end
 
 function GamePadMixin:OnEvent(event, ...)
@@ -258,8 +282,6 @@ function GamePadMixin:ConfigActions()
 
    if DCLKList[config.Hotbar.DCLKType] ~= nil  then
       self:SetAttribute("wxhbdclk", DCLKList[config.Hotbar.DCLKType])
-      self:SetLeftTriggerButtonHandler(DCLKList[config.Hotbar.DCLKType])
-      self:SetRightTriggerButtonHandler(DCLKList[config.Hotbar.DCLKType])
    end
    
    self:Execute([[

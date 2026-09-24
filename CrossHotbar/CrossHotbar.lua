@@ -100,6 +100,13 @@ function CrossHotbarMixin:SetupCrosshotbar()
    end
 end
 
+function CrossHotbarMixin:AddClickNotifier(Notifier)
+   WXHBLHotbar1:AddClickNotifier(Notifier)
+   WXHBRHotbar1:AddClickNotifier(Notifier)
+   WXHBLRHotbar1:AddClickNotifier(Notifier)
+   WXHBRLHotbar1:AddClickNotifier(Notifier)
+end
+
 function CrossHotbarMixin:ApplyConfig()
    local bindings = {}
    local nbindings = #GamePadModifierList + 2

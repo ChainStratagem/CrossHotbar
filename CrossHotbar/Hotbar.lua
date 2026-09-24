@@ -181,6 +181,14 @@ function HotbarMixin:AddActionBar()
       --]]
 
       -- Toggle "useOnKeyDown" to suppress button during drag and drop.
+      SecureHandlerWrapScript(self.Buttons[i], "OnClick", self.Buttons[i], [[
+         if down then
+            local ClickNotifier = self:GetFrameRef('ClickNotifier')
+            if ClickNotifier ~= nil then
+               ClickNotifier:RunAttribute("SetActionButton", self:GetName())
+            end
+         end
+      ]])
       SecureHandlerWrapScript(self.Buttons[i], "PreClick", self.Buttons[i], [[
          if down and IsShiftKeyDown() and self:IsUnderMouse(false) then
             self:SetAttribute("type", nil)
@@ -195,6 +203,12 @@ function HotbarMixin:AddActionBar()
       SecureHandlerSetFrameRef(self, 'ActionButton'..index, button)
    end
    SecureHandlerSetFrameRef(self, 'ActionBar', self)
+end
+
+function HotbarMixin:AddClickNotifier(Notifier)
+   for i,button in ipairs(self.Buttons) do
+      SecureHandlerSetFrameRef(button, 'ClickNotifier', Notifier)
+   end
 end
 
 function HotbarMixin:AddOverrideKeyBindings(ConfigBindings)
