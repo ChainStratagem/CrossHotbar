@@ -460,6 +460,18 @@ function CrossHotbarMixin:HideActionBars(hide)
       for _,barname in ipairs(mainbarnames) do
          self:HideActionBar(_G[barname])
       end
+      
+      local gamepadnames = {
+         "GamepadMainActionBarFrame",
+         "GamepadMainActionBarFramePageUnit",
+         "GamepadPersistentInputLegend",
+         "GamepadActionBarEditFrame"
+      }
+      
+      for _,barname in ipairs(gamepadnames) do
+         self:HideGamepadBar(_G[barname])
+      end
+      
    end
 
    if hide == "HIDEALL" then
@@ -475,6 +487,28 @@ function CrossHotbarMixin:HideActionBars(hide)
       
       for _,barname in ipairs(multibarnames) do
          self:HideActionBar(_G[barname])
+      end
+   end
+end
+
+function CrossHotbarMixin:HideGamepadBar(gamepadbar)
+   if GamepadMode then
+      if gamepadbar then
+         if gamepadbar.HideBase then
+            gamepadbar:HideBase()
+         else
+            gamepadbar:Hide()
+         end
+         gamepadbar:ClearAllPoints()
+         gamepadbar:SetParent(addon.UIHider)
+         GamepadMode.UnregisterTargetModifierChanged(gamepadbar)
+         GamepadMode.UnregisterInputModifierStateChangeCallback(gamepadbar)         
+         GamepadMode.UnregisterTargetModifierVisualStateChanged(gamepadbar)
+         gamepadbar:UnregisterEvent("PLAYER_ENTERING_WORLD")
+         gamepadbar:UnregisterEvent("PLAYER_ENTER_COMBAT")
+         gamepadbar:UnregisterEvent("PLAYER_LEAVE_COMBAT")
+         gamepadbar:UnregisterEvent("UPDATE_BINDINGS")
+         gamepadbar:UnregisterEvent("UNIT_PET")
       end
    end
 end

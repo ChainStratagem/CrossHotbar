@@ -11,7 +11,15 @@ local Actions = {
    {"FRIENDNAMEPLATES", true},
    {"ALLNAMEPLATES", true}
 }
+
 addon:ActionListAdd("GamePadActions", "CATEGORY_ACTIONS", Actions, "NONE")
+
+local GamepadModeActions = {
+   {"OPENRADIAL", true},
+   {"TOGGLEUIFOCUS", true}
+}
+
+addon:ActionListAdd("GamePadActions", "CATEGORY_ACTIONS_GAMEPADMODE", GamepadModeActions, "NONE")
 
 local Modifiers = {
    {"LEFTSHOULDER", true},
@@ -21,6 +29,7 @@ local Modifiers = {
    {"LEFTPADDLE", true},
    {"RIGHTPADDLE", true}
 }
+
 addon:ActionListAdd("GamePadModifiers", "CATEGORY_MODIFIERS", Modifiers, "NONE")
 
 local ModifierActions = {
@@ -456,6 +465,7 @@ end
 GamePadActionsMixin.Actions = addon:ActionListToTable(Actions)
 GamePadActionsMixin.Modifiers = addon:ActionListToTable(Modifiers)
 GamePadActionsMixin.ModifierActions = addon:ActionListToTable(ModifierActions)
+for key, value in pairs(addon:ActionListToTable(GamepadModeActions)) do GamePadActionsMixin.Actions[key] = value  end
 for key, value in pairs(addon:ActionListToTable(ExpandedModifierActions)) do GamePadActionsMixin.ModifierActions[key] = value  end
 for key, value in pairs(addon:ActionListToTable(MacroModifierActions)) do GamePadActionsMixin.ModifierActions[key] = value  end
 for key, value in pairs(addon:ActionListToTable(TargetModifierActions)) do GamePadActionsMixin.ModifierActions[key] = value  end

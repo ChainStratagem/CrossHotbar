@@ -1,5 +1,18 @@
 # CrossHotbar Changelog
 
+## Crosshotbar-1.0.28-release
+* Updated toc to include forever beta.
+* Basic minimal support for forever GamepadMode (Alpha)
+   * Added ability to hide MainActionBar under GamepadMode.
+   * GamepadMode bindings OPENRADIAL and TOGGLEUIFOCUS.
+* Changed unit binding UNITNAVUP, UNITNAVDOWN outside of party/raid.
+   * Will now cycle nearest and prev friendly target instead of player.
+* Changed unit binding UNITNAVLEFT, UNITNAVRIGHT outside of party/raid.
+   * Will now cycle nearest and prev enemy target instead of player.
+* Added auto advance when holding the UNITNAV buttons down.
+* When using mouselook the mouse will unlock when the gamemenu is activated.
+   * Failsafe incase cameralook binding is missing.
+
 ## Crosshotbar-1.0.27-release
 * Improvements to double click hotbar expand.
    * Added Expand on down presses with attribute driver.

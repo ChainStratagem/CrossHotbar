@@ -247,6 +247,20 @@ function GamePadLookMixin:CreateLookUpdateHooks()
    if addon.GamePad.GamePadEnabled then
       hooksecurefunc('SetGamePadCursorControl',  GenerateClosure(self.SetGamePadCursorControl, self))
    end
+
+   local laststate = addon.GamePad.MouseLookState
+   function UnlockMouse(self, GameMenuFrame)
+      if self.MouseLookEnabled then
+         if GameMenuFrame:IsShown() and addon.GamePad.MouseLookState then
+            laststate = addon.GamePad.MouseLookState
+            self:SetMouseLook(false)
+         else
+            self:SetMouseLook(laststate)
+         end
+      end
+   end
+   
+   hooksecurefunc("ToggleGameMenu", GenerateClosure(UnlockMouse, self, GameMenuFrame))
 end
 
 function GamePadLookMixin:AddMovieLookHandlers()

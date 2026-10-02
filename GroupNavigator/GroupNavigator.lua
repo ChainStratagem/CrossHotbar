@@ -74,12 +74,14 @@ function GroupNavigatorMixin:OnEvent(event, ...)
    elseif event == "PLAYER_ROLES_ASSIGNED" then
       self:updateRoster()                        
    elseif event == "PLAYER_ENTERING_WORLD" then
-      self:updateRoster()
-      if ChatFrame1EditBox then
-         ChatFrame1EditBox:SetAltArrowKeyMode(false)
-      end
-      self.SoftTargetFrame:Hide()      
-      self:updateRoster()
+       C_Timer.After(1.5, function()
+                        self:updateRoster()
+                        if ChatFrame1EditBox then
+                           ChatFrame1EditBox:SetAltArrowKeyMode(false)
+                        end
+                        self.SoftTargetFrame:Hide()      
+                        self:updateRoster()
+                     end)
    elseif event == "PLAYER_REGEN_ENABLED" then
       self:updateRoster()
    elseif event == "PLAYER_REGEN_DISABLED" then
@@ -95,6 +97,7 @@ function GroupNavigatorMixin:AddStateHandlers()
    
    self:SetAttribute("SetActionBindings", [[
       local prefix = ...
+      self:SetAttribute("event-ncount", 0)
       if prefix == "" or prefix == "TRIG" then
          self:ClearBindings()
       end
@@ -160,13 +163,30 @@ function GroupNavigatorMixin:updateRoster()
    if not InCombatLockdown() then 
       local raid_id = UnitInRaid("player")
       if raid_id then
+         self:SetAttribute("*type1", "target")
+         self:SetAttribute("*type2", "target")
+         self:SetAttribute("*type4", "target")
+         self:SetAttribute("*type5", "target")
          self:SetAttribute("player_id", "raid"..raid_id)
          self:SetAttribute("group_change", true)
          self:AddUnitFrameRefs()
       elseif UnitInParty("player") then
+         self:SetAttribute("*type1", "target")
+         self:SetAttribute("*type2", "target")
+         self:SetAttribute("*type4", "target")
+         self:SetAttribute("*type5", "target")
          self:SetAttribute("player_id", "player")
          self:SetAttribute("group_change", true)
          self:AddUnitFrameRefs()
+      else
+         self:SetAttribute("*type1", "macro")
+         self:SetAttribute("macrotext1", "/targetenemy 1")
+         self:SetAttribute("*type2", "macro")
+         self:SetAttribute("macrotext2", "/targetenemy")
+         self:SetAttribute("*type4", "macro")
+         self:SetAttribute("macrotext4", "/targetfriend")
+         self:SetAttribute("*type5", "macro")
+         self:SetAttribute("macrotext5", "/targetfriend 1")
       end
    end
 end
@@ -324,9 +344,47 @@ function GroupNavigatorMixin:UpdateSoftTarget(key)
 end
 
 function GroupNavigatorMixin:WrapOnClick()
+   self:SetAttribute("event-ready", 0)
+   self:SetAttribute("event-ncount", 0)
+   RegisterAttributeDriver(self, "event-ready", 1)
+   self:Execute([[ _ncount = 0;  _button = nil ]])
+   self:SetAttributeNoHandler("_onattributechanged", [[
+        if name == "event-ready" then
+           if value == 1 and _ncount > 0 then
+              _ncount = _ncount - 1
+              if _ncount < 99 then
+                 self:RunAttribute('processGroups', _button, true)
+              end
+              self:SetAttribute("event-ready", 0)
+           end
+        elseif name == "event-ncount" then
+           if value > 0 then
+              _ncount = value
+              self:SetAttribute("event-ready", 0)
+           else
+              _ncount = 0
+              self:SetAttribute("event-ready", 1)
+           end
+        end
+    ]])
    SecureHandlerUnwrapScript(self, "OnClick")
    SecureHandlerWrapScript(self, "OnClick", self,  [[
-
+      _button = button
+      if PlayerInGroup() then
+         if down then
+           _ncount = 100
+           self:SetAttribute("useOnKeyDown", true)
+           self:SetAttribute("event-ready", 0)
+           self:RunAttribute('processGroups', _button, true)
+         else
+           _ncount = 0
+           self:SetAttribute("useOnKeyDown", false)
+           self:SetAttribute("event-ready", 1)
+         end
+      end
+   ]])
+   self:SetAttributeNoHandler('processGroups', [[
+   local button, down = ...
    if not down then return end
 
    if not lastunit then lastunit = 1 end
@@ -488,7 +546,7 @@ local InitGroupNavigator = function()
    local SoftTargetFrame = CreateFrame("Frame", ADDON .. "SoftTarget", UIParent)
    SoftTargetFrame:SetFrameStrata("MEDIUM")
    SoftTargetFrame:EnableMouse(false)
-   SoftTargetFrame:SetFrameLevel(10)
+   SoftTargetFrame:SetFrameLevel(50)
    SoftTargetFrame:SetPoint("TOP", UIParent, "LEFT", 0, 0)
    
    SoftTargetFrame.activeHighlight = SoftTargetFrame:CreateTexture(nil, "OVERLAY")
@@ -513,7 +571,7 @@ local InitGroupNavigator = function()
    SoftTargetFrame:Hide()   
 
    local GroupNavigator = CreateFrame("Button", ADDON .. "GroupNavigator", parent,
-                                      "SecureActionButtonTemplate, SecureHandlerStateTemplate")
+                                      "SecureActionButtonTemplate, SecureHandlerStateTemplate, SecureHandlerAttributeTemplate")
 
    Mixin(GroupNavigator, GroupNavigatorMixin)
 
@@ -524,19 +582,19 @@ local InitGroupNavigator = function()
    GroupNavigator:SetPoint("TOP", parent:GetName(), "LEFT", 0, 0)
    GroupNavigator:Hide()
 
-   GroupNavigator:SetAttribute("useOnKeyDown", true)
    GroupNavigator:SetAttribute("player_unit", "1")
    GroupNavigator:SetAttribute("player_group", "1")
-   GroupNavigator:SetAttribute("*type1", "target")
-   GroupNavigator:SetAttribute("*type2", "target")
+   GroupNavigator:SetAttribute("*type1", "macro")
+   GroupNavigator:SetAttribute("*type2", "macro")
    GroupNavigator:SetAttribute("*type3", "macro")
-   GroupNavigator:SetAttribute("*type4", "target")
-   GroupNavigator:SetAttribute("*type5", "target")
+   GroupNavigator:SetAttribute("*type4", "macro")
+   GroupNavigator:SetAttribute("*type5", "macro")
    GroupNavigator:SetAttribute("unit", "player")
    GroupNavigator:SetAttribute("group_change", true)
    GroupNavigator:SetAttribute("max_group", 1)
    GroupNavigator:SetAttribute("max_unit", 5)
    GroupNavigator:SetAttribute("group_vertical", true)
+   GroupNavigator:SetAttribute("useOnKeyDown", false)
 
    GroupNavigator:AddStateHandlers()
 
