@@ -109,8 +109,46 @@ function GamePadMixin:SetupGamePad()
       end
       LastButtonDown = name
    ]])
+
+   self:CreateNativeBarResync()
    
    addon.Crosshotbar:AddClickNotifier(addon.GamePad)
+end
+
+-- WoW Forever's native gamepad bar picks its LT/RT set by reading the physical
+-- trigger (IsKeyDown on the key bound to GAMEPADLEFTMOD / GAMEPADRIGHTMOD), but
+-- only when an event asks it to re-check. CrossHotbar's override on the trigger
+-- takes the trigger's press and release, so after T + B (pet panel, target
+-- modifier) the bar re-checks while T is held and never re-checks after T is
+-- released: it stays stuck on the LT/RT set.
+--
+-- The engine-owned GAMEPADxMOD binding can't be changed from Lua, and calling
+-- the bar's refresh from addon code is blocked in combat. Instead, on trigger
+-- release, securely click the native page button forward and back: each page
+-- change runs the bar's own re-check, which now sees the trigger released.
+function GamePadMixin:CreateNativeBarResync()
+   local pageUnit = GamepadMainActionBarFrame and GamepadMainActionBarFrame.PageUnit
+   local pageButton = pageUnit and pageUnit.PageTracker and pageUnit.PageTracker.ChangePageButton
+   if not pageButton then
+      return
+   end
+
+   local resync = CreateFrame("Button", ADDON .. "NativeBarResyncButton", UIParent, "SecureActionButtonTemplate")
+   resync:RegisterForClicks("AnyDown", "AnyUp")
+   resync:SetAttribute("type", "click")
+   resync:SetAttribute("clickbutton", pageButton)
+
+   local name = resync:GetName()
+   local macrotext = "/click " .. name .. " LeftButton true\n/click " .. name .. " RightButton true"
+
+   for _, button in ipairs({ self.LeftTriggerButton, self.RightTriggerButton }) do
+      -- The trigger buttons have no secure action of their own (their logic
+      -- lives in the wrapped OnClick), so running the action on key up only
+      -- affects this macro.
+      button:SetAttribute("useOnKeyDown", false)
+      button:SetAttribute("type", "macro")
+      button:SetAttribute("macrotext", macrotext)
+   end
 end
 
 function GamePadMixin:OnEvent(event, ...)
