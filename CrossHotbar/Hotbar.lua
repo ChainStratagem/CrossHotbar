@@ -160,6 +160,53 @@ function HotbarMixin:SetupHotbar()
    RegisterStateDriver(self, 'page', pageprefix .. pageindex)
 end
       
+-- Out-of-range ring around the gamepad glyph.
+--
+-- While a trigger is held, UpdateHotkeys replaces the range dot with the
+-- button glyph (an inline atlas). Blizzard's range indicator only recolors
+-- the HotKey font string, which doesn't tint inline textures, so the range
+-- state is invisible. Draw a red ring behind the glyph instead.
+local GLYPH_SIZE = 14  -- size of the KEY_ABBR_* gamepad atlas
+local RING_SIZE = GLYPH_SIZE + 6
+
+local function CreateRangeRing(button)
+   local parent = button.TextOverlayContainer or button
+   local ring = parent:CreateTexture(nil, "OVERLAY", nil, -1)
+   ring:SetColorTexture(1.0, 0.15, 0.15, 0.9)
+   ring:SetSize(RING_SIZE, RING_SIZE)
+   ring:SetPoint("CENTER", button.HotKey, "RIGHT", -GLYPH_SIZE / 2, 0)
+   local mask = parent:CreateMaskTexture()
+   mask:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask",
+                   "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+   mask:SetAllPoints(ring)
+   ring:AddMaskTexture(mask)
+   ring:Hide()
+   button.CHRangeRing = ring
+end
+
+local function UpdateRangeRing(button, checksRange, inRange)
+   local ring = button.CHRangeRing
+   if not ring then return end
+   local glyphShown = button.HotKey:IsShown() and button.HotKey:GetText() ~= RANGE_INDICATOR
+   ring:SetShown(glyphShown and checksRange and not inRange)
+end
+
+local function RefreshRangeRing(button)
+   local action = button.action
+   local inRange = nil
+   if action and HasAction(action) then
+      inRange = IsActionInRange(action)
+   end
+   -- nil: the action has no range or there's no target.
+   UpdateRangeRing(button, inRange ~= nil, inRange)
+end
+
+hooksecurefunc("ActionButton_UpdateRangeIndicator", function(button, checksRange, inRange)
+   if button.CHRangeRing then
+      UpdateRangeRing(button, checksRange, inRange)
+   end
+end)
+
 function HotbarMixin:AddActionBar()
    self.Buttons = {}
    self.BtnPrefix = self:GetName() .. "Button"
@@ -173,6 +220,7 @@ function HotbarMixin:AddActionBar()
       self.Buttons[i]:SetAttribute("useOnKeyDown", true)
       -- Set attribute to tell Consoleport not to manage hotkey text.
       self.Buttons[i]:SetAttribute("ignoregamepadhotkey", true)
+      CreateRangeRing(self.Buttons[i])
       
       --[[ Unable to unregister events using bar level workaround.
       -- Unregister events to prevent hotkey text changes.
@@ -545,6 +593,7 @@ function HotbarMixin:UpdateHotkeys()
                                       button.hotkeyTextKeyboardY or 0);
          end
          button.HotKey:Show()
+         RefreshRangeRing(button)
       end
       for i,highlight in ipairs(self.Highlights) do
          if highlights[i] then
